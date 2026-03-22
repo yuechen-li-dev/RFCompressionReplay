@@ -26,6 +26,21 @@ public sealed class EvaluationTests
     }
 
     [Fact]
+    public void RocAucIsOneForPerfectSeparationWhenLowerScoresMeanMorePositive()
+    {
+        var calculator = new RocAucCalculator();
+        var result = calculator.Calculate(
+        [
+            new BinaryScoreRecord(true, 0.1d),
+            new BinaryScoreRecord(true, 0.2d),
+            new BinaryScoreRecord(false, 0.8d),
+            new BinaryScoreRecord(false, 0.9d),
+        ], ScoreOrientation.LowerScoreMorePositive);
+
+        Assert.Equal(1d, result.Auc);
+    }
+
+    [Fact]
     public void RocAucIsZeroForInvertedOrderingWhenOrientationIsNotCorrected()
     {
         var calculator = new RocAucCalculator();
@@ -57,12 +72,14 @@ public sealed class EvaluationTests
     }
 
     [Theory]
-    [InlineData(DetectorCatalog.EnergyDetectorName)]
-    [InlineData(DetectorCatalog.CovarianceAbsoluteValueDetectorName)]
-    [InlineData(DetectorCatalog.LzmsaPaperDetectorName)]
-    public void DetectorScoreOrientationIsExplicitlyDocumented(string detectorName)
+    [InlineData(DetectorCatalog.EnergyDetectorName, ScoreOrientation.HigherScoreMorePositive)]
+    [InlineData(DetectorCatalog.CovarianceAbsoluteValueDetectorName, ScoreOrientation.HigherScoreMorePositive)]
+    [InlineData(DetectorCatalog.LzmsaPaperDetectorName, ScoreOrientation.HigherScoreMorePositive)]
+    [InlineData(DetectorCatalog.LzmsaCompressedLengthDetectorName, ScoreOrientation.LowerScoreMorePositive)]
+    [InlineData(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, ScoreOrientation.LowerScoreMorePositive)]
+    public void DetectorScoreOrientationIsExplicitlyDocumented(string detectorName, ScoreOrientation expectedOrientation)
     {
-        Assert.Equal(ScoreOrientation.HigherScoreMorePositive, DetectorCatalog.GetScoreOrientation(detectorName));
+        Assert.Equal(expectedOrientation, DetectorCatalog.GetScoreOrientation(detectorName));
     }
 
     [Fact]
@@ -101,6 +118,8 @@ public sealed class EvaluationTests
     [Theory]
     [InlineData("m3.ofdm-sweep.json")]
     [InlineData("m3.gaussian-control.json")]
+    [InlineData("m3.lzmsa-compressed-length.json")]
+    [InlineData("m3.lzmsa-normalized-compressed-length.json")]
     [InlineData("m3.mixed.json")]
     public void M3SampleConfigsRunEndToEnd(string configFileName)
     {

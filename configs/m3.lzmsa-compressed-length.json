@@ -1,6 +1,6 @@
 {
-  "experimentId": "m3-mixed",
-  "experimentName": "M3 Synthetic Evaluation - Mixed Detector and Task Sweep",
+  "experimentId": "m3-lzmsa-compressed-length",
+  "experimentName": "M3 Synthetic Evaluation - LZMSA Compressed Length",
   "seed": 12345,
   "outputDirectory": "artifacts",
   "scenario": {
@@ -49,56 +49,13 @@
           "gaussianEmitter": null,
           "ofdmLike": null
         }
-      },
-      {
-        "name": "gaussian-emitter-vs-noise-only",
-        "description": "Positive class is an independent Gaussian emitter mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
-        "positiveCase": {
-          "name": "gaussian-emitter-control",
-          "targetLabel": "signal-present",
-          "sourceType": "gaussian-emitter",
-          "snrDb": 0.0,
-          "gaussianEmitter": {
-            "mean": 0.0,
-            "standardDeviation": 1.0
-          },
-          "ofdmLike": null
-        },
-        "negativeCase": {
-          "name": "noise-only-baseline",
-          "targetLabel": "noise-only",
-          "sourceType": "noise-only",
-          "snrDb": null,
-          "gaussianEmitter": null,
-          "ofdmLike": null
-        }
       }
     ],
     "detectors": [
       {
-        "name": "ed",
-        "threshold": 1.0,
-        "mode": "average-energy"
-      },
-      {
-        "name": "cav",
-        "threshold": 0.05,
-        "mode": "lag-1-absolute-autocovariance"
-      },
-      {
-        "name": "lzmsa-paper",
-        "threshold": 25000.0,
-        "mode": "paper-byte-sum"
-      },
-      {
         "name": "lzmsa-compressed-length",
         "threshold": 64.0,
         "mode": "compressed-byte-count"
-      },
-      {
-        "name": "lzmsa-normalized-compressed-length",
-        "threshold": 0.25,
-        "mode": "compressed-byte-count-per-input-byte"
       }
     ],
     "snrDbValues": [ -6.0, 0.0 ],
@@ -106,12 +63,12 @@
     "trialCountPerCondition": 3
   },
   "manifestMetadata": {
-    "notes": "Compact pre-M4 mixed sweep covering both benchmark tasks and the existing plus new compression-derived score identities for smoke testing and review.",
+    "notes": "Pre-M4 hardening sample config for the raw compressed-byte-count score identity on an existing M3 task.",
     "versionTag": "m3-hardening",
     "tags": {
       "paper": "2018-rf-spectrum-sensing",
       "milestone": "pre-m4-hardening",
-      "benchmark": "mixed"
+      "detector": "lzmsa-compressed-length"
     }
   }
 }

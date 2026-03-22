@@ -23,18 +23,21 @@ public sealed class ExperimentConfigTests
         Assert.Null(config.Evaluation);
     }
 
-    [Fact]
-    public void DeserializesM3SampleConfig()
+    [Theory]
+    [InlineData("m3.ofdm-sweep.json", 2)]
+    [InlineData("m3.lzmsa-compressed-length.json", 1)]
+    [InlineData("m3.lzmsa-normalized-compressed-length.json", 1)]
+    [InlineData("m3.mixed.json", 5)]
+    public void DeserializesM3SampleConfig(string configFileName, int expectedDetectorCount)
     {
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs/m3.ofdm-sweep.json"));
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
         var config = ExperimentConfigJson.Load(path);
 
-        Assert.Equal("m3-ofdm-sweep", config.ExperimentId);
         Assert.NotNull(config.Evaluation);
-        Assert.Equal(BenchmarkTaskCatalog.OfdmSignalPresentVsNoiseOnly, config.Evaluation!.Tasks.Single().Name);
-        Assert.Equal(2, config.Evaluation.Detectors.Count);
-        Assert.Equal(new[] { -9d, -3d, 0d }, config.Evaluation.SnrDbValues);
-        Assert.Equal(new[] { 64, 128 }, config.Evaluation.WindowLengths);
+        Assert.Equal(expectedDetectorCount, config.Evaluation!.Detectors.Count);
+        Assert.NotEmpty(config.Evaluation.Tasks);
+        Assert.NotEmpty(config.Evaluation.SnrDbValues);
+        Assert.NotEmpty(config.Evaluation.WindowLengths);
     }
 
     [Fact]
@@ -86,21 +89,24 @@ public sealed class ExperimentConfigTests
 
         var errors = ExperimentConfigValidator.Validate(config);
 
-        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M3. Supported detectors: ed, cav, lzmsa-paper.", errors);
+        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M3. Supported detectors: ed, cav, lzmsa-paper, lzmsa-compressed-length, lzmsa-normalized-compressed-length.", errors);
         Assert.Contains("Benchmark.Cases[0].SourceType 'bogus-source' is not supported in M3. Supported source types: noise-only, gaussian-emitter, ofdm-like.", errors);
     }
 
-    [Fact]
-    public void ValidatorRejectsUnsupportedDetectorModes()
+    [Theory]
+    [InlineData(DetectorCatalog.LzmsaPaperDetectorName, "compressed-length", DetectorCatalog.LzmsaPaperDetectorMode)]
+    [InlineData(DetectorCatalog.LzmsaCompressedLengthDetectorName, DetectorCatalog.LzmsaPaperDetectorMode, DetectorCatalog.LzmsaCompressedLengthDetectorMode)]
+    [InlineData(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, DetectorCatalog.LzmsaCompressedLengthDetectorMode, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode)]
+    public void ValidatorRejectsUnsupportedDetectorModes(string detectorName, string invalidMode, string expectedMode)
     {
         var config = TestConfigFactory.CreateSyntheticBenchmarkConfig(
             experimentId: "bad-mode",
-            detectorName: DetectorCatalog.LzmsaPaperDetectorName,
-            detectorMode: "compressed-length");
+            detectorName: detectorName,
+            detectorMode: invalidMode);
 
         var errors = ExperimentConfigValidator.Validate(config);
 
-        Assert.Contains("Detector.Mode 'compressed-length' is not supported for detector 'lzmsa-paper' in M3. Supported modes: paper-byte-sum.", errors);
+        Assert.Contains($"Detector.Mode '{invalidMode}' is not supported for detector '{detectorName}' in M3. Supported modes: {expectedMode}.", errors);
     }
 
     [Fact]

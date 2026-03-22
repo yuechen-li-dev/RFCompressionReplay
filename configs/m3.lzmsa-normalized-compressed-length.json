@@ -1,6 +1,6 @@
 {
-  "experimentId": "m3-mixed",
-  "experimentName": "M3 Synthetic Evaluation - Mixed Detector and Task Sweep",
+  "experimentId": "m3-lzmsa-normalized-compressed-length",
+  "experimentName": "M3 Synthetic Evaluation - LZMSA Normalized Compressed Length",
   "seed": 12345,
   "outputDirectory": "artifacts",
   "scenario": {
@@ -24,32 +24,6 @@
   },
   "evaluation": {
     "tasks": [
-      {
-        "name": "ofdm-signal-present-vs-noise-only",
-        "description": "Positive class is an OFDM-like synthetic signal mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
-        "positiveCase": {
-          "name": "ofdm-like-signal",
-          "targetLabel": "signal-present",
-          "sourceType": "ofdm-like",
-          "snrDb": -3.0,
-          "gaussianEmitter": null,
-          "ofdmLike": {
-            "subcarrierCount": 8,
-            "samplesPerSymbol": 32,
-            "symbolSeed": 77,
-            "carrierSpacing": 0.75,
-            "amplitude": 1.0
-          }
-        },
-        "negativeCase": {
-          "name": "noise-only-baseline",
-          "targetLabel": "noise-only",
-          "sourceType": "noise-only",
-          "snrDb": null,
-          "gaussianEmitter": null,
-          "ofdmLike": null
-        }
-      },
       {
         "name": "gaussian-emitter-vs-noise-only",
         "description": "Positive class is an independent Gaussian emitter mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
@@ -76,26 +50,6 @@
     ],
     "detectors": [
       {
-        "name": "ed",
-        "threshold": 1.0,
-        "mode": "average-energy"
-      },
-      {
-        "name": "cav",
-        "threshold": 0.05,
-        "mode": "lag-1-absolute-autocovariance"
-      },
-      {
-        "name": "lzmsa-paper",
-        "threshold": 25000.0,
-        "mode": "paper-byte-sum"
-      },
-      {
-        "name": "lzmsa-compressed-length",
-        "threshold": 64.0,
-        "mode": "compressed-byte-count"
-      },
-      {
         "name": "lzmsa-normalized-compressed-length",
         "threshold": 0.25,
         "mode": "compressed-byte-count-per-input-byte"
@@ -106,12 +60,12 @@
     "trialCountPerCondition": 3
   },
   "manifestMetadata": {
-    "notes": "Compact pre-M4 mixed sweep covering both benchmark tasks and the existing plus new compression-derived score identities for smoke testing and review.",
+    "notes": "Pre-M4 hardening sample config for the normalized compressed-byte-count score identity on an existing M3 task.",
     "versionTag": "m3-hardening",
     "tags": {
       "paper": "2018-rf-spectrum-sensing",
       "milestone": "pre-m4-hardening",
-      "benchmark": "mixed"
+      "detector": "lzmsa-normalized-compressed-length"
     }
   }
 }

@@ -22,6 +22,16 @@ public static class DetectorFactory
             DetectorCatalog.EnergyDetectorName => new EnergyDetector(),
             DetectorCatalog.CovarianceAbsoluteValueDetectorName => new CovarianceAbsoluteValueDetector(),
             DetectorCatalog.LzmsaPaperDetectorName => new LzmsaPaperDetector(new LzmsaWindowSerializer(), new BrotliCompressionCodec()),
+            DetectorCatalog.LzmsaCompressedLengthDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaCompressedLengthDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.CompressedByteCount),
+            DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.InputByteCount == 0 ? 0d : (double)analysis.CompressedByteCount / analysis.InputByteCount),
             _ => throw new InvalidOperationException($"Detector '{config.Name}' is not supported."),
         };
     }
