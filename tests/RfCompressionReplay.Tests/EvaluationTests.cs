@@ -122,6 +122,7 @@ public sealed class EvaluationTests
     [InlineData("m3.lzmsa-normalized-compressed-length.json")]
     [InlineData("m3.mixed.json")]
     [InlineData("m4.score-identity-smoke.json")]
+    [InlineData("m4a.score-identity-smoke.json")]
     public void M3SampleConfigsRunEndToEnd(string configFileName)
     {
         var tempRoot = CreateTempRoot();
@@ -146,6 +147,12 @@ public sealed class EvaluationTests
             {
                 Assert.True(File.Exists(Path.Combine(run.RunDirectory, "m4_auc_comparison.csv")));
                 Assert.True(File.Exists(Path.Combine(run.RunDirectory, "m4_findings.md")));
+            }
+
+            if (string.Equals(configFileName, "m4a.score-identity-smoke.json", StringComparison.Ordinal))
+            {
+                Assert.True(File.Exists(Path.Combine(run.RunDirectory, "m4a_auc_comparison.csv")));
+                Assert.True(File.Exists(Path.Combine(run.RunDirectory, "m4a_findings.md")));
             }
         }
         finally

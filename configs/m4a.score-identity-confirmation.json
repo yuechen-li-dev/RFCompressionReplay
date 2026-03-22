@@ -1,0 +1,109 @@
+{
+  "experimentId": "m4a-score-identity-confirmation",
+  "experimentName": "M4a Synthetic Score-Identity Confirmation Rerun",
+  "seed": 24680,
+  "outputDirectory": "artifacts/m4a",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "lzmsa-paper",
+    "threshold": 25000.0,
+    "mode": "paper-byte-sum"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": []
+  },
+  "evaluation": {
+    "tasks": [
+      {
+        "name": "ofdm-signal-present-vs-noise-only",
+        "description": "Positive class is an OFDM-like synthetic signal mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "ofdm-like-signal",
+          "targetLabel": "signal-present",
+          "sourceType": "ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": {
+            "subcarrierCount": 8,
+            "samplesPerSymbol": 32,
+            "symbolSeed": 77,
+            "carrierSpacing": 0.75,
+            "amplitude": 1.0
+          }
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      },
+      {
+        "name": "gaussian-emitter-vs-noise-only",
+        "description": "Positive class is an independent Gaussian emitter mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "gaussian-emitter-control",
+          "targetLabel": "signal-present",
+          "sourceType": "gaussian-emitter",
+          "snrDb": 0.0,
+          "gaussianEmitter": {
+            "mean": 0.0,
+            "standardDeviation": 1.0
+          },
+          "ofdmLike": null
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      }
+    ],
+    "detectors": [
+      {
+        "name": "lzmsa-paper",
+        "threshold": 25000.0,
+        "mode": "paper-byte-sum"
+      },
+      {
+        "name": "lzmsa-compressed-length",
+        "threshold": 64.0,
+        "mode": "compressed-byte-count"
+      },
+      {
+        "name": "lzmsa-normalized-compressed-length",
+        "threshold": 0.25,
+        "mode": "compressed-byte-count-per-input-byte"
+      }
+    ],
+    "snrDbValues": [ -9.0, -3.0, 0.0 ],
+    "windowLengths": [ 64, 128 ],
+    "trialCountPerCondition": 72
+  },
+  "manifestMetadata": {
+    "notes": "M4a confirmation rerun: same synthetic M4 task definitions, detector score formulas, serialization basis, Brotli compression path, and ROC/AUC evaluation, with a 3x larger per-class trial count to check whether the qualitative ranking remains stable.",
+    "versionTag": "m4a",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m4a",
+      "experimentType": "score-identity-confirmation-rerun",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m4"
+    }
+  }
+}
