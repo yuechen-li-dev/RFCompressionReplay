@@ -1,0 +1,76 @@
+{
+  "experimentId": "m3-gaussian-control",
+  "experimentName": "M3 Synthetic Evaluation - Gaussian Emitter Control vs Noise Only",
+  "seed": 12345,
+  "outputDirectory": "artifacts",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "ed",
+    "threshold": 1.0,
+    "mode": "average-energy"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": []
+  },
+  "evaluation": {
+    "tasks": [
+      {
+        "name": "gaussian-emitter-vs-noise-only",
+        "description": "Positive class is an independent Gaussian emitter mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "gaussian-emitter-control",
+          "targetLabel": "signal-present",
+          "sourceType": "gaussian-emitter",
+          "snrDb": 0.0,
+          "gaussianEmitter": {
+            "mean": 0.0,
+            "standardDeviation": 1.0
+          },
+          "ofdmLike": null
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      }
+    ],
+    "detectors": [
+      {
+        "name": "ed",
+        "threshold": 1.0,
+        "mode": "average-energy"
+      },
+      {
+        "name": "lzmsa-paper",
+        "threshold": 25000.0,
+        "mode": "paper-byte-sum"
+      }
+    ],
+    "snrDbValues": [ -6.0, 0.0, 3.0 ],
+    "windowLengths": [ 64, 128 ],
+    "trialCountPerCondition": 4
+  },
+  "manifestMetadata": {
+    "notes": "M3 Gaussian-emitter control sweep. Positive class is still synthetic and Gaussian-like rather than a realistic transmitter model.",
+    "versionTag": "m3",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m3",
+      "benchmark": "gaussian-control"
+    }
+  }
+}

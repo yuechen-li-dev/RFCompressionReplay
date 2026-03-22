@@ -1,3 +1,5 @@
+using RfCompressionReplay.Core.Evaluation;
+
 namespace RfCompressionReplay.Core.Detectors;
 
 public static class DetectorCatalog
@@ -25,6 +27,14 @@ public static class DetectorCatalog
             [LzmsaPaperDetectorName] = LzmsaPaperDetectorMode,
         };
 
+    public static IReadOnlyDictionary<string, ScoreOrientation> ScoreOrientationByDetector { get; } =
+        new Dictionary<string, ScoreOrientation>(StringComparer.OrdinalIgnoreCase)
+        {
+            [EnergyDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [CovarianceAbsoluteValueDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaPaperDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+        };
+
     public static bool IsSupportedDetector(string detectorName)
     {
         return SupportedModesByDetector.ContainsKey(detectorName);
@@ -34,6 +44,16 @@ public static class DetectorCatalog
     {
         return SupportedModesByDetector.TryGetValue(detectorName, out var supportedMode)
             && string.Equals(supportedMode, detectorMode, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static ScoreOrientation GetScoreOrientation(string detectorName)
+    {
+        if (!ScoreOrientationByDetector.TryGetValue(detectorName, out var orientation))
+        {
+            throw new InvalidOperationException($"Detector '{detectorName}' does not have a documented score orientation.");
+        }
+
+        return orientation;
     }
 
     public static string SupportedDetectorsDisplay => string.Join(", ", SupportedDetectorNames);

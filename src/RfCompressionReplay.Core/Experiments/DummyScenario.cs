@@ -33,12 +33,17 @@ public sealed class DummyScenario : IExperimentScenario
 
             trials.Add(new TrialRecord(
                 TrialIndex: trialIndex,
+                TaskName: null,
                 ScenarioName: Name,
                 TargetLabel: "dummy",
+                ClassLabel: "dummy",
+                IsPositiveClass: null,
                 SourceType: config.Signal!.Name,
                 DetectorName: detectorResult.DetectorName,
                 DetectorMode: detectorResult.DetectorMode,
-                SnrDb: null,
+                ScoreOrientation: DetectorCatalog.GetScoreOrientation(detectorResult.DetectorName).ToString(),
+                ConditionSnrDb: null,
+                SourceSnrDb: null,
                 WindowLength: config.Scenario.SamplesPerWindow,
                 WindowCount: windows.Count,
                 SampleCount: allSamples.Length,
@@ -53,17 +58,25 @@ public sealed class DummyScenario : IExperimentScenario
         var mean = scores.Average();
         var variance = scores.Length == 1 ? 0d : scores.Select(score => Math.Pow(score - mean, 2d)).Average();
         var summary = new SummaryRecord(
+            TaskName: null,
             ScenarioName: Name,
             TargetLabel: "dummy",
             DetectorName: config.Detector.Name,
             DetectorMode: config.Detector.Mode,
+            ScoreOrientation: DetectorCatalog.GetScoreOrientation(config.Detector.Name).ToString(),
+            ConditionSnrDb: null,
+            SourceSnrDb: null,
+            WindowLength: config.Scenario.SamplesPerWindow,
             Count: trials.Count,
+            PositiveCount: null,
+            NegativeCount: null,
             MinScore: DetectorMath.RoundScore(scores.Min()),
             MaxScore: DetectorMath.RoundScore(scores.Max()),
             MeanScore: DetectorMath.RoundScore(mean),
             StandardDeviation: DetectorMath.RoundScore(Math.Sqrt(variance)),
-            AboveThresholdCount: trials.Count(trial => trial.IsAboveThreshold));
+            AboveThresholdCount: trials.Count(trial => trial.IsAboveThreshold),
+            Auc: null);
 
-        return new ExperimentResult(trials, new ExperimentSummary(new[] { summary }), null);
+        return new ExperimentResult(trials, new ExperimentSummary(new[] { summary }), null, null);
     }
 }

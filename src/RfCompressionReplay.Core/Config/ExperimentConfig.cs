@@ -10,6 +10,7 @@ public sealed record ExperimentConfig(
     DetectorConfig Detector,
     SignalConfig? Signal,
     SyntheticBenchmarkConfig? Benchmark,
+    EvaluationConfig? Evaluation,
     ManifestMetadataConfig ManifestMetadata);
 
 public sealed record ScenarioConfig(
@@ -54,6 +55,19 @@ public sealed record OfdmLikeSignalConfig(
     int SymbolSeed,
     double CarrierSpacing,
     double Amplitude);
+
+public sealed record EvaluationConfig(
+    IReadOnlyList<BenchmarkTaskConfig> Tasks,
+    IReadOnlyList<DetectorConfig> Detectors,
+    IReadOnlyList<double> SnrDbValues,
+    IReadOnlyList<int> WindowLengths,
+    int TrialCountPerCondition);
+
+public sealed record BenchmarkTaskConfig(
+    string Name,
+    string Description,
+    SyntheticCaseConfig PositiveCase,
+    SyntheticCaseConfig NegativeCase);
 
 public sealed record ManifestMetadataConfig(
     string Notes,

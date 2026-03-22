@@ -1,0 +1,79 @@
+{
+  "experimentId": "m3-ofdm-sweep",
+  "experimentName": "M3 Synthetic Evaluation - OFDM-like Signal Present vs Noise Only",
+  "seed": 12345,
+  "outputDirectory": "artifacts",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "ed",
+    "threshold": 1.0,
+    "mode": "average-energy"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": []
+  },
+  "evaluation": {
+    "tasks": [
+      {
+        "name": "ofdm-signal-present-vs-noise-only",
+        "description": "Positive class is an OFDM-like synthetic signal mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "ofdm-like-signal",
+          "targetLabel": "signal-present",
+          "sourceType": "ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": {
+            "subcarrierCount": 8,
+            "samplesPerSymbol": 32,
+            "symbolSeed": 77,
+            "carrierSpacing": 0.75,
+            "amplitude": 1.0
+          }
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      }
+    ],
+    "detectors": [
+      {
+        "name": "ed",
+        "threshold": 1.0,
+        "mode": "average-energy"
+      },
+      {
+        "name": "cav",
+        "threshold": 0.05,
+        "mode": "lag-1-absolute-autocovariance"
+      }
+    ],
+    "snrDbValues": [ -9.0, -3.0, 0.0 ],
+    "windowLengths": [ 64, 128 ],
+    "trialCountPerCondition": 4
+  },
+  "manifestMetadata": {
+    "notes": "M3 OFDM-like synthetic evaluation sweep. Positive class is OFDM-like plus noise; negative class is noise-only. OFDM-like remains a structured synthetic source, not LTE.",
+    "versionTag": "m3",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m3",
+      "benchmark": "ofdm-sweep"
+    }
+  }
+}

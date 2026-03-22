@@ -61,12 +61,17 @@ public sealed class SyntheticBenchmarkScenario : IExperimentScenario
 
                 trials.Add(new TrialRecord(
                     TrialIndex: trialIndex,
+                    TaskName: null,
                     ScenarioName: syntheticCase.Name,
                     TargetLabel: syntheticCase.TargetLabel,
+                    ClassLabel: syntheticCase.TargetLabel,
+                    IsPositiveClass: null,
                     SourceType: syntheticCase.SourceType,
                     DetectorName: detectorResult.DetectorName,
                     DetectorMode: detectorResult.DetectorMode,
-                    SnrDb: syntheticCase.SnrDb,
+                    ScoreOrientation: DetectorCatalog.GetScoreOrientation(detectorResult.DetectorName).ToString(),
+                    ConditionSnrDb: syntheticCase.SnrDb,
+                    SourceSnrDb: syntheticCase.SnrDb,
                     WindowLength: config.Scenario.SamplesPerWindow,
                     WindowCount: windows.Count,
                     SampleCount: allSamples.Length,
@@ -79,7 +84,7 @@ public sealed class SyntheticBenchmarkScenario : IExperimentScenario
         }
 
         var summaryGroups = trials
-            .GroupBy(trial => new { trial.ScenarioName, trial.TargetLabel, trial.DetectorName, trial.DetectorMode })
+            .GroupBy(trial => new { trial.ScenarioName, trial.TargetLabel, trial.DetectorName, trial.DetectorMode, trial.ScoreOrientation, trial.SourceSnrDb, trial.WindowLength })
             .Select(group =>
             {
                 var scores = group.Select(trial => trial.Score).ToArray();
@@ -89,20 +94,28 @@ public sealed class SyntheticBenchmarkScenario : IExperimentScenario
                     : scores.Select(score => Math.Pow(score - mean, 2d)).Average();
 
                 return new SummaryRecord(
+                    TaskName: null,
                     ScenarioName: group.Key.ScenarioName,
                     TargetLabel: group.Key.TargetLabel,
                     DetectorName: group.Key.DetectorName,
                     DetectorMode: group.Key.DetectorMode,
+                    ScoreOrientation: group.Key.ScoreOrientation,
+                    ConditionSnrDb: group.Key.SourceSnrDb,
+                    SourceSnrDb: group.Key.SourceSnrDb,
+                    WindowLength: group.Key.WindowLength,
                     Count: group.Count(),
+                    PositiveCount: null,
+                    NegativeCount: null,
                     MinScore: DetectorMath.RoundScore(scores.Min()),
                     MaxScore: DetectorMath.RoundScore(scores.Max()),
                     MeanScore: DetectorMath.RoundScore(mean),
                     StandardDeviation: DetectorMath.RoundScore(Math.Sqrt(variance)),
-                    AboveThresholdCount: group.Count(trial => trial.IsAboveThreshold));
+                    AboveThresholdCount: group.Count(trial => trial.IsAboveThreshold),
+                    Auc: null);
             })
             .OrderBy(summary => summary.ScenarioName, StringComparer.Ordinal)
             .ToArray();
 
-        return new ExperimentResult(trials, new ExperimentSummary(summaryGroups), null);
+        return new ExperimentResult(trials, new ExperimentSummary(summaryGroups), null, null);
     }
 }

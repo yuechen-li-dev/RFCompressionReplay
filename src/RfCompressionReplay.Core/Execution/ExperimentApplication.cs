@@ -1,6 +1,7 @@
 using RfCompressionReplay.Core.Artifacts;
 using RfCompressionReplay.Core.Config;
 using RfCompressionReplay.Core.Detectors;
+using RfCompressionReplay.Core.Evaluation;
 using RfCompressionReplay.Core.Experiments;
 using RfCompressionReplay.Core.Models;
 using RfCompressionReplay.Core.Randomness;
@@ -64,13 +65,14 @@ public sealed class ExperimentApplication
             Environment: _environmentSummaryProvider.Create(),
             ConfigFilePath: Path.GetRelativePath(runDirectory, fullConfigPath),
             ScenarioName: config.Scenario.Name,
-            TrialCount: config.TrialCount,
+            TrialCount: config.Evaluation?.TrialCountPerCondition ?? config.TrialCount,
             ArtifactPaths: Array.Empty<string>(),
             Warnings: warnings,
             Metadata: new ManifestMetadata(
                 config.ManifestMetadata.Notes,
                 config.ManifestMetadata.VersionTag,
-                config.ManifestMetadata.Tags));
+                config.ManifestMetadata.Tags),
+            Evaluation: CreateEvaluationManifest(config));
 
         var artifactPaths = _artifactFileWriter.WriteRunArtifacts(runDirectory, result, manifestTemplate);
         var manifest = manifestTemplate with
@@ -79,7 +81,9 @@ public sealed class ExperimentApplication
             {
                 Path.GetRelativePath(runDirectory, artifactPaths.ManifestPath),
                 Path.GetRelativePath(runDirectory, artifactPaths.SummaryPath),
+                Path.GetRelativePath(runDirectory, artifactPaths.SummaryCsvPath),
                 Path.GetRelativePath(runDirectory, artifactPaths.TrialsCsvPath),
+                Path.GetRelativePath(runDirectory, artifactPaths.RocPointsCsvPath),
             }
         };
 
@@ -88,12 +92,26 @@ public sealed class ExperimentApplication
         return new RunExecutionResult(manifest, finalizedResult, runDirectory);
     }
 
+    private static EvaluationManifest? CreateEvaluationManifest(ExperimentConfig config)
+    {
+        if (config.Evaluation is null)
+        {
+            return null;
+        }
+
+        return new EvaluationManifest(
+            TaskNames: config.Evaluation.Tasks.Select(task => task.Name).ToArray(),
+            DetectorNames: config.Evaluation.Detectors.Select(detector => detector.Name).ToArray(),
+            SnrDbValues: config.Evaluation.SnrDbValues.ToArray(),
+            WindowLengths: config.Evaluation.WindowLengths.ToArray(),
+            TrialCountPerCondition: config.Evaluation.TrialCountPerCondition);
+    }
+
     private static IExperimentScenario CreateScenario(ExperimentConfig config)
     {
-        IDetector detector = DetectorFactory.Create(config.Detector);
-
         if (string.Equals(config.Scenario.Name, ExperimentConfigValidator.DummyScenarioName, StringComparison.OrdinalIgnoreCase))
         {
+            IDetector detector = DetectorFactory.Create(config.Detector);
             ISignalProvider signalProvider = new DummySignalProvider();
             return new DummyScenario(signalProvider, detector);
         }
@@ -106,9 +124,15 @@ public sealed class ExperimentApplication
                 new OfdmLikeSignalGenerator(),
                 new SnrMixer());
 
+            if (config.Evaluation is not null)
+            {
+                return new SyntheticEvaluationScenario(streamBuilder, new ConsecutiveWindowSampler(), new RocAucCalculator());
+            }
+
+            IDetector detector = DetectorFactory.Create(config.Detector);
             return new SyntheticBenchmarkScenario(streamBuilder, new ConsecutiveWindowSampler(), detector);
         }
 
-        throw new InvalidOperationException($"Scenario '{config.Scenario.Name}' is not supported in M2. Supported scenarios: {ExperimentConfigValidator.DummyScenarioName}, {ExperimentConfigValidator.SyntheticBenchmarkScenarioName}.");
+        throw new InvalidOperationException($"Scenario '{config.Scenario.Name}' is not supported in M3. Supported scenarios: {ExperimentConfigValidator.DummyScenarioName}, {ExperimentConfigValidator.SyntheticBenchmarkScenarioName}.");
     }
 }
