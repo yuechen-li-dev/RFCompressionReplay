@@ -38,12 +38,14 @@ public sealed class ExperimentApplication
             throw new InvalidOperationException("Configuration validation failed: " + string.Join(" ", validationErrors));
         }
 
+        var fullConfigPath = Path.GetFullPath(configPath);
+        var configDirectory = Path.GetDirectoryName(fullConfigPath) ?? Directory.GetCurrentDirectory();
         var clockTime = _clock.UtcNow;
         var random = new SeededRandom(config.Seed);
         var scenario = CreateScenario(config);
         var result = scenario.Execute(config, random);
 
-        var outputRoot = Path.GetFullPath(config.OutputDirectory, Directory.GetCurrentDirectory());
+        var outputRoot = Path.GetFullPath(config.OutputDirectory, configDirectory);
         var runDirectory = _runDirectoryFactory.Create(outputRoot, config, clockTime);
         var warnings = new List<string>();
         var gitCommit = _gitCommitResolver.Resolve(repositoryRoot);
@@ -59,12 +61,15 @@ public sealed class ExperimentApplication
             Seed: config.Seed,
             GitCommit: gitCommit,
             Environment: _environmentSummaryProvider.Create(),
-            ConfigFilePath: Path.GetRelativePath(runDirectory, Path.GetFullPath(configPath)),
+            ConfigFilePath: Path.GetRelativePath(runDirectory, fullConfigPath),
             ScenarioName: config.Scenario.Name,
             TrialCount: config.TrialCount,
             ArtifactPaths: Array.Empty<string>(),
             Warnings: warnings,
-            Metadata: config.ManifestMetadata.Tags);
+            Metadata: new ManifestMetadata(
+                config.ManifestMetadata.Notes,
+                config.ManifestMetadata.VersionTag,
+                config.ManifestMetadata.Tags));
 
         var artifactPaths = _artifactFileWriter.WriteRunArtifacts(runDirectory, result, manifestTemplate);
         var manifest = manifestTemplate with

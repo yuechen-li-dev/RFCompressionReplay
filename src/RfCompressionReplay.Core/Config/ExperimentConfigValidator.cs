@@ -56,9 +56,25 @@ public static class ExperimentConfigValidator
         {
             errors.Add("Detector is required.");
         }
-        else if (string.IsNullOrWhiteSpace(config.Detector.Name))
+        else
         {
-            errors.Add("Detector.Name is required.");
+            if (string.IsNullOrWhiteSpace(config.Detector.Name))
+            {
+                errors.Add("Detector.Name is required.");
+            }
+            else if (!string.Equals(config.Detector.Name, "placeholder-detector", StringComparison.OrdinalIgnoreCase))
+            {
+                errors.Add($"Detector.Name '{config.Detector.Name}' is not supported in M0. Supported detectors: placeholder-detector.");
+            }
+
+            if (string.IsNullOrWhiteSpace(config.Detector.Mode))
+            {
+                errors.Add("Detector.Mode is required.");
+            }
+            else if (!string.Equals(config.Detector.Mode, "placeholder", StringComparison.OrdinalIgnoreCase))
+            {
+                errors.Add($"Detector.Mode '{config.Detector.Mode}' is not supported in M0. Supported modes: placeholder.");
+            }
         }
 
         if (config.Signal is null)
@@ -68,6 +84,10 @@ public static class ExperimentConfigValidator
         else if (string.IsNullOrWhiteSpace(config.Signal.Name))
         {
             errors.Add("Signal.Name is required.");
+        }
+        else if (!string.Equals(config.Signal.Name, "dummy-signal", StringComparison.OrdinalIgnoreCase))
+        {
+            errors.Add($"Signal.Name '{config.Signal.Name}' is not supported in M0. Supported signals: dummy-signal.");
         }
 
         if (config.ManifestMetadata is null)
