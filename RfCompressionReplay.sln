@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DBEA5DE0-F34E-4E11-8794-54A4CC4CD12E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RfCompressionReplay.Core", "src\RfCompressionReplay.Core\RfCompressionReplay.Core.csproj", "{2ACF8FC2-8E33-4975-AED0-3FDA3DAB596A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RfCompressionReplay.Cli", "src\RfCompressionReplay.Cli\RfCompressionReplay.Cli.csproj", "{4BB0832C-F9E4-45EB-AA6F-C9B38D2C5E47}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{450AFF86-126F-4613-90C3-6B2F89E58860}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RfCompressionReplay.Tests", "tests\RfCompressionReplay.Tests\RfCompressionReplay.Tests.csproj", "{C2243574-CD26-4710-A8F9-6603334C8F18}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2ACF8FC2-8E33-4975-AED0-3FDA3DAB596A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ACF8FC2-8E33-4975-AED0-3FDA3DAB596A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ACF8FC2-8E33-4975-AED0-3FDA3DAB596A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ACF8FC2-8E33-4975-AED0-3FDA3DAB596A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BB0832C-F9E4-45EB-AA6F-C9B38D2C5E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BB0832C-F9E4-45EB-AA6F-C9B38D2C5E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BB0832C-F9E4-45EB-AA6F-C9B38D2C5E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BB0832C-F9E4-45EB-AA6F-C9B38D2C5E47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2243574-CD26-4710-A8F9-6603334C8F18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2243574-CD26-4710-A8F9-6603334C8F18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2243574-CD26-4710-A8F9-6603334C8F18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2243574-CD26-4710-A8F9-6603334C8F18}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2ACF8FC2-8E33-4975-AED0-3FDA3DAB596A} = {DBEA5DE0-F34E-4E11-8794-54A4CC4CD12E}
+		{4BB0832C-F9E4-45EB-AA6F-C9B38D2C5E47} = {DBEA5DE0-F34E-4E11-8794-54A4CC4CD12E}
+		{C2243574-CD26-4710-A8F9-6603334C8F18} = {450AFF86-126F-4613-90C3-6B2F89E58860}
+	EndGlobalSection
+EndGlobal
