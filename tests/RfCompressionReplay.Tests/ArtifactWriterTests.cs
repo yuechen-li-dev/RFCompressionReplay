@@ -17,6 +17,13 @@ public sealed class ArtifactWriterTests
         {
             var writer = new ArtifactFileWriter(new CsvArtifactWriter());
             var runDirectory = Path.Combine(tempRoot, "run");
+            var config = TestConfigFactory.CreateSyntheticEvaluationConfig(
+                experimentId: "artifact-writer",
+                tasks: [TestConfigFactory.CreateOfdmTask()],
+                detectors: [new DetectorConfig("ed", 1d, "average-energy")],
+                snrDbValues: [-3d],
+                windowLengths: [128],
+                trialCountPerCondition: 1);
             var result = new ExperimentResult(
                 new[]
                 {
@@ -48,7 +55,7 @@ public sealed class ArtifactWriterTests
                 new ManifestMetadata("note", "v0", new Dictionary<string, string> { ["tag"] = "value" }),
                 new EvaluationManifest(["ofdm-signal-present-vs-noise-only"], ["ed"], [-3d], [128], 1));
 
-            var artifacts = writer.WriteRunArtifacts(runDirectory, result, manifest);
+            var artifacts = writer.WriteRunArtifacts(runDirectory, config, result, manifest);
 
             Assert.True(File.Exists(artifacts.ManifestPath));
             Assert.True(File.Exists(artifacts.SummaryPath));

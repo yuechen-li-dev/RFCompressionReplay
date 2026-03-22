@@ -69,6 +69,16 @@ internal static class TestConfigFactory
             ManifestMetadata: new ManifestMetadataConfig("note", "m3", new Dictionary<string, string> { ["suite"] = "tests" }));
     }
 
+    public static IReadOnlyList<DetectorConfig> CreateM4CompressionDetectors()
+    {
+        return
+        [
+            new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 25000d, DetectorCatalog.LzmsaPaperDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaCompressedLengthDetectorName, 64d, DetectorCatalog.LzmsaCompressedLengthDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0.25d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode),
+        ];
+    }
+
     public static BenchmarkTaskConfig CreateOfdmTask()
     {
         return new BenchmarkTaskConfig(

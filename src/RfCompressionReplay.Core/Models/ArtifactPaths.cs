@@ -6,4 +6,6 @@ public sealed record ArtifactPaths(
     string SummaryPath,
     string SummaryCsvPath,
     string TrialsCsvPath,
-    string RocPointsCsvPath);
+    string RocPointsCsvPath,
+    string? M4AucComparisonCsvPath = null,
+    string? M4FindingsPath = null);

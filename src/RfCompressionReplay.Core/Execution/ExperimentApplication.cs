@@ -74,17 +74,29 @@ public sealed class ExperimentApplication
                 config.ManifestMetadata.Tags),
             Evaluation: CreateEvaluationManifest(config));
 
-        var artifactPaths = _artifactFileWriter.WriteRunArtifacts(runDirectory, result, manifestTemplate);
+        var artifactPaths = _artifactFileWriter.WriteRunArtifacts(runDirectory, config, result, manifestTemplate);
+        var manifestArtifactPaths = new List<string>
+        {
+            Path.GetRelativePath(runDirectory, artifactPaths.ManifestPath),
+            Path.GetRelativePath(runDirectory, artifactPaths.SummaryPath),
+            Path.GetRelativePath(runDirectory, artifactPaths.SummaryCsvPath),
+            Path.GetRelativePath(runDirectory, artifactPaths.TrialsCsvPath),
+            Path.GetRelativePath(runDirectory, artifactPaths.RocPointsCsvPath),
+        };
+
+        if (artifactPaths.M4AucComparisonCsvPath is not null)
+        {
+            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M4AucComparisonCsvPath));
+        }
+
+        if (artifactPaths.M4FindingsPath is not null)
+        {
+            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M4FindingsPath));
+        }
+
         var manifest = manifestTemplate with
         {
-            ArtifactPaths = new[]
-            {
-                Path.GetRelativePath(runDirectory, artifactPaths.ManifestPath),
-                Path.GetRelativePath(runDirectory, artifactPaths.SummaryPath),
-                Path.GetRelativePath(runDirectory, artifactPaths.SummaryCsvPath),
-                Path.GetRelativePath(runDirectory, artifactPaths.TrialsCsvPath),
-                Path.GetRelativePath(runDirectory, artifactPaths.RocPointsCsvPath),
-            }
+            ArtifactPaths = manifestArtifactPaths
         };
 
         ExperimentConfigJson.Save(artifactPaths.ManifestPath, manifest);

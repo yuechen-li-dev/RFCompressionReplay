@@ -1,0 +1,59 @@
+{
+  "experimentId": "m4-score-identity-comparison",
+  "experimentName": "M4 Synthetic Score-Identity Comparison",
+  "utcTimestamp": "2026-03-22T23:03:55.3327755+00:00",
+  "seed": 12345,
+  "gitCommit": "0f7db1d5042fd1870d66f539d809c7f20c649d3c",
+  "environment": {
+    "machineName": "2ff2b7151e27",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../m4.score-identity-comparison.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCount": 24,
+  "artifactPaths": [
+    "manifest.json",
+    "summary.json",
+    "summary.csv",
+    "trials.csv",
+    "roc_points.csv",
+    "m4_auc_comparison.csv",
+    "m4_findings.md"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M4 mechanism-comparison run: hold serialization and Brotli compression fixed while comparing byte-sum, compressed-byte-count, and normalized compressed-length score identities on the existing synthetic M3 tasks.",
+    "versionTag": "m4",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m4",
+      "experimentType": "score-identity-comparison",
+      "benchmark": "synthetic-m3-tasks"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "ofdm-signal-present-vs-noise-only",
+      "gaussian-emitter-vs-noise-only"
+    ],
+    "detectorNames": [
+      "lzmsa-paper",
+      "lzmsa-compressed-length",
+      "lzmsa-normalized-compressed-length"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 24
+  }
+}
