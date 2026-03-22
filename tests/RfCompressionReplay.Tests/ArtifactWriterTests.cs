@@ -8,7 +8,7 @@ namespace RfCompressionReplay.Tests;
 public sealed class ArtifactWriterTests
 {
     [Fact]
-    public void WritesManifestAndSummaryArtifacts()
+    public void WritesManifestSummaryAndTrialArtifacts()
     {
         var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);
@@ -18,8 +18,15 @@ public sealed class ArtifactWriterTests
             var writer = new ArtifactFileWriter(new CsvArtifactWriter());
             var runDirectory = Path.Combine(tempRoot, "run");
             var result = new ExperimentResult(
-                new[] { new TrialRecord(0, "ed", "average-energy", 1, 4, 1.2, true, 1.1, 1.4) },
-                new SummaryRecord("ed", "average-energy", 1, 1.2, 1.2, 1.2, 1),
+                new[]
+                {
+                    new TrialRecord(0, "noise-only-baseline", "noise-only", "noise-only", "ed", "average-energy", null, 128, 2, 256, 17, 1.2, true, 0.1, 1.4)
+                },
+                new ExperimentSummary(
+                    new[]
+                    {
+                        new SummaryRecord("noise-only-baseline", "noise-only", "ed", "average-energy", 1, 1.2, 1.2, 1.2, 0d, 1)
+                    }),
                 null);
             var manifest = new RunManifest(
                 "exp",
@@ -29,7 +36,7 @@ public sealed class ArtifactWriterTests
                 "unknown",
                 new EnvironmentSummary("machine", "user", "os", ".NET 8", "X64", "/tmp"),
                 "../config.json",
-                "dummy",
+                "synthetic-benchmark",
                 1,
                 Array.Empty<string>(),
                 Array.Empty<string>(),
@@ -43,11 +50,11 @@ public sealed class ArtifactWriterTests
 
             var summaryJson = File.ReadAllText(artifacts.SummaryPath);
             Assert.Contains("meanScore", summaryJson);
-            Assert.Contains("detectorName", summaryJson);
+            Assert.Contains("scenarioName", summaryJson);
 
             var trialsCsv = File.ReadAllText(artifacts.TrialsCsvPath);
             Assert.Contains("detectorName", trialsCsv);
-            Assert.Contains("average-energy", trialsCsv);
+            Assert.Contains("targetLabel", trialsCsv);
 
             var manifestRoundTrip = JsonSerializer.Deserialize<RunManifest>(File.ReadAllText(artifacts.ManifestPath), ExperimentConfigJson.SerializerOptions);
             Assert.NotNull(manifestRoundTrip);

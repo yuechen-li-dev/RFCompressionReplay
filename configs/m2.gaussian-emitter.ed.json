@@ -1,0 +1,46 @@
+{
+  "experimentId": "m2-gaussian-emitter-ed",
+  "experimentName": "M2 Synthetic Benchmark - Gaussian Emitter Control / ED",
+  "seed": 12345,
+  "outputDirectory": "artifacts",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 6,
+  "detector": {
+    "name": "ed",
+    "threshold": 1.5,
+    "mode": "average-energy"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": [
+      {
+        "name": "gaussian-emitter-control",
+        "targetLabel": "signal-present",
+        "sourceType": "gaussian-emitter",
+        "snrDb": 0.0,
+        "gaussianEmitter": {
+          "mean": 0.0,
+          "standardDeviation": 1.0
+        },
+        "ofdmLike": null
+      }
+    ]
+  },
+  "manifestMetadata": {
+    "notes": "M2 Gaussian-emitter control: an added Gaussian process mixed into Gaussian background noise at a finite-window target SNR.",
+    "versionTag": "m2",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m2",
+      "benchmark": "gaussian-emitter"
+    }
+  }
+}

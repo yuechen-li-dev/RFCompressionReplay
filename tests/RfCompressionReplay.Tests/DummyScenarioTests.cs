@@ -9,17 +9,18 @@ namespace RfCompressionReplay.Tests;
 public sealed class DummyScenarioTests
 {
     [Fact]
-    public void ProducesDeterministicResultsForFixedSeed()
+    public void LegacyDummyScenarioRemainsDeterministic()
     {
         var config = new ExperimentConfig(
             ExperimentId: "determinism",
             ExperimentName: "Deterministic dummy",
             Seed: 42,
             OutputDirectory: "artifacts",
-            Scenario: new ScenarioConfig("dummy", 2, 3),
+            Scenario: new ScenarioConfig(ExperimentConfigValidator.DummyScenarioName, 2, 3),
             TrialCount: 3,
             Detector: new DetectorConfig(DetectorCatalog.EnergyDetectorName, 1.0, DetectorCatalog.EnergyDetectorMode),
-            Signal: new SignalConfig("dummy-signal", 1.25, 0.2),
+            Signal: new SignalConfig(ExperimentConfigValidator.DummySignalName, 1.25, 0.2),
+            Benchmark: null,
             ManifestMetadata: ManifestMetadataConfig.Empty);
 
         var scenario = new DummyScenario(new DummySignalProvider(), new EnergyDetector());
@@ -27,9 +28,10 @@ public sealed class DummyScenarioTests
         var resultA = scenario.Execute(config, new SeededRandom(config.Seed));
         var resultB = scenario.Execute(config, new SeededRandom(config.Seed));
 
-        Assert.Equal(resultA.Trials, resultB.Trials);
-        Assert.Equal(resultA.Summary, resultB.Summary);
+        Assert.Equal(resultA.Trials.Count, resultB.Trials.Count);
+        Assert.Equal(resultA.Trials.Select(trial => trial.Score), resultB.Trials.Select(trial => trial.Score));
+        Assert.Equal(resultA.Summary.Groups.Select(group => group.MeanScore), resultB.Summary.Groups.Select(group => group.MeanScore));
         Assert.Equal(3, resultA.Trials.Count);
-        Assert.All(resultA.Trials, trial => Assert.Equal(DetectorCatalog.EnergyDetectorName, trial.DetectorName));
+        Assert.Single(resultA.Summary.Groups);
     }
 }

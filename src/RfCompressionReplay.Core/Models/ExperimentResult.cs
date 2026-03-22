@@ -2,5 +2,5 @@ namespace RfCompressionReplay.Core.Models;
 
 public sealed record ExperimentResult(
     IReadOnlyList<TrialRecord> Trials,
-    SummaryRecord Summary,
+    ExperimentSummary Summary,
     ArtifactPaths? Artifacts);

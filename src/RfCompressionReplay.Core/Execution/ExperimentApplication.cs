@@ -5,6 +5,7 @@ using RfCompressionReplay.Core.Experiments;
 using RfCompressionReplay.Core.Models;
 using RfCompressionReplay.Core.Randomness;
 using RfCompressionReplay.Core.Signals;
+using RfCompressionReplay.Core.Signals.Synthetic;
 
 namespace RfCompressionReplay.Core.Execution;
 
@@ -89,13 +90,25 @@ public sealed class ExperimentApplication
 
     private static IExperimentScenario CreateScenario(ExperimentConfig config)
     {
-        if (!string.Equals(config.Scenario.Name, "dummy", StringComparison.OrdinalIgnoreCase))
+        IDetector detector = DetectorFactory.Create(config.Detector);
+
+        if (string.Equals(config.Scenario.Name, ExperimentConfigValidator.DummyScenarioName, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException($"Scenario '{config.Scenario.Name}' is not supported in M1. Supported scenarios: dummy.");
+            ISignalProvider signalProvider = new DummySignalProvider();
+            return new DummyScenario(signalProvider, detector);
         }
 
-        ISignalProvider signalProvider = new DummySignalProvider();
-        IDetector detector = DetectorFactory.Create(config.Detector);
-        return new DummyScenario(signalProvider, detector);
+        if (string.Equals(config.Scenario.Name, ExperimentConfigValidator.SyntheticBenchmarkScenarioName, StringComparison.OrdinalIgnoreCase))
+        {
+            var streamBuilder = new SyntheticCaseStreamBuilder(
+                new GaussianNoiseGenerator(),
+                new GaussianEmitterGenerator(),
+                new OfdmLikeSignalGenerator(),
+                new SnrMixer());
+
+            return new SyntheticBenchmarkScenario(streamBuilder, new ConsecutiveWindowSampler(), detector);
+        }
+
+        throw new InvalidOperationException($"Scenario '{config.Scenario.Name}' is not supported in M2. Supported scenarios: {ExperimentConfigValidator.DummyScenarioName}, {ExperimentConfigValidator.SyntheticBenchmarkScenarioName}.");
     }
 }

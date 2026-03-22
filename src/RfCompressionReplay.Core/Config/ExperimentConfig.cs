@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace RfCompressionReplay.Core.Config;
 
 public sealed record ExperimentConfig(
@@ -10,7 +8,8 @@ public sealed record ExperimentConfig(
     ScenarioConfig Scenario,
     int TrialCount,
     DetectorConfig Detector,
-    SignalConfig Signal,
+    SignalConfig? Signal,
+    SyntheticBenchmarkConfig? Benchmark,
     ManifestMetadataConfig ManifestMetadata);
 
 public sealed record ScenarioConfig(
@@ -27,6 +26,34 @@ public sealed record SignalConfig(
     string Name,
     double BaseLevel,
     double NoiseScale);
+
+public sealed record SyntheticBenchmarkConfig(
+    int BaseStreamLength,
+    GaussianNoiseConfig Noise,
+    IReadOnlyList<SyntheticCaseConfig> Cases);
+
+public sealed record GaussianNoiseConfig(
+    double Mean,
+    double StandardDeviation);
+
+public sealed record SyntheticCaseConfig(
+    string Name,
+    string TargetLabel,
+    string SourceType,
+    double? SnrDb,
+    GaussianEmitterConfig? GaussianEmitter,
+    OfdmLikeSignalConfig? OfdmLike);
+
+public sealed record GaussianEmitterConfig(
+    double Mean,
+    double StandardDeviation);
+
+public sealed record OfdmLikeSignalConfig(
+    int SubcarrierCount,
+    int SamplesPerSymbol,
+    int SymbolSeed,
+    double CarrierSpacing,
+    double Amplitude);
 
 public sealed record ManifestMetadataConfig(
     string Notes,
