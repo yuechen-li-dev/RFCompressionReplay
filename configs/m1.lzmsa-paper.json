@@ -1,0 +1,31 @@
+{
+  "experimentId": "m1-lzmsa-paper",
+  "experimentName": "M1 Dummy Experiment - LZMSA Paper Statistic",
+  "seed": 12345,
+  "outputDirectory": "artifacts",
+  "scenario": {
+    "name": "dummy",
+    "sampleWindowCount": 3,
+    "samplesPerWindow": 5
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "lzmsa-paper",
+    "threshold": 1000.0,
+    "mode": "paper-byte-sum"
+  },
+  "signal": {
+    "name": "dummy-signal",
+    "baseLevel": 1.0,
+    "noiseScale": 0.2
+  },
+  "manifestMetadata": {
+    "notes": "M1 sample config for the paper byte-sum-over-compressed-bytes statistic using the current deterministic compression backend.",
+    "versionTag": "m1",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m1",
+      "detector": "lzmsa-paper"
+    }
+  }
+}

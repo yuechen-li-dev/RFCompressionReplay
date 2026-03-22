@@ -18,8 +18,8 @@ public sealed class ArtifactWriterTests
             var writer = new ArtifactFileWriter(new CsvArtifactWriter());
             var runDirectory = Path.Combine(tempRoot, "run");
             var result = new ExperimentResult(
-                new[] { new TrialRecord(0, 1, 4, 1.2, true, 1.1, 1.4) },
-                new SummaryRecord(1, 1.2, 1.2, 1.2, 1),
+                new[] { new TrialRecord(0, "ed", "average-energy", 1, 4, 1.2, true, 1.1, 1.4) },
+                new SummaryRecord("ed", "average-energy", 1, 1.2, 1.2, 1.2, 1),
                 null);
             var manifest = new RunManifest(
                 "exp",
@@ -43,6 +43,11 @@ public sealed class ArtifactWriterTests
 
             var summaryJson = File.ReadAllText(artifacts.SummaryPath);
             Assert.Contains("meanScore", summaryJson);
+            Assert.Contains("detectorName", summaryJson);
+
+            var trialsCsv = File.ReadAllText(artifacts.TrialsCsvPath);
+            Assert.Contains("detectorName", trialsCsv);
+            Assert.Contains("average-energy", trialsCsv);
 
             var manifestRoundTrip = JsonSerializer.Deserialize<RunManifest>(File.ReadAllText(artifacts.ManifestPath), ExperimentConfigJson.SerializerOptions);
             Assert.NotNull(manifestRoundTrip);

@@ -1,0 +1,31 @@
+{
+  "experimentId": "m1-cav",
+  "experimentName": "M1 Dummy Experiment - CAV",
+  "seed": 12345,
+  "outputDirectory": "artifacts",
+  "scenario": {
+    "name": "dummy",
+    "sampleWindowCount": 3,
+    "samplesPerWindow": 5
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "cav",
+    "threshold": 0.01,
+    "mode": "lag-1-absolute-autocovariance"
+  },
+  "signal": {
+    "name": "dummy-signal",
+    "baseLevel": 1.0,
+    "noiseScale": 0.2
+  },
+  "manifestMetadata": {
+    "notes": "M1 sample config for lag-1 absolute autocovariance over deterministic synthetic windows.",
+    "versionTag": "m1",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m1",
+      "detector": "cav"
+    }
+  }
+}
