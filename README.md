@@ -2,6 +2,8 @@
 
 `RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M4 uses the typed M0/M1/M2/M3 harness to run a first mechanism-comparison experiment: hold scalar-window serialization and Brotli compression fixed, then compare three compression-derived score identities on the same synthetic benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and ROC/AUC evaluation layer. M4a is the follow-on confirmation rerun of that same comparison question with stronger per-condition Monte Carlo evidence.
 
+Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note. In the synthetic harness, the clean "works because of compressibility" interpretation is currently weakened; the next step is mechanism decomposition, not benchmark inflation.
+
 ## What M4 / M4a Add
 
 - Config-driven named synthetic evaluation tasks for:
@@ -117,6 +119,14 @@ Each run writes a deterministic per-run folder beneath the configured output roo
 
 If a same-second rerun would collide, the harness appends a readable suffix such as `_2` to keep artifacts isolated.
 
+## Current Findings and Artifact Pointers
+
+- M4 comparison artifacts: `configs/artifacts/m4/20260322T230355Z_m4-score-identity-comparison_seed12345/`
+  - inspect `m4_auc_comparison.csv`, `m4_findings.md`, and `manifest.json`
+- M4a confirmation artifacts: `configs/artifacts/m4a/20260322T231911Z_m4a-score-identity-confirmation_seed24680/`
+  - inspect `m4a_auc_comparison.csv`, `m4a_findings.md`, and `manifest.json`
+- M4b findings freeze: `docs/M4B_FINDINGS.md`
+
 ## Repository Layout
 
 - `src/RfCompressionReplay.Core/`: typed config, execution flow, detectors, synthetic generators, evaluation logic, and artifact writing.
@@ -127,6 +137,7 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - `docs/M3_EVALUATION_PROTOCOL.md`: M3 task definitions, sweep semantics, ROC/AUC method, and caveats.
 - `docs/M4_SCORE_IDENTITY_COMPARISON.md`: M4 scope, outputs, and reading guide for the score-identity comparison experiment.
 - `docs/M4A_CONFIRMATION_RERUN.md`: M4a confirmation-rerun scope, strengthening choices, and reading guide.
+- `docs/M4B_FINDINGS.md`: concise M4/M4a findings freeze, supported conclusion, non-conclusions, and next mechanistic question.
 - `docs/DETECTOR_IMPLEMENTATION_NOTES.md`: detector formulas and compression-statistic contract.
 - `docs/REPRODUCTION_SCOPE.md`: concise reproduction-scope statement.
 
