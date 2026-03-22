@@ -1,0 +1,60 @@
+{
+  "experimentId": "m4a-score-identity-confirmation",
+  "experimentName": "M4a Synthetic Score-Identity Confirmation Rerun",
+  "utcTimestamp": "2026-03-22T23:19:11.567619+00:00",
+  "seed": 24680,
+  "gitCommit": "c4800ea7f9b3e9303712d1d035c91fa7b2cc979a",
+  "environment": {
+    "machineName": "c2c37b916d27",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../m4a.score-identity-confirmation.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCount": 72,
+  "artifactPaths": [
+    "manifest.json",
+    "summary.json",
+    "summary.csv",
+    "trials.csv",
+    "roc_points.csv",
+    "m4a_auc_comparison.csv",
+    "m4a_findings.md"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M4a confirmation rerun: same synthetic M4 task definitions, detector score formulas, serialization basis, Brotli compression path, and ROC/AUC evaluation, with a 3x larger per-class trial count to check whether the qualitative ranking remains stable.",
+    "versionTag": "m4a",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m4a",
+      "experimentType": "score-identity-confirmation-rerun",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m4"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "ofdm-signal-present-vs-noise-only",
+      "gaussian-emitter-vs-noise-only"
+    ],
+    "detectorNames": [
+      "lzmsa-paper",
+      "lzmsa-compressed-length",
+      "lzmsa-normalized-compressed-length"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 72
+  }
+}

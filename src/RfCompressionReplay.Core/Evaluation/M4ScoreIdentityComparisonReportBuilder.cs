@@ -8,6 +8,8 @@ namespace RfCompressionReplay.Core.Evaluation;
 
 public static class M4ScoreIdentityComparisonReportBuilder
 {
+    public static string GetArtifactPrefix(ExperimentConfig config) => GetMilestoneDescriptor(config).ArtifactPrefix;
+
     public static bool IsEnabled(ExperimentConfig config)
     {
         if (config.Evaluation is null)
@@ -105,10 +107,12 @@ public static class M4ScoreIdentityComparisonReportBuilder
 
     private static string BuildFindingsMarkdown(ExperimentConfig config, ExperimentResult result, IReadOnlyList<M4ComparisonRow> rows)
     {
+        var descriptor = GetMilestoneDescriptor(config);
+        var stability = SummarizeStability(rows);
         var sb = new StringBuilder();
-        sb.AppendLine("# M4 Score-Identity Comparison Findings");
+        sb.AppendLine($"# {descriptor.HeadingPrefix} Score-Identity Comparison Findings");
         sb.AppendLine();
-        sb.AppendLine("## Experimental Scope");
+        sb.AppendLine("## Scope");
         sb.AppendLine();
         sb.AppendLine($"- Tasks run: {string.Join(", ", config.Evaluation!.Tasks.Select(task => task.Name))}");
         sb.AppendLine($"- SNR values (dB): {string.Join(", ", config.Evaluation.SnrDbValues.Select(value => value.ToString("0.###", CultureInfo.InvariantCulture)))}");
@@ -118,7 +122,13 @@ public static class M4ScoreIdentityComparisonReportBuilder
         sb.AppendLine($"- Seed: {config.Seed}");
         sb.AppendLine($"- Config provenance: {config.ExperimentId} / {config.ExperimentName}");
         sb.AppendLine();
-        sb.AppendLine("## Main Comparison Table");
+        sb.AppendLine("## Stability Summary");
+        sb.AppendLine();
+        sb.AppendLine($"- `{DetectorCatalog.LzmsaPaperDetectorName}` had the highest AUC in {stability.PaperRankingSummary}.");
+        sb.AppendLine($"- `{DetectorCatalog.LzmsaCompressedLengthDetectorName}` and `{DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName}` {stability.LengthVariantSummary}.");
+        sb.AppendLine($"- The largest paper-vs-length-based AUC gap was {stability.LargestGap:F6} ({stability.LargestGapQualitative}), and the median paper-vs-length-based AUC gap was {stability.MedianGap:F6} ({stability.MedianGapQualitative}).");
+        sb.AppendLine();
+        sb.AppendLine("## Comparison Table");
         sb.AppendLine();
         sb.AppendLine("| Task | SNR dB | Window | AUC paper | AUC compressed length | AUC normalized length | Δ paper-length | Δ paper-normalized | Δ length-normalized |");
         sb.AppendLine("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
@@ -128,9 +138,13 @@ public static class M4ScoreIdentityComparisonReportBuilder
         }
 
         sb.AppendLine();
-        sb.AppendLine("## Short Findings");
+        sb.AppendLine("## Cautious Conclusion");
         sb.AppendLine();
-        foreach (var bullet in BuildFindingsBullets(rows))
+        sb.AppendLine($"- {BuildConclusion(descriptor.HeadingPrefix, stability)}");
+        sb.AppendLine();
+        sb.AppendLine("## Supporting Notes");
+        sb.AppendLine();
+        foreach (var bullet in BuildFindingsBullets(rows, descriptor.HeadingPrefix))
         {
             sb.AppendLine($"- {bullet}");
         }
@@ -138,7 +152,7 @@ public static class M4ScoreIdentityComparisonReportBuilder
         sb.AppendLine();
         sb.AppendLine("## Caveats");
         sb.AppendLine();
-        sb.AppendLine("- This M4 comparison is limited to the repository's synthetic benchmark tasks and conditions.");
+        sb.AppendLine($"- This {descriptor.HeadingPrefix} comparison is limited to the repository's synthetic benchmark tasks and conditions.");
         sb.AppendLine("- The OFDM-like task is a structured synthetic proxy, not LTE fidelity or a standards-faithful waveform.");
         sb.AppendLine("- The current deterministic serialization + Brotli compression backend remains fixed; M4 only varies score identity on top of that path.");
         sb.AppendLine("- No SDR capture, over-the-air, or hardware claims are supported by this artifact set.");
@@ -152,7 +166,7 @@ public static class M4ScoreIdentityComparisonReportBuilder
         return sb.ToString();
     }
 
-    private static IReadOnlyList<string> BuildFindingsBullets(IReadOnlyList<M4ComparisonRow> rows)
+    private static IReadOnlyList<string> BuildFindingsBullets(IReadOnlyList<M4ComparisonRow> rows, string headingPrefix)
     {
         var bullets = new List<string>();
         var compressedVsNormalizedWorstGap = rows.Count == 0
@@ -179,7 +193,7 @@ public static class M4ScoreIdentityComparisonReportBuilder
         var paperBetterCount = rows.Count(row => row.PaperAuc > row.CompressedLengthAuc && row.PaperAuc > row.NormalizedCompressedLengthAuc);
         if (paperBetterCount == rows.Count && rows.Count > 0)
         {
-            bullets.Add("Within this synthetic benchmark, `lzmsa-paper` achieved the highest AUC in every tested condition rather than tracking closely with the length-based score identities.");
+            bullets.Add($"Within this synthetic benchmark, `{DetectorCatalog.LzmsaPaperDetectorName}` achieved the highest AUC in every tested condition rather than tracking closely with the length-based score identities.");
         }
 
         foreach (var taskGroup in rows.GroupBy(row => row.TaskName).OrderBy(group => group.Key, StringComparer.Ordinal))
@@ -234,7 +248,96 @@ public static class M4ScoreIdentityComparisonReportBuilder
             bullets.Add($"Some synthetic conditions diverged materially under score substitution (threshold 0.05 AUC): {examples}.");
         }
 
+        bullets.Add($"{headingPrefix} stays within the same scientific question as M4: same synthetic tasks, same serialization/compression path, same score formulas, and same ROC/AUC method.");
+
         return bullets;
+    }
+
+    private static string BuildConclusion(string headingPrefix, StabilitySummary stability)
+    {
+        if (stability.PaperHighestInAllConditions && stability.LengthVariantsNearlyMatch)
+        {
+            return $"The M4 ranking remained stable under the stronger {headingPrefix} rerun: `lzmsa-paper` stayed on top throughout the tested synthetic matrix, while the two length-based variants remained interchangeable within the fixed-window conditions exercised here.";
+        }
+
+        if (!stability.PaperHighestInMostConditions)
+        {
+            return $"The original M4 ranking weakened under the stronger {headingPrefix} rerun, so the score-identity conclusion should be treated as less stable than the initial pass suggested.";
+        }
+
+        return $"The original M4 ranking was only partially stable under the stronger {headingPrefix} rerun: `lzmsa-paper` remained strongest in most, but not all, tested conditions, while the length-based variants stayed close to one another.";
+    }
+
+    private static StabilitySummary SummarizeStability(IReadOnlyList<M4ComparisonRow> rows)
+    {
+        if (rows.Count == 0)
+        {
+            return new StabilitySummary("no conditions", "did not produce evaluable AUC rows", 0d, "small", 0d, "small", false, false, false, false);
+        }
+
+        var paperHighestCount = rows.Count(row => row.PaperAuc > row.CompressedLengthAuc && row.PaperAuc > row.NormalizedCompressedLengthAuc);
+        var paperRankingSummary = paperHighestCount == rows.Count
+            ? "all tested conditions"
+            : paperHighestCount >= Math.Ceiling(rows.Count / 2d)
+                ? $"most tested conditions ({paperHighestCount} of {rows.Count})"
+                : $"only some tested conditions ({paperHighestCount} of {rows.Count})";
+
+        var lengthGaps = rows.Select(row => Math.Abs(row.CompressedLengthMinusNormalizedCompressedLength)).ToArray();
+        var maxLengthGap = lengthGaps.Max();
+        var lengthVariantSummary = maxLengthGap == 0d
+            ? "matched exactly in every tested condition"
+            : maxLengthGap <= 0.01d
+                ? $"nearly matched throughout the tested conditions (maximum AUC gap {maxLengthGap:F6})"
+                : $"diverged in at least some tested conditions (maximum AUC gap {maxLengthGap:F6})";
+
+        var paperVsLengthGaps = rows
+            .SelectMany(row => new[]
+            {
+                Math.Abs(row.PaperMinusCompressedLength),
+                Math.Abs(row.PaperMinusNormalizedCompressedLength),
+            })
+            .OrderBy(value => value)
+            .ToArray();
+
+        var largestGap = paperVsLengthGaps.Max();
+        var medianGap = paperVsLengthGaps[paperVsLengthGaps.Length / 2];
+
+        return new StabilitySummary(
+            paperRankingSummary,
+            lengthVariantSummary,
+            largestGap,
+            DescribeGap(largestGap),
+            medianGap,
+            DescribeGap(medianGap),
+            paperHighestCount == rows.Count,
+            paperHighestCount >= Math.Ceiling(rows.Count / 2d),
+            maxLengthGap <= 0.01d,
+            maxLengthGap == 0d);
+    }
+
+    private static string DescribeGap(double value)
+    {
+        return value switch
+        {
+            >= 0.1d => "large",
+            >= 0.03d => "modest",
+            _ => "small",
+        };
+    }
+
+    private static MilestoneDescriptor GetMilestoneDescriptor(ExperimentConfig config)
+    {
+        var milestone = config.ManifestMetadata.Tags is not null
+            && config.ManifestMetadata.Tags.TryGetValue("milestone", out var taggedMilestone)
+            ? taggedMilestone
+            : config.ManifestMetadata.VersionTag;
+
+        if (milestone.StartsWith("m4a", StringComparison.OrdinalIgnoreCase))
+        {
+            return new MilestoneDescriptor("m4a", "M4a");
+        }
+
+        return new MilestoneDescriptor("m4", "M4");
     }
 
     private static double RoundDelta(double value) => Math.Round(value, 6, MidpointRounding.AwayFromZero);
@@ -265,4 +368,18 @@ public static class M4ScoreIdentityComparisonReportBuilder
                 StringComparer.OrdinalIgnoreCase.GetHashCode(obj.DetectorName));
         }
     }
+
+    private sealed record StabilitySummary(
+        string PaperRankingSummary,
+        string LengthVariantSummary,
+        double LargestGap,
+        string LargestGapQualitative,
+        double MedianGap,
+        string MedianGapQualitative,
+        bool PaperHighestInAllConditions,
+        bool PaperHighestInMostConditions,
+        bool LengthVariantsNearlyMatch,
+        bool LengthVariantsExactlyMatch);
+
+    private sealed record MilestoneDescriptor(string ArtifactPrefix, string HeadingPrefix);
 }

@@ -34,8 +34,9 @@ public sealed class ArtifactFileWriter
         if (M4ScoreIdentityComparisonReportBuilder.IsEnabled(config))
         {
             var comparison = M4ScoreIdentityComparisonReportBuilder.Build(config, result);
-            m4AucComparisonCsvPath = Path.Combine(runDirectory, "m4_auc_comparison.csv");
-            m4FindingsPath = Path.Combine(runDirectory, "m4_findings.md");
+            var artifactPrefix = M4ScoreIdentityComparisonReportBuilder.GetArtifactPrefix(config);
+            m4AucComparisonCsvPath = Path.Combine(runDirectory, $"{artifactPrefix}_auc_comparison.csv");
+            m4FindingsPath = Path.Combine(runDirectory, $"{artifactPrefix}_findings.md");
             M4ScoreIdentityComparisonReportBuilder.WriteCsv(m4AucComparisonCsvPath, comparison.Rows);
             File.WriteAllText(m4FindingsPath, comparison.FindingsMarkdown);
         }
