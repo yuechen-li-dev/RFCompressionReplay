@@ -7,16 +7,22 @@ public static class DetectorCatalog
     public const string EnergyDetectorName = "ed";
     public const string CovarianceAbsoluteValueDetectorName = "cav";
     public const string LzmsaPaperDetectorName = "lzmsa-paper";
+    public const string LzmsaCompressedLengthDetectorName = "lzmsa-compressed-length";
+    public const string LzmsaNormalizedCompressedLengthDetectorName = "lzmsa-normalized-compressed-length";
 
     public const string EnergyDetectorMode = "average-energy";
     public const string CovarianceAbsoluteValueDetectorMode = "lag-1-absolute-autocovariance";
     public const string LzmsaPaperDetectorMode = "paper-byte-sum";
+    public const string LzmsaCompressedLengthDetectorMode = "compressed-byte-count";
+    public const string LzmsaNormalizedCompressedLengthDetectorMode = "compressed-byte-count-per-input-byte";
 
     public static IReadOnlyList<string> SupportedDetectorNames { get; } =
     [
         EnergyDetectorName,
         CovarianceAbsoluteValueDetectorName,
         LzmsaPaperDetectorName,
+        LzmsaCompressedLengthDetectorName,
+        LzmsaNormalizedCompressedLengthDetectorName,
     ];
 
     public static IReadOnlyDictionary<string, string> SupportedModesByDetector { get; } =
@@ -25,6 +31,8 @@ public static class DetectorCatalog
             [EnergyDetectorName] = EnergyDetectorMode,
             [CovarianceAbsoluteValueDetectorName] = CovarianceAbsoluteValueDetectorMode,
             [LzmsaPaperDetectorName] = LzmsaPaperDetectorMode,
+            [LzmsaCompressedLengthDetectorName] = LzmsaCompressedLengthDetectorMode,
+            [LzmsaNormalizedCompressedLengthDetectorName] = LzmsaNormalizedCompressedLengthDetectorMode,
         };
 
     public static IReadOnlyDictionary<string, ScoreOrientation> ScoreOrientationByDetector { get; } =
@@ -33,6 +41,8 @@ public static class DetectorCatalog
             [EnergyDetectorName] = ScoreOrientation.HigherScoreMorePositive,
             [CovarianceAbsoluteValueDetectorName] = ScoreOrientation.HigherScoreMorePositive,
             [LzmsaPaperDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaCompressedLengthDetectorName] = ScoreOrientation.LowerScoreMorePositive,
+            [LzmsaNormalizedCompressedLengthDetectorName] = ScoreOrientation.LowerScoreMorePositive,
         };
 
     public static bool IsSupportedDetector(string detectorName)
@@ -54,6 +64,17 @@ public static class DetectorCatalog
         }
 
         return orientation;
+    }
+
+
+    public static bool IsPositiveAtThreshold(string detectorName, double score, double threshold)
+    {
+        return GetScoreOrientation(detectorName) switch
+        {
+            ScoreOrientation.HigherScoreMorePositive => score >= threshold,
+            ScoreOrientation.LowerScoreMorePositive => score <= threshold,
+            _ => throw new InvalidOperationException($"Detector '{detectorName}' does not have a supported threshold orientation."),
+        };
     }
 
     public static string SupportedDetectorsDisplay => string.Join(", ", SupportedDetectorNames);

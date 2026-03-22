@@ -19,6 +19,6 @@ public sealed class EnergyDetector : IDetector
             ["averageEnergy"] = score,
         };
 
-        return new DetectorResult(config.Name, config.Mode, score, score >= config.Threshold, metrics);
+        return new DetectorResult(config.Name, config.Mode, score, DetectorCatalog.IsPositiveAtThreshold(config.Name, score, config.Threshold), metrics);
     }
 }

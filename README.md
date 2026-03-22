@@ -1,6 +1,6 @@
 # RfCompressionReplay
 
-`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M3 extends the typed M0/M1/M2 harness with a deterministic synthetic evaluation protocol: named binary benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and explicit ROC/AUC artifacts.
+`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M3 extends the typed M0/M1/M2 harness with a deterministic synthetic evaluation protocol: named binary benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and explicit ROC/AUC artifacts. This pre-M4 hardening pass keeps that M3 layer intact while exposing multiple compression-derived score identities so M4 can compare them without mixing new science claims into the plumbing.
 
 ## What M3 Adds
 
@@ -39,7 +39,27 @@ Important caveats:
 - The OFDM-like source is **not LTE** and is not claimed to be standards-faithful.
 - The Gaussian-emitter control is intentionally simple and Gaussian-like.
 - `lzmsa-paper` still uses the currently implemented deterministic compression backend and the paper-style **byte-sum-over-compressed-bytes** score contract.
+- This pre-M4 hardening pass does **not** interpret the compression-derived variants; it only exposes them as first-class, test-locked detector identities for a later M4 experiment.
 - M3 does **not** claim exact replication of the paper's original unpublished numbers.
+
+## Compression-Derived Detector Variants
+
+The repository now exposes three separate compression-derived detector IDs that all share the same scalar-window serialization and Brotli compression path:
+
+- `lzmsa-paper` (`paper-byte-sum`)
+  - Formula: `score = sum(compressedBytes)`
+  - Orientation: `HigherScoreMorePositive`
+  - Purpose: preserve the existing paper-style byte-sum score unchanged.
+- `lzmsa-compressed-length` (`compressed-byte-count`)
+  - Formula: `score = compressedByteCount`
+  - Orientation: `LowerScoreMorePositive`
+  - Purpose: compare the paper-style statistic against raw compressed length while keeping the same payload basis.
+- `lzmsa-normalized-compressed-length` (`compressed-byte-count-per-input-byte`)
+  - Formula: `score = compressedByteCount / inputByteCount`
+  - Orientation: `LowerScoreMorePositive`
+  - Purpose: compare against a normalized compression-length metric on the same serialized input bytes.
+
+`inputByteCount` is the serialized scalar-window payload size in bytes before compression. The serialization contract itself is unchanged.
 
 ## Synthetic Tasks Evaluated in M3
 
@@ -64,6 +84,8 @@ Current orientation contract:
 - `ed`: higher score means more evidence for the positive class.
 - `cav`: higher score means more evidence for the positive class.
 - `lzmsa-paper`: higher score means more evidence for the positive class.
+- `lzmsa-compressed-length`: lower score means more evidence for the positive class.
+- `lzmsa-normalized-compressed-length`: lower score means more evidence for the positive class.
 
 ROC/AUC is computed per condition by:
 
@@ -73,6 +95,8 @@ ROC/AUC is computed per condition by:
 4. integrating with the trapezoidal rule.
 
 No large ML dependency is used for this step.
+
+Threshold pass/fail also follows the detector's documented orientation. The legacy `IsAboveThreshold` / `AboveThresholdCount` artifact fields therefore mean “meets the configured detector threshold according to that detector's orientation,” even for lower-is-more-positive detector identities.
 
 ## Produced Artifacts
 
@@ -110,6 +134,8 @@ dotnet run --project src/RfCompressionReplay.Cli -- configs/m2.mixed.lzmsa-paper
 
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m3.ofdm-sweep.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m3.gaussian-control.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m3.lzmsa-compressed-length.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m3.lzmsa-normalized-compressed-length.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m3.mixed.json
 ```
 
@@ -121,12 +147,12 @@ On success, the CLI prints the run identifier and the artifact directory.
 - No LTE claim.
 - No plotting libraries, notebooks, or large reporting stack.
 - No threshold optimization workflow beyond explicit ROC/AUC computation.
-- No compression-statistic ablation study yet.
-- No M4 statistic identity testing yet.
+- No compression backend swap for this pre-M4 hardening pass.
+- No M4 statistic identity interpretation yet.
 
 ## What Later Milestones Can Add
 
-- Additional statistics or detector-score identities.
+- Mechanism testing across the now-explicit compression-derived score identities.
 - Broader signal families or external data.
 - More standards-faithful waveform generation if later justified.
 - Figure-reproduction workflows once the synthetic evaluation layer is stable.

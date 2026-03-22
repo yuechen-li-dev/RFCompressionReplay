@@ -13,6 +13,8 @@ The protocol now supports:
 - continuous detector score collection, and
 - ROC/AUC generation from score distributions.
 
+The current pre-M4 hardening pass keeps that evaluation protocol in place and makes compression-score identity explicit so a later M4 run can compare detector-score semantics on the same tasks without changing the evaluation layer midstream.
+
 ## Binary Tasks Used in This Repository
 
 ### `ofdm-signal-present-vs-noise-only`
@@ -60,6 +62,22 @@ The harness uses deterministic derived seeds for:
 
 This keeps the evaluation repeatable without hidden global mutable state.
 
+## Compression-Derived Score Identities in Evaluation
+
+The evaluation layer now accepts three separate compression-derived detector IDs:
+
+- `lzmsa-paper`
+- `lzmsa-compressed-length`
+- `lzmsa-normalized-compressed-length`
+
+All three share the same serialized-input and compressed-payload basis. They differ only in score derivation:
+
+- `lzmsa-paper`: `sum(compressedBytes)`
+- `lzmsa-compressed-length`: `compressedByteCount`
+- `lzmsa-normalized-compressed-length`: `compressedByteCount / inputByteCount`
+
+This pre-M4 hardening pass does **not** interpret which identity matters scientifically. It only ensures configs, validation, artifacts, and ROC/AUC can treat them as separate, explicit detector paths.
+
 ## ROC/AUC Method
 
 The ROC/AUC implementation is intentionally modest and explicit:
@@ -81,6 +99,8 @@ Current documented orientation:
 - `ed`: higher score => more positive
 - `cav`: higher score => more positive
 - `lzmsa-paper`: higher score => more positive
+- `lzmsa-compressed-length`: lower score => more positive
+- `lzmsa-normalized-compressed-length`: lower score => more positive
 
 The implementation does **not** silently assume a universal direction without documentation and tests.
 
@@ -123,6 +143,8 @@ Contains per-condition ROC rows with:
 
 - task
 - detector
+- detector mode
+- score orientation
 - SNR condition
 - window length
 - threshold
@@ -146,4 +168,4 @@ What remains provisional and independently regenerated:
 - the exact OFDM-like waveform details
 - any LTE fidelity claim
 - exact paper-number reproduction
-- any later compression-statistic ablation or identity testing work
+- any mechanism interpretation across the compression-derived score identities

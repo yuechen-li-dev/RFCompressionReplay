@@ -1,15 +1,23 @@
-# M1 Detector Implementation Notes
+# Detector Implementation Notes
 
-This document records the exact detector formulas and serialization contract implemented for M1.
+This document records the exact detector formulas and serialization contract implemented in this repository through the pre-M4 hardening pass.
 
-## Scope of M1
+## Scope of This Document
 
-M1 replaces the M0 placeholder detector path with real detector implementations over the existing deterministic synthetic signal windows. It does **not** claim paper-figure reproduction yet.
+The goal here is detector-contract clarity, not mechanism interpretation.
 
-## Input Model Used in M1
+The repository now contains:
+
+- the existing ED and CAV detector paths,
+- the existing `lzmsa-paper` paper-style byte-sum score path, and
+- additional compression-derived score identities that reuse the same serialization and compressed payload basis.
+
+This hardening pass does **not** claim which score identity is scientifically responsible for any later detection effect. It only makes that comparison explicit and testable for M4.
+
+## Input Model Used by the Detectors
 
 - Sample representation: scalar `double` values.
-- Signal structure: scalar-only; there is no complex IQ layout in M1.
+- Signal structure: scalar-only; there is no complex IQ layout in the current harness.
 - Window ordering: windows are processed in scenario order, then samples are processed in each window's stored order.
 - Detector input reduction: detectors flatten all windows in a trial into one ordered scalar sequence.
 
@@ -17,57 +25,103 @@ M1 replaces the M0 placeholder detector path with real detector implementations 
 
 ### ED (`ed`, mode `average-energy`)
 
-For flattened scalar samples `x[0..N-1]`, the M1 ED score is:
+For flattened scalar samples `x[0..N-1]`, the ED score is:
 
 - `score = mean(x_i^2)`
 
 This is the average signal energy over the trial's flattened sample sequence.
 
+Orientation:
+
+- `HigherScoreMorePositive`
+
 ### CAV (`cav`, mode `lag-1-absolute-autocovariance`)
 
-For flattened scalar samples `x[0..N-1]` with mean `μ`, the M1 CAV score is:
+For flattened scalar samples `x[0..N-1]` with mean `μ`, the CAV score is:
 
 - `score = abs(mean((x_i - μ) * (x_(i-1) - μ)))` for `i = 1..N-1`
 
 This is a modest lag-1 absolute autocovariance statistic. It is conceptually aligned with covariance-based detection, but it is intentionally documented as a simple harness statistic rather than a claim of full paper-equivalent CAV processing.
 
+Orientation:
+
+- `HigherScoreMorePositive`
+
 ### LZMSA paper statistic (`lzmsa-paper`, mode `paper-byte-sum`)
 
-The M1 `lzmsa-paper` score contract is:
+The `lzmsa-paper` score contract is:
 
 1. Serialize the flattened sample sequence into bytes using the explicit serialization contract below.
-2. Compress those bytes with the currently configured deterministic compression backend.
+2. Compress those bytes with the current deterministic compression backend.
 3. Compute the score as the sum of the compressed output byte values.
+
+Formula:
+
+- `score = sum(compressedBytes)`
+
+Orientation:
+
+- `HigherScoreMorePositive`
 
 Important caveat:
 
+- This path remains behaviorally unchanged from the earlier M1/M3 implementation.
 - The harness reports the paper-style **byte-sum-over-compressed-bytes statistic**.
-- It does **not** relabel this as compressed length or compression ratio.
-- In M1, the compression backend is Brotli (`BrotliStream`) as a practical deterministic .NET substitution, not a claim of true LZMA parity.
+- It does **not** relabel this score as compressed length or compression ratio.
 
-## Compression Serialization Contract
+### LZMSA compressed length (`lzmsa-compressed-length`, mode `compressed-byte-count`)
 
-The M1 serialization contract is explicit and test-locked:
+This variant reuses the same serialized input bytes and same compressed payload as `lzmsa-paper`, but derives the score differently.
+
+Formula:
+
+- `score = compressedByteCount`
+
+Orientation:
+
+- `LowerScoreMorePositive`
+
+Interpretation contract:
+
+- This is the raw compressed output byte count.
+- It is intentionally a separate detector identity so configs, artifacts, and ROC/AUC summaries cannot confuse it with the paper-style byte-sum score.
+
+### LZMSA normalized compressed length (`lzmsa-normalized-compressed-length`, mode `compressed-byte-count-per-input-byte`)
+
+This variant again reuses the same serialized input bytes and same compressed payload basis.
+
+Formula:
+
+- `score = compressedByteCount / inputByteCount`
+
+Where:
+
+- `inputByteCount = serialized scalar payload byte count before compression`
+
+Orientation:
+
+- `LowerScoreMorePositive`
+
+Interpretation contract:
+
+- This is a normalized length metric, not a byte-sum statistic.
+- It exists so M4 can compare score identity while holding the serialization and compression path fixed.
+
+## Shared Compression Serialization Contract
+
+The compression-derived variants all share the same explicit, test-locked serialization contract:
 
 - Numeric type: IEEE 754 binary64 `double`.
 - Endianness: little-endian.
 - Layout: scalar samples only, with no headers, delimiters, metadata, or per-window prefixes.
 - Ordering: concatenate samples in trial order as `(window 0 samples) + (window 1 samples) + ...`.
 - Quantization/scaling: none beyond the synthetic signal generator's existing rounded `double` values.
-- Complex layout: not applicable in M1 because signals are scalar-only.
+- Complex layout: not applicable because signals are scalar-only.
 
 A serialization test locks down representative bytes so that accidental changes to endianness, representation, or packing fail fast.
 
-## Faithful vs Provisional in M1
+## Compression Backend Caveat
 
-Faithful to the paper conceptually:
+The current compression backend remains Brotli (`BrotliStream`) as a practical deterministic .NET substitution. This document does **not** claim true LZMA parity. The pre-M4 hardening pass intentionally keeps that backend unchanged so score-identity comparisons do not introduce accidental pipeline drift.
 
-- The harness now contains explicit ED, covariance-style, and compression-statistic detector paths.
-- The `lzmsa-paper` score is modeled as a byte-sum-over-compressed-bytes statistic, which is the key paper distinction needed for later milestones.
-
-Still provisional in this independent reproduction:
-
-- The synthetic signal source is still a deterministic stand-in, not a realistic RF/LTE generator.
-- The CAV statistic is a simple lag-1 variant.
-- The compression backend is Brotli rather than a dedicated LZMA implementation.
-- M1 does not attempt paper-figure replication, ROC/AUC sweeps, or benchmark breadth.
+Threshold pass/fail also follows the detector's documented orientation. The legacy `IsAboveThreshold` / `AboveThresholdCount` artifact fields therefore mean “meets the configured detector threshold according to that detector's orientation,” even for lower-is-more-positive detector identities.

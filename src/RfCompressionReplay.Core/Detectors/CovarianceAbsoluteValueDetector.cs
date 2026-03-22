@@ -11,7 +11,7 @@ public sealed class CovarianceAbsoluteValueDetector : IDetector
         var allSamples = input.Windows.SelectMany(window => window.Samples).ToArray();
         if (allSamples.Length < 2)
         {
-            return new DetectorResult(config.Name, config.Mode, 0d, config.Threshold <= 0d, new Dictionary<string, double>
+            return new DetectorResult(config.Name, config.Mode, 0d, DetectorCatalog.IsPositiveAtThreshold(config.Name, 0d, config.Threshold), new Dictionary<string, double>
             {
                 ["lag1AbsoluteAutocovariance"] = 0d,
             });
@@ -28,6 +28,6 @@ public sealed class CovarianceAbsoluteValueDetector : IDetector
             ["lag1AbsoluteAutocovariance"] = score,
         };
 
-        return new DetectorResult(config.Name, config.Mode, score, score >= config.Threshold, metrics);
+        return new DetectorResult(config.Name, config.Mode, score, DetectorCatalog.IsPositiveAtThreshold(config.Name, score, config.Threshold), metrics);
     }
 }

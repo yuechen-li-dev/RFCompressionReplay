@@ -77,6 +77,78 @@ public sealed class DetectorImplementationTests
         Assert.NotEqual(repetitive.Score, randomLooking.Score);
     }
 
+    [Fact]
+    public void LzmsaScoreVariantsExposeDistinctScoresForSameCompressedPayload()
+    {
+        var input = new DetectorInput(0, [
+            CreateWindow(Enumerable.Repeat(0.25d, 64).ToArray()),
+            CreateWindow(new[]
+            {
+                0.125, 0.375, 0.625, 0.875, -0.125, -0.375, -0.625, -0.875,
+                1.125, 1.375, 1.625, 1.875, -1.125, -1.375, -1.625, -1.875,
+            })]);
+
+        var paper = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 0d, DetectorCatalog.LzmsaPaperDetectorMode))
+            .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 0d, DetectorCatalog.LzmsaPaperDetectorMode));
+        var compressedLength = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaCompressedLengthDetectorMode))
+            .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaCompressedLengthDetectorMode));
+        var normalized = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode))
+            .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode));
+
+        Assert.Equal(paper.Metrics["compressedByteSum"], paper.Score);
+        Assert.Equal(compressedLength.Metrics["compressedByteCount"], compressedLength.Score);
+        Assert.Equal(
+            compressedLength.Metrics["compressedByteCount"] / normalized.Metrics["inputByteCount"],
+            normalized.Score,
+            precision: 12);
+
+        Assert.NotEqual(paper.Score, compressedLength.Score);
+        Assert.NotEqual(paper.Score, normalized.Score);
+        Assert.NotEqual(compressedLength.Score, normalized.Score);
+    }
+
+    [Fact]
+    public void LzmsaScoreVariantsShareSerializationAndCompressionBasis()
+    {
+        var input = new DetectorInput(0, [
+            CreateWindow(Enumerable.Repeat(0.5d, 32).ToArray()),
+            CreateWindow(Enumerable.Range(0, 32).Select(index => index / 32d).ToArray())]);
+
+        var paper = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 0d, DetectorCatalog.LzmsaPaperDetectorMode))
+            .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 0d, DetectorCatalog.LzmsaPaperDetectorMode));
+        var compressedLength = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaCompressedLengthDetectorMode))
+            .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaCompressedLengthDetectorMode));
+        var normalized = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode))
+            .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode));
+
+        foreach (var metricName in new[] { "serializedByteCount", "inputByteCount", "compressedByteCount", "compressedByteSum" })
+        {
+            Assert.Equal(paper.Metrics[metricName], compressedLength.Metrics[metricName]);
+            Assert.Equal(paper.Metrics[metricName], normalized.Metrics[metricName]);
+        }
+    }
+
+
+    [Fact]
+    public void LzmsaLengthBasedVariantsUseLowerScoreThresholdSemantics()
+    {
+        var input = new DetectorInput(0, [CreateWindow(Enumerable.Repeat(0.25d, 64).ToArray())]);
+        var compressedLengthConfig = new DetectorConfig(
+            Name: DetectorCatalog.LzmsaCompressedLengthDetectorName,
+            Threshold: 32d,
+            Mode: DetectorCatalog.LzmsaCompressedLengthDetectorMode);
+        var normalizedConfig = new DetectorConfig(
+            Name: DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName,
+            Threshold: 0.1d,
+            Mode: DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode);
+
+        var compressedLength = DetectorFactory.Create(compressedLengthConfig).Evaluate(input, compressedLengthConfig);
+        var normalized = DetectorFactory.Create(normalizedConfig).Evaluate(input, normalizedConfig);
+
+        Assert.Equal(compressedLength.Score <= compressedLengthConfig.Threshold, compressedLength.IsAboveThreshold);
+        Assert.Equal(normalized.Score <= normalizedConfig.Threshold, normalized.IsAboveThreshold);
+    }
+
     private static SignalWindow CreateWindow(IReadOnlyList<double> samples)
     {
         return new SignalWindow(0, 0, samples);
