@@ -17,7 +17,7 @@ public sealed class DummyScenario : IExperimentScenario
         _detector = detector;
     }
 
-    public string Name => "dummy";
+    public string Name => ExperimentConfigValidator.DummyScenarioName;
 
     public ExperimentResult Execute(ExperimentConfig config, ISeededRandom random)
     {
@@ -25,7 +25,7 @@ public sealed class DummyScenario : IExperimentScenario
 
         for (var trialIndex = 0; trialIndex < config.TrialCount; trialIndex++)
         {
-            var windows = _signalProvider.CreateWindows(trialIndex, config.Scenario, config.Signal, random);
+            var windows = _signalProvider.CreateWindows(trialIndex, config.Scenario, config.Signal!, random);
             var detectorResult = _detector.Evaluate(new DetectorInput(trialIndex, windows), config.Detector);
             var allSamples = windows.SelectMany(window => window.Samples).ToArray();
             var meanSample = allSamples.Length == 0 ? 0d : DetectorMath.RoundScore(allSamples.Average());
@@ -33,10 +33,16 @@ public sealed class DummyScenario : IExperimentScenario
 
             trials.Add(new TrialRecord(
                 TrialIndex: trialIndex,
+                ScenarioName: Name,
+                TargetLabel: "dummy",
+                SourceType: config.Signal!.Name,
                 DetectorName: detectorResult.DetectorName,
                 DetectorMode: detectorResult.DetectorMode,
+                SnrDb: null,
+                WindowLength: config.Scenario.SamplesPerWindow,
                 WindowCount: windows.Count,
                 SampleCount: allSamples.Length,
+                StartIndex: 0,
                 Score: detectorResult.Score,
                 IsAboveThreshold: detectorResult.IsAboveThreshold,
                 MeanSample: meanSample,
@@ -44,15 +50,20 @@ public sealed class DummyScenario : IExperimentScenario
         }
 
         var scores = trials.Select(trial => trial.Score).ToArray();
+        var mean = scores.Average();
+        var variance = scores.Length == 1 ? 0d : scores.Select(score => Math.Pow(score - mean, 2d)).Average();
         var summary = new SummaryRecord(
+            ScenarioName: Name,
+            TargetLabel: "dummy",
             DetectorName: config.Detector.Name,
             DetectorMode: config.Detector.Mode,
-            TrialCount: trials.Count,
+            Count: trials.Count,
             MinScore: DetectorMath.RoundScore(scores.Min()),
             MaxScore: DetectorMath.RoundScore(scores.Max()),
-            MeanScore: DetectorMath.RoundScore(scores.Average()),
+            MeanScore: DetectorMath.RoundScore(mean),
+            StandardDeviation: DetectorMath.RoundScore(Math.Sqrt(variance)),
             AboveThresholdCount: trials.Count(trial => trial.IsAboveThreshold));
 
-        return new ExperimentResult(trials, summary, null);
+        return new ExperimentResult(trials, new ExperimentSummary(new[] { summary }), null);
     }
 }

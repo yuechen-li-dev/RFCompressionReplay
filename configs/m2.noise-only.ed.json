@@ -1,0 +1,43 @@
+{
+  "experimentId": "m2-noise-only-ed",
+  "experimentName": "M2 Synthetic Benchmark - Noise Only / ED",
+  "seed": 12345,
+  "outputDirectory": "artifacts",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 6,
+  "detector": {
+    "name": "ed",
+    "threshold": 1.1,
+    "mode": "average-energy"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": [
+      {
+        "name": "noise-only-baseline",
+        "targetLabel": "noise-only",
+        "sourceType": "noise-only",
+        "snrDb": null,
+        "gaussianEmitter": null,
+        "ofdmLike": null
+      }
+    ]
+  },
+  "manifestMetadata": {
+    "notes": "M2 baseline synthetic benchmark for Gaussian noise only.",
+    "versionTag": "m2",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m2",
+      "benchmark": "noise-only"
+    }
+  }
+}
