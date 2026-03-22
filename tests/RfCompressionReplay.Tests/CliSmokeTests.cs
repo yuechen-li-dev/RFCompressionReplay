@@ -7,8 +7,9 @@ public sealed class CliSmokeTests
     [Fact]
     public void CliShowsUsageWhenConfigArgumentMissing()
     {
-        var projectPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../src/RfCompressionReplay.Cli/RfCompressionReplay.Cli.csproj"));
-        var psi = new ProcessStartInfo("/tmp/dotnet/dotnet", $"run --project \"{projectPath}\" --no-build")
+        var cliDllPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../src/RfCompressionReplay.Cli/bin/Debug/net8.0/RfCompressionReplay.Cli.dll"));
+        var dotnetHost = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
+        var psi = new ProcessStartInfo(dotnetHost, $"\"{cliDllPath}\"")
         {
             RedirectStandardError = true,
             RedirectStandardOutput = true,

@@ -1,7 +1,6 @@
 using System.Text.Json;
 using RfCompressionReplay.Core.Artifacts;
 using RfCompressionReplay.Core.Config;
-using RfCompressionReplay.Core.Execution;
 using RfCompressionReplay.Core.Models;
 
 namespace RfCompressionReplay.Tests;
@@ -34,7 +33,7 @@ public sealed class ArtifactWriterTests
                 1,
                 Array.Empty<string>(),
                 Array.Empty<string>(),
-                new Dictionary<string, string> { ["tag"] = "value" });
+                new ManifestMetadata("note", "v0", new Dictionary<string, string> { ["tag"] = "value" }));
 
             var artifacts = writer.WriteRunArtifacts(runDirectory, result, manifest);
 
@@ -48,6 +47,9 @@ public sealed class ArtifactWriterTests
             var manifestRoundTrip = JsonSerializer.Deserialize<RunManifest>(File.ReadAllText(artifacts.ManifestPath), ExperimentConfigJson.SerializerOptions);
             Assert.NotNull(manifestRoundTrip);
             Assert.Equal("exp", manifestRoundTrip!.ExperimentId);
+            Assert.Equal("note", manifestRoundTrip.Metadata.Notes);
+            Assert.Equal("v0", manifestRoundTrip.Metadata.VersionTag);
+            Assert.Equal("value", manifestRoundTrip.Metadata.Tags!["tag"]);
         }
         finally
         {

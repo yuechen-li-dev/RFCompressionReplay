@@ -27,7 +27,7 @@ public sealed class ExperimentConfigTests
             OutputDirectory: "",
             Scenario: new ScenarioConfig("", 0, 0),
             TrialCount: 0,
-            Detector: new DetectorConfig("", 0.5, "placeholder"),
+            Detector: new DetectorConfig("", 0.5, ""),
             Signal: new SignalConfig("", 1.0, 0.2),
             ManifestMetadata: ManifestMetadataConfig.Empty);
 
@@ -37,5 +37,27 @@ public sealed class ExperimentConfigTests
         Assert.Contains("Seed must be zero or greater.", errors);
         Assert.Contains("TrialCount must be greater than zero.", errors);
         Assert.Contains("Scenario.SampleWindowCount must be greater than zero.", errors);
+        Assert.Contains("Detector.Mode is required.", errors);
+    }
+
+    [Fact]
+    public void ValidatorRejectsUnsupportedDetectorAndSignalIdentifiers()
+    {
+        var config = new ExperimentConfig(
+            ExperimentId: "bad-identifiers",
+            ExperimentName: "Bad identifiers",
+            Seed: 1,
+            OutputDirectory: "artifacts",
+            Scenario: new ScenarioConfig("dummy", 1, 1),
+            TrialCount: 1,
+            Detector: new DetectorConfig("bogus-detector", 0.5, "bogus-mode"),
+            Signal: new SignalConfig("bogus-signal", 1.0, 0.2),
+            ManifestMetadata: ManifestMetadataConfig.Empty);
+
+        var errors = ExperimentConfigValidator.Validate(config);
+
+        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M0. Supported detectors: placeholder-detector.", errors);
+        Assert.Contains("Detector.Mode 'bogus-mode' is not supported in M0. Supported modes: placeholder.", errors);
+        Assert.Contains("Signal.Name 'bogus-signal' is not supported in M0. Supported signals: dummy-signal.", errors);
     }
 }

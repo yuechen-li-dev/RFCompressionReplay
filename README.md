@@ -39,7 +39,7 @@ Each run writes a deterministic per-run folder beneath the configured output roo
 - `summary.json`: typed aggregate summary for the run.
 - `trials.csv`: per-trial dummy measurements and placeholder detector scores.
 
-The sample config writes under `artifacts/<timestamp>_m0-dummy_seed12345/`.
+The sample config writes beneath the config file directory under `configs/artifacts/<timestamp>_m0-dummy_seed12345/`. If a same-second rerun would collide, the harness appends a readable suffix such as `_2` to keep artifacts isolated.
 
 ## M0 Deliberate Simplifications
 

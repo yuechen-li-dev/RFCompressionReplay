@@ -12,7 +12,12 @@ public sealed record RunManifest(
     int TrialCount,
     IReadOnlyList<string> ArtifactPaths,
     IReadOnlyList<string> Warnings,
-    IReadOnlyDictionary<string, string>? Metadata);
+    ManifestMetadata Metadata);
+
+public sealed record ManifestMetadata(
+    string Notes,
+    string VersionTag,
+    IReadOnlyDictionary<string, string>? Tags);
 
 public sealed record EnvironmentSummary(
     string MachineName,
