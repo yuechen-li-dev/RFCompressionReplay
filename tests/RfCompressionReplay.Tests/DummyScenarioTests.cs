@@ -18,11 +18,11 @@ public sealed class DummyScenarioTests
             OutputDirectory: "artifacts",
             Scenario: new ScenarioConfig("dummy", 2, 3),
             TrialCount: 3,
-            Detector: new DetectorConfig("placeholder-detector", 1.0, "placeholder"),
+            Detector: new DetectorConfig(DetectorCatalog.EnergyDetectorName, 1.0, DetectorCatalog.EnergyDetectorMode),
             Signal: new SignalConfig("dummy-signal", 1.25, 0.2),
             ManifestMetadata: ManifestMetadataConfig.Empty);
 
-        var scenario = new DummyScenario(new DummySignalProvider(), new PlaceholderDetector());
+        var scenario = new DummyScenario(new DummySignalProvider(), new EnergyDetector());
 
         var resultA = scenario.Execute(config, new SeededRandom(config.Seed));
         var resultB = scenario.Execute(config, new SeededRandom(config.Seed));
@@ -30,6 +30,6 @@ public sealed class DummyScenarioTests
         Assert.Equal(resultA.Trials, resultB.Trials);
         Assert.Equal(resultA.Summary, resultB.Summary);
         Assert.Equal(3, resultA.Trials.Count);
-        Assert.Equal(3, resultA.Summary.AboveThresholdCount);
+        Assert.All(resultA.Trials, trial => Assert.Equal(DetectorCatalog.EnergyDetectorName, trial.DetectorName));
     }
 }

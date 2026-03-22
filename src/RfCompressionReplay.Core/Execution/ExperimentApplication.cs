@@ -91,11 +91,11 @@ public sealed class ExperimentApplication
     {
         if (!string.Equals(config.Scenario.Name, "dummy", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException($"Scenario '{config.Scenario.Name}' is not supported in M0. Supported scenarios: dummy.");
+            throw new InvalidOperationException($"Scenario '{config.Scenario.Name}' is not supported in M1. Supported scenarios: dummy.");
         }
 
         ISignalProvider signalProvider = new DummySignalProvider();
-        IDetector detector = new PlaceholderDetector();
+        IDetector detector = DetectorFactory.Create(config.Detector);
         return new DummyScenario(signalProvider, detector);
     }
 }

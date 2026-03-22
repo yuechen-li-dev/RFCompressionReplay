@@ -1,3 +1,5 @@
+using RfCompressionReplay.Core.Detectors;
+
 namespace RfCompressionReplay.Core.Config;
 
 public static class ExperimentConfigValidator
@@ -41,6 +43,10 @@ public static class ExperimentConfigValidator
         {
             errors.Add("Scenario.Name is required.");
         }
+        else if (!string.Equals(config.Scenario.Name, "dummy", StringComparison.OrdinalIgnoreCase))
+        {
+            errors.Add($"Scenario.Name '{config.Scenario.Name}' is not supported in M1. Supported scenarios: dummy.");
+        }
 
         if (config.Scenario.SampleWindowCount <= 0)
         {
@@ -62,18 +68,18 @@ public static class ExperimentConfigValidator
             {
                 errors.Add("Detector.Name is required.");
             }
-            else if (!string.Equals(config.Detector.Name, "placeholder-detector", StringComparison.OrdinalIgnoreCase))
+            else if (!DetectorCatalog.IsSupportedDetector(config.Detector.Name))
             {
-                errors.Add($"Detector.Name '{config.Detector.Name}' is not supported in M0. Supported detectors: placeholder-detector.");
+                errors.Add($"Detector.Name '{config.Detector.Name}' is not supported in M1. Supported detectors: {DetectorCatalog.SupportedDetectorsDisplay}.");
             }
 
             if (string.IsNullOrWhiteSpace(config.Detector.Mode))
             {
                 errors.Add("Detector.Mode is required.");
             }
-            else if (!string.Equals(config.Detector.Mode, "placeholder", StringComparison.OrdinalIgnoreCase))
+            else if (!string.IsNullOrWhiteSpace(config.Detector.Name) && DetectorCatalog.IsSupportedDetector(config.Detector.Name) && !DetectorCatalog.IsSupportedMode(config.Detector.Name, config.Detector.Mode))
             {
-                errors.Add($"Detector.Mode '{config.Detector.Mode}' is not supported in M0. Supported modes: placeholder.");
+                errors.Add($"Detector.Mode '{config.Detector.Mode}' is not supported for detector '{config.Detector.Name}' in M1. Supported modes: {DetectorCatalog.SupportedModesDisplay(config.Detector.Name)}.");
             }
         }
 
@@ -87,7 +93,7 @@ public static class ExperimentConfigValidator
         }
         else if (!string.Equals(config.Signal.Name, "dummy-signal", StringComparison.OrdinalIgnoreCase))
         {
-            errors.Add($"Signal.Name '{config.Signal.Name}' is not supported in M0. Supported signals: dummy-signal.");
+            errors.Add($"Signal.Name '{config.Signal.Name}' is not supported in M1. Supported signals: dummy-signal.");
         }
 
         if (config.ManifestMetadata is null)
