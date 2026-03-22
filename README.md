@@ -1,8 +1,8 @@
 # RfCompressionReplay
 
-`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M3 extends the typed M0/M1/M2 harness with a deterministic synthetic evaluation protocol: named binary benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and explicit ROC/AUC artifacts. This pre-M4 hardening pass keeps that M3 layer intact while exposing multiple compression-derived score identities so M4 can compare them without mixing new science claims into the plumbing.
+`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M4 now uses the typed M0/M1/M2/M3 harness to run a first mechanism-comparison experiment: hold scalar-window serialization and Brotli compression fixed, then compare three compression-derived score identities on the same synthetic benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and ROC/AUC evaluation layer.
 
-## What M3 Adds
+## What M4 Adds
 
 - Config-driven named synthetic evaluation tasks for:
   - `ofdm-signal-present-vs-noise-only`
@@ -19,12 +19,15 @@
   - `summary.json`
   - `summary.csv`
   - `roc_points.csv`
+- M4 comparison artifacts when the evaluation run compares the three compression-derived detector identities together:
+  - `m4_auc_comparison.csv`
+  - `m4_findings.md`
 - Manifest metadata that records task names and sweep axes.
 - Focused xUnit coverage for ROC/AUC sanity, score orientation, condition grouping, end-to-end sample configs, and determinism.
 
 ## Scientific Intent
 
-M3 is about **evaluation protocol truth**, not paper-number reproduction.
+M4 is about **score-identity mechanism comparison**, not paper-number reproduction.
 
 The harness now supports synthetic comparisons that mirror the paper's experiment shape closely enough to inspect detector behavior honestly:
 
@@ -39,7 +42,7 @@ Important caveats:
 - The OFDM-like source is **not LTE** and is not claimed to be standards-faithful.
 - The Gaussian-emitter control is intentionally simple and Gaussian-like.
 - `lzmsa-paper` still uses the currently implemented deterministic compression backend and the paper-style **byte-sum-over-compressed-bytes** score contract.
-- This pre-M4 hardening pass does **not** interpret the compression-derived variants; it only exposes them as first-class, test-locked detector identities for a later M4 experiment.
+- M4 does **not** change the compression backend, synthetic task definitions, or ROC/AUC layer; it only compares score identity while keeping that path fixed.
 - M3 does **not** claim exact replication of the paper's original unpublished numbers.
 
 ## Compression-Derived Detector Variants
@@ -107,6 +110,8 @@ Each run writes a deterministic per-run folder beneath the configured output roo
 - `summary.csv`: tabular per-condition score summary including class counts and AUC.
 - `trials.csv`: per-trial score records including task name, label, detector, detector mode, score orientation, condition SNR, source SNR, and window length.
 - `roc_points.csv`: ROC thresholds, TPR/FPR points, class counts, and per-condition AUC.
+- `m4_auc_comparison.csv`: side-by-side AUC comparison for `lzmsa-paper`, `lzmsa-compressed-length`, and `lzmsa-normalized-compressed-length` by task, SNR, and window length when all three are run together.
+- `m4_findings.md`: concise scope, comparison table, findings text, and caveats for an M4 score-identity comparison run.
 
 If a same-second rerun would collide, the harness appends a readable suffix such as `_2` to keep artifacts isolated.
 
@@ -118,6 +123,7 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - `configs/`: runnable M0/M1/M2 sample configs plus M3 evaluation configs.
 - `docs/M2_SYNTHETIC_BENCHMARKS.md`: M2 synthetic generator notes.
 - `docs/M3_EVALUATION_PROTOCOL.md`: M3 task definitions, sweep semantics, ROC/AUC method, and caveats.
+- `docs/M4_SCORE_IDENTITY_COMPARISON.md`: M4 scope, outputs, and reading guide for the score-identity comparison experiment.
 - `docs/DETECTOR_IMPLEMENTATION_NOTES.md`: detector formulas and compression-statistic contract.
 - `docs/REPRODUCTION_SCOPE.md`: concise reproduction-scope statement.
 
@@ -137,18 +143,21 @@ dotnet run --project src/RfCompressionReplay.Cli -- configs/m3.gaussian-control.
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m3.lzmsa-compressed-length.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m3.lzmsa-normalized-compressed-length.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m3.mixed.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m4.score-identity-smoke.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m4.score-identity-comparison.json
 ```
 
 On success, the CLI prints the run identifier and the artifact directory.
 
-## Deliberate M3 Simplifications
+## Deliberate Scope Simplifications
 
 - Synthetic-only evaluation; no SDR ingestion or external datasets.
 - No LTE claim.
 - No plotting libraries, notebooks, or large reporting stack.
 - No threshold optimization workflow beyond explicit ROC/AUC computation.
 - No compression backend swap for this pre-M4 hardening pass.
-- No M4 statistic identity interpretation yet.
+- No claim that the M4 synthetic comparison settles the paper's original unpublished results.
+- M4 findings stay within the synthetic benchmark scope and do not claim anything about private paper data or SDR performance.
 
 ## What Later Milestones Can Add
 

@@ -1,0 +1,13 @@
+﻿taskName,conditionSnrDb,windowLength,aucLzmsaPaper,aucLzmsaCompressedLength,aucLzmsaNormalizedCompressedLength,deltaPaperMinusCompressedLength,deltaPaperMinusNormalizedCompressedLength,deltaCompressedLengthMinusNormalizedCompressedLength
+gaussian-emitter-vs-noise-only,-9.000000,64,0.604167,0.321181,0.321181,0.282986,0.282986,0.000000
+gaussian-emitter-vs-noise-only,-9.000000,128,0.484375,0.429688,0.429688,0.054687,0.054687,0.000000
+gaussian-emitter-vs-noise-only,-3.000000,64,0.456597,0.247396,0.247396,0.209201,0.209201,0.000000
+gaussian-emitter-vs-noise-only,-3.000000,128,0.805556,0.111111,0.111111,0.694445,0.694445,0.000000
+gaussian-emitter-vs-noise-only,0.000000,64,0.657986,0.032118,0.032118,0.625868,0.625868,0.000000
+gaussian-emitter-vs-noise-only,0.000000,128,0.777778,0.010417,0.010417,0.767361,0.767361,0.000000
+ofdm-signal-present-vs-noise-only,-9.000000,64,0.438368,0.376736,0.376736,0.061632,0.061632,0.000000
+ofdm-signal-present-vs-noise-only,-9.000000,128,0.451389,0.421875,0.421875,0.029514,0.029514,0.000000
+ofdm-signal-present-vs-noise-only,-3.000000,64,0.684028,0.118924,0.118924,0.565104,0.565104,0.000000
+ofdm-signal-present-vs-noise-only,-3.000000,128,0.564236,0.182292,0.182292,0.381944,0.381944,0.000000
+ofdm-signal-present-vs-noise-only,0.000000,64,0.487847,0.087674,0.087674,0.400173,0.400173,0.000000
+ofdm-signal-present-vs-noise-only,0.000000,128,0.645833,0.052951,0.052951,0.592882,0.592882,0.000000

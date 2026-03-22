@@ -1,4 +1,5 @@
 using RfCompressionReplay.Core.Config;
+using RfCompressionReplay.Core.Evaluation;
 using RfCompressionReplay.Core.Models;
 
 namespace RfCompressionReplay.Core.Artifacts;
@@ -12,7 +13,7 @@ public sealed class ArtifactFileWriter
         _csvWriter = csvWriter;
     }
 
-    public ArtifactPaths WriteRunArtifacts(string runDirectory, ExperimentResult result, RunManifest manifest)
+    public ArtifactPaths WriteRunArtifacts(string runDirectory, ExperimentConfig config, ExperimentResult result, RunManifest manifest)
     {
         Directory.CreateDirectory(runDirectory);
 
@@ -21,6 +22,8 @@ public sealed class ArtifactFileWriter
         var summaryCsvPath = Path.Combine(runDirectory, "summary.csv");
         var trialsPath = Path.Combine(runDirectory, "trials.csv");
         var rocPointsPath = Path.Combine(runDirectory, "roc_points.csv");
+        string? m4AucComparisonCsvPath = null;
+        string? m4FindingsPath = null;
 
         ExperimentConfigJson.Save(manifestPath, manifest);
         ExperimentConfigJson.Save(summaryPath, result.Summary);
@@ -28,6 +31,15 @@ public sealed class ArtifactFileWriter
         _csvWriter.WriteTrials(trialsPath, result.Trials);
         _csvWriter.WriteRocPoints(rocPointsPath, result.Evaluation?.RocPoints ?? Array.Empty<RocPointRecord>());
 
-        return new ArtifactPaths(runDirectory, manifestPath, summaryPath, summaryCsvPath, trialsPath, rocPointsPath);
+        if (M4ScoreIdentityComparisonReportBuilder.IsEnabled(config))
+        {
+            var comparison = M4ScoreIdentityComparisonReportBuilder.Build(config, result);
+            m4AucComparisonCsvPath = Path.Combine(runDirectory, "m4_auc_comparison.csv");
+            m4FindingsPath = Path.Combine(runDirectory, "m4_findings.md");
+            M4ScoreIdentityComparisonReportBuilder.WriteCsv(m4AucComparisonCsvPath, comparison.Rows);
+            File.WriteAllText(m4FindingsPath, comparison.FindingsMarkdown);
+        }
+
+        return new ArtifactPaths(runDirectory, manifestPath, summaryPath, summaryCsvPath, trialsPath, rocPointsPath, m4AucComparisonCsvPath, m4FindingsPath);
     }
 }

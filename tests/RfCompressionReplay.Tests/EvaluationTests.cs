@@ -121,6 +121,7 @@ public sealed class EvaluationTests
     [InlineData("m3.lzmsa-compressed-length.json")]
     [InlineData("m3.lzmsa-normalized-compressed-length.json")]
     [InlineData("m3.mixed.json")]
+    [InlineData("m4.score-identity-smoke.json")]
     public void M3SampleConfigsRunEndToEnd(string configFileName)
     {
         var tempRoot = CreateTempRoot();
@@ -140,6 +141,12 @@ public sealed class EvaluationTests
             Assert.Contains("auc", summaryCsv, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("tpr", rocCsv, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("scoreOrientation", rocCsv);
+
+            if (string.Equals(configFileName, "m4.score-identity-smoke.json", StringComparison.Ordinal))
+            {
+                Assert.True(File.Exists(Path.Combine(run.RunDirectory, "m4_auc_comparison.csv")));
+                Assert.True(File.Exists(Path.Combine(run.RunDirectory, "m4_findings.md")));
+            }
         }
         finally
         {

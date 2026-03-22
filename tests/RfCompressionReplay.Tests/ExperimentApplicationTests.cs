@@ -117,6 +117,48 @@ public sealed class ExperimentApplicationTests
         }
     }
 
+    [Fact]
+    public void GeneratesM4ComparisonArtifactsForCompressionIdentityRun()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+
+        try
+        {
+            var config = TestConfigFactory.CreateSyntheticEvaluationConfig(
+                experimentId: "m4-test",
+                tasks: [TestConfigFactory.CreateOfdmTask(), TestConfigFactory.CreateGaussianEmitterTask()],
+                detectors: TestConfigFactory.CreateM4CompressionDetectors(),
+                snrDbValues: [-6d, 0d],
+                windowLengths: [64],
+                trialCountPerCondition: 2) with
+            {
+                OutputDirectory = tempRoot,
+                ExperimentName = "M4 Comparison Test",
+                ManifestMetadata = new ManifestMetadataConfig(
+                    "Test M4 score identity comparison run.",
+                    "m4-test",
+                    new Dictionary<string, string> { ["milestone"] = "m4", ["experimentType"] = "score-identity-comparison" }),
+            };
+
+            var application = CreateApplication("2026-03-22T05:06:07Z");
+            var result = application.Run(config, Path.Combine(tempRoot, "config.json"), "/does/not/exist");
+            var comparisonPath = Path.Combine(result.RunDirectory, "m4_auc_comparison.csv");
+            var findingsPath = Path.Combine(result.RunDirectory, "m4_findings.md");
+
+            Assert.True(File.Exists(comparisonPath));
+            Assert.True(File.Exists(findingsPath));
+            Assert.Contains("m4_auc_comparison.csv", result.Manifest.ArtifactPaths);
+            Assert.Contains("m4_findings.md", result.Manifest.ArtifactPaths);
+            Assert.Contains("aucLzmsaPaper", File.ReadAllText(comparisonPath));
+            Assert.Contains("M4 Score-Identity Comparison Findings", File.ReadAllText(findingsPath));
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
     private static ExperimentApplication CreateApplication(string utcTimestamp)
     {
         return new ExperimentApplication(
