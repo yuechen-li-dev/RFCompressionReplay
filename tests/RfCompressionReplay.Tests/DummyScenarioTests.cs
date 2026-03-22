@@ -21,6 +21,7 @@ public sealed class DummyScenarioTests
             Detector: new DetectorConfig(DetectorCatalog.EnergyDetectorName, 1.0, DetectorCatalog.EnergyDetectorMode),
             Signal: new SignalConfig(ExperimentConfigValidator.DummySignalName, 1.25, 0.2),
             Benchmark: null,
+            Evaluation: null,
             ManifestMetadata: ManifestMetadataConfig.Empty);
 
         var scenario = new DummyScenario(new DummySignalProvider(), new EnergyDetector());

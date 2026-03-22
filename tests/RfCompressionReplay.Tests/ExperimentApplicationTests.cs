@@ -22,7 +22,7 @@ public sealed class ExperimentApplicationTests
                 threshold: 0.5d,
                 cases:
                 [
-                    new SyntheticCaseConfig("noise-only-baseline", "noise-only", ExperimentConfigValidator.NoiseOnlySourceType, null, null, null),
+                    TestConfigFactory.CreateNoiseOnlyCase(),
                     TestConfigFactory.CreateGaussianEmitterCase(0d),
                     TestConfigFactory.CreateOfdmLikeCase(-3d)
                 ]);
@@ -36,7 +36,9 @@ public sealed class ExperimentApplicationTests
             Assert.Equal(3, result.Result.Summary.Groups.Count);
             Assert.True(File.Exists(Path.Combine(result.RunDirectory, "manifest.json")));
             Assert.True(File.Exists(Path.Combine(result.RunDirectory, "summary.json")));
+            Assert.True(File.Exists(Path.Combine(result.RunDirectory, "summary.csv")));
             Assert.True(File.Exists(Path.Combine(result.RunDirectory, "trials.csv")));
+            Assert.True(File.Exists(Path.Combine(result.RunDirectory, "roc_points.csv")));
             Assert.Contains("Git commit could not be resolved.", result.Manifest.Warnings);
             Assert.All(result.Result.Trials, trial =>
             {

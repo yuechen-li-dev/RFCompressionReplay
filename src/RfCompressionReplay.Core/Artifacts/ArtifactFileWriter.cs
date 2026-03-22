@@ -18,12 +18,16 @@ public sealed class ArtifactFileWriter
 
         var manifestPath = Path.Combine(runDirectory, "manifest.json");
         var summaryPath = Path.Combine(runDirectory, "summary.json");
+        var summaryCsvPath = Path.Combine(runDirectory, "summary.csv");
         var trialsPath = Path.Combine(runDirectory, "trials.csv");
+        var rocPointsPath = Path.Combine(runDirectory, "roc_points.csv");
 
         ExperimentConfigJson.Save(manifestPath, manifest);
         ExperimentConfigJson.Save(summaryPath, result.Summary);
+        _csvWriter.WriteSummary(summaryCsvPath, result.Summary.Groups);
         _csvWriter.WriteTrials(trialsPath, result.Trials);
+        _csvWriter.WriteRocPoints(rocPointsPath, result.Evaluation?.RocPoints ?? Array.Empty<RocPointRecord>());
 
-        return new ArtifactPaths(runDirectory, manifestPath, summaryPath, trialsPath);
+        return new ArtifactPaths(runDirectory, manifestPath, summaryPath, summaryCsvPath, trialsPath, rocPointsPath);
     }
 }

@@ -1,5 +1,6 @@
 using RfCompressionReplay.Core.Config;
 using RfCompressionReplay.Core.Detectors;
+using RfCompressionReplay.Core.Evaluation;
 
 namespace RfCompressionReplay.Tests;
 
@@ -19,6 +20,21 @@ public sealed class ExperimentConfigTests
         Assert.Equal(DetectorCatalog.EnergyDetectorMode, config.Detector.Mode);
         Assert.NotNull(config.Benchmark);
         Assert.Single(config.Benchmark!.Cases);
+        Assert.Null(config.Evaluation);
+    }
+
+    [Fact]
+    public void DeserializesM3SampleConfig()
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs/m3.ofdm-sweep.json"));
+        var config = ExperimentConfigJson.Load(path);
+
+        Assert.Equal("m3-ofdm-sweep", config.ExperimentId);
+        Assert.NotNull(config.Evaluation);
+        Assert.Equal(BenchmarkTaskCatalog.OfdmSignalPresentVsNoiseOnly, config.Evaluation!.Tasks.Single().Name);
+        Assert.Equal(2, config.Evaluation.Detectors.Count);
+        Assert.Equal(new[] { -9d, -3d, 0d }, config.Evaluation.SnrDbValues);
+        Assert.Equal(new[] { 64, 128 }, config.Evaluation.WindowLengths);
     }
 
     [Fact]
@@ -34,6 +50,7 @@ public sealed class ExperimentConfigTests
             Detector: new DetectorConfig("", 0.5, ""),
             Signal: null,
             Benchmark: new SyntheticBenchmarkConfig(0, new GaussianNoiseConfig(0d, 0d), Array.Empty<SyntheticCaseConfig>()),
+            Evaluation: null,
             ManifestMetadata: ManifestMetadataConfig.Empty);
 
         var errors = ExperimentConfigValidator.Validate(config);
@@ -64,12 +81,13 @@ public sealed class ExperimentConfigTests
                 64,
                 new GaussianNoiseConfig(0d, 1d),
                 [new SyntheticCaseConfig("bad-case", "signal-present", "bogus-source", 0d, null, null)]),
+            Evaluation: null,
             ManifestMetadata: ManifestMetadataConfig.Empty);
 
         var errors = ExperimentConfigValidator.Validate(config);
 
-        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M2. Supported detectors: ed, cav, lzmsa-paper.", errors);
-        Assert.Contains("Benchmark.Cases[0].SourceType 'bogus-source' is not supported in M2. Supported source types: noise-only, gaussian-emitter, ofdm-like.", errors);
+        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M3. Supported detectors: ed, cav, lzmsa-paper.", errors);
+        Assert.Contains("Benchmark.Cases[0].SourceType 'bogus-source' is not supported in M3. Supported source types: noise-only, gaussian-emitter, ofdm-like.", errors);
     }
 
     [Fact]
@@ -82,6 +100,28 @@ public sealed class ExperimentConfigTests
 
         var errors = ExperimentConfigValidator.Validate(config);
 
-        Assert.Contains("Detector.Mode 'compressed-length' is not supported for detector 'lzmsa-paper' in M2. Supported modes: paper-byte-sum.", errors);
+        Assert.Contains("Detector.Mode 'compressed-length' is not supported for detector 'lzmsa-paper' in M3. Supported modes: paper-byte-sum.", errors);
+    }
+
+    [Fact]
+    public void ValidatorRejectsInvalidEvaluationSweeps()
+    {
+        var config = TestConfigFactory.CreateSyntheticEvaluationConfig("bad-eval") with
+        {
+            Evaluation = new EvaluationConfig(
+                Tasks: [new BenchmarkTaskConfig(BenchmarkTaskCatalog.OfdmSignalPresentVsNoiseOnly, string.Empty, TestConfigFactory.CreateOfdmLikeCase(), TestConfigFactory.CreateNoiseOnlyCase())],
+                Detectors: Array.Empty<DetectorConfig>(),
+                SnrDbValues: Array.Empty<double>(),
+                WindowLengths: [0],
+                TrialCountPerCondition: 0),
+        };
+
+        var errors = ExperimentConfigValidator.Validate(config);
+
+        Assert.Contains("Evaluation.Tasks[0].Description is required.", errors);
+        Assert.Contains("Evaluation.Detectors must contain at least one detector.", errors);
+        Assert.Contains("Evaluation.SnrDbValues must contain at least one SNR value.", errors);
+        Assert.Contains("Evaluation.WindowLengths[0] must be greater than zero.", errors);
+        Assert.Contains("Evaluation.TrialCountPerCondition must be greater than zero.", errors);
     }
 }

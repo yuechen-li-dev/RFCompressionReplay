@@ -4,4 +4,6 @@ public sealed record ArtifactPaths(
     string RunDirectory,
     string ManifestPath,
     string SummaryPath,
-    string TrialsCsvPath);
+    string SummaryCsvPath,
+    string TrialsCsvPath,
+    string RocPointsCsvPath);
