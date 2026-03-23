@@ -185,6 +185,33 @@ public sealed class ExperimentConfigTests
             config.Bundles.Select(bundle => bundle.Id).ToArray());
     }
 
+    [Theory]
+    [InlineData("m7b.change-point-usefulness.json", ArtifactRetentionModes.Milestone, 8)]
+    [InlineData("m7b.change-point-usefulness-smoke.json", ArtifactRetentionModes.Smoke, 2)]
+    public void DeserializesM7BConfigs(string configFileName, string expectedRetentionMode, int expectedStreamCountPerCondition)
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = M7BChangePointConfigJson.Load(path);
+
+        Assert.Equal(expectedRetentionMode, config.ArtifactRetentionMode);
+        Assert.Equal(expectedStreamCountPerCondition, config.Evaluation.StreamCountPerCondition);
+        Assert.Equal([86420, 97531, 24680], config.SeedPanel);
+        Assert.Equal(
+            [
+                BenchmarkTaskCatalog.QuietToStructuredRegime,
+                BenchmarkTaskCatalog.CorrelatedNuisanceToEngineeredStructure,
+                BenchmarkTaskCatalog.StructureToStructureRegimeShift,
+            ],
+            config.Benchmark.Tasks.Select(task => task.Name).ToArray());
+        Assert.Equal(
+            [
+                DetectorCatalog.EnergyDetectorName,
+                DetectorCatalog.CovarianceAbsoluteValueDetectorName,
+                DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName,
+            ],
+            config.Evaluation.Detectors.Select(detector => detector.Name).ToArray());
+    }
+
     [Fact]
     public void ValidatorReturnsClearMessagesForInvalidSyntheticBenchmarkConfig()
     {
@@ -413,6 +440,22 @@ public sealed class ExperimentConfigTests
         Assert.Contains("M6a2 complementary-value usefulness mapping requires the focused two-task suite in order: engineered-structure-vs-natural-correlation, equal-energy-engineered-structure-vs-natural-correlation.", errors);
         Assert.Contains("M6a2 complementary-value usefulness mapping requires the focused detector panel exactly: ed, cav, lzmsa-paper, lzmsa-rms-normalized-mean-compressed-byte-value.", errors);
         Assert.Contains("M6a2 complementary-value usefulness mapping requires exactly two bundles in order: bundle-a-ed-cav, bundle-b-ed-cav-rms-normalized-mean.", errors);
+    }
+
+    [Fact]
+    public void M7BValidatorRejectsWrongTaskPanelAndDetectorPanel()
+    {
+        var config = TestConfigFactory.CreateM7BChangePointConfig(
+            "m7b-bad",
+            seedPanel: [7],
+            tasks: [TestConfigFactory.CreateQuietToStructuredStreamTask(), TestConfigFactory.CreateStructureShiftTask()],
+            detectors: TestConfigFactory.CreateM6A1Detectors());
+
+        var errors = M7BChangePointConfigValidator.Validate(config);
+
+        Assert.Contains("SeedPanel must contain at least three explicit seeds for M7b change-point usefulness mapping.", errors);
+        Assert.Contains("M7b change-point usefulness mapping requires the exact three-task stream suite in order: quiet-to-structured-regime, correlated-nuisance-to-engineered-structure, structure-to-structure-regime-shift.", errors);
+        Assert.Contains("M7b change-point usefulness mapping requires the focused detector panel exactly: ed, cav, lzmsa-rms-normalized-mean-compressed-byte-value.", errors);
     }
 
     [Fact]

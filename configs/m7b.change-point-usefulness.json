@@ -1,0 +1,202 @@
+{
+  "experimentId": "m7b-change-point-usefulness",
+  "experimentName": "M7b Change-Point / Segmentation Usefulness Mapping",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "outputDirectory": "artifacts/m7b",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 1,
+    "samplesPerWindow": 128
+  },
+  "benchmark": {
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "tasks": [
+      {
+        "name": "quiet-to-structured-regime",
+        "description": "Noise-only prefix, then a sustained OFDM-like structured regime, then noise-only suffix. Known onset and offset test whether detectors can localize the structured segment boundaries.",
+        "regimes": [
+          {
+            "id": "quiet-prefix",
+            "lengthSamples": 1536,
+            "syntheticCase": {
+              "name": "m7b-quiet-prefix",
+              "targetLabel": "quiet",
+              "sourceType": "noise-only"
+            },
+            "applyConditionSnr": false
+          },
+          {
+            "id": "structured-middle",
+            "lengthSamples": 2048,
+            "syntheticCase": {
+              "name": "m7b-quiet-structured-middle",
+              "targetLabel": "structured-regime",
+              "sourceType": "ofdm-like",
+              "snrDb": -3.0,
+              "ofdmLike": {
+                "subcarrierCount": 8,
+                "samplesPerSymbol": 32,
+                "symbolSeed": 177,
+                "carrierSpacing": 0.75,
+                "amplitude": 1.0
+              }
+            }
+          },
+          {
+            "id": "quiet-suffix",
+            "lengthSamples": 1536,
+            "syntheticCase": {
+              "name": "m7b-quiet-suffix",
+              "targetLabel": "quiet",
+              "sourceType": "noise-only"
+            },
+            "applyConditionSnr": false
+          }
+        ]
+      },
+      {
+        "name": "correlated-nuisance-to-engineered-structure",
+        "description": "Correlated Gaussian nuisance, then engineered OFDM-like structure, then correlated Gaussian nuisance again. Both sides are non-iid and use the same configured SNR so the change is not intended to collapse to a simple raw-energy jump.",
+        "regimes": [
+          {
+            "id": "correlated-prefix",
+            "lengthSamples": 1536,
+            "syntheticCase": {
+              "name": "m7b-correlated-prefix",
+              "targetLabel": "correlated-nuisance",
+              "sourceType": "correlated-gaussian",
+              "snrDb": -3.0,
+              "correlatedGaussian": {
+                "innovationStandardDeviation": 1.0,
+                "arCoefficient": 0.92
+              }
+            }
+          },
+          {
+            "id": "engineered-middle",
+            "lengthSamples": 2048,
+            "syntheticCase": {
+              "name": "m7b-engineered-middle",
+              "targetLabel": "engineered-structure",
+              "sourceType": "ofdm-like",
+              "snrDb": -3.0,
+              "ofdmLike": {
+                "subcarrierCount": 8,
+                "samplesPerSymbol": 32,
+                "symbolSeed": 177,
+                "carrierSpacing": 0.75,
+                "amplitude": 1.0
+              }
+            }
+          },
+          {
+            "id": "correlated-suffix",
+            "lengthSamples": 1536,
+            "syntheticCase": {
+              "name": "m7b-correlated-suffix",
+              "targetLabel": "correlated-nuisance",
+              "sourceType": "correlated-gaussian",
+              "snrDb": -3.0,
+              "correlatedGaussian": {
+                "innovationStandardDeviation": 1.0,
+                "arCoefficient": 0.92
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "structure-to-structure-regime-shift",
+        "description": "One OFDM-like structured regime transitions into a second OFDM-like regime with a different subcarrier organization and symbol timing. This tests structure-to-structure change detection rather than noise-vs-signal separation.",
+        "regimes": [
+          {
+            "id": "structure-a",
+            "lengthSamples": 2560,
+            "syntheticCase": {
+              "name": "m7b-structure-a",
+              "targetLabel": "structure-a",
+              "sourceType": "ofdm-like",
+              "snrDb": -3.0,
+              "ofdmLike": {
+                "subcarrierCount": 8,
+                "samplesPerSymbol": 32,
+                "symbolSeed": 177,
+                "carrierSpacing": 0.75,
+                "amplitude": 1.0
+              }
+            }
+          },
+          {
+            "id": "structure-b",
+            "lengthSamples": 2560,
+            "syntheticCase": {
+              "name": "m7b-structure-b",
+              "targetLabel": "structure-b",
+              "sourceType": "ofdm-like",
+              "snrDb": -3.0,
+              "ofdmLike": {
+                "subcarrierCount": 5,
+                "samplesPerSymbol": 40,
+                "symbolSeed": 278,
+                "carrierSpacing": 0.45,
+                "amplitude": 1.0
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "evaluation": {
+    "detectors": [
+      {
+        "name": "ed",
+        "threshold": 1.0,
+        "mode": "average-energy"
+      },
+      {
+        "name": "cav",
+        "threshold": 0.0,
+        "mode": "lag-1-absolute-autocovariance"
+      },
+      {
+        "name": "lzmsa-rms-normalized-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "rms-normalized-mean-compressed-byte-value"
+      }
+    ],
+    "snrDbValues": [
+      -9.0,
+      -3.0,
+      0.0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "streamCountPerCondition": 8,
+    "windowStrideFraction": 0.5,
+    "boundaryToleranceWindowMultiple": 1.0,
+    "minPeakSpacingWindowMultiple": 1.0,
+    "peakThresholdMadMultiplier": 1.5,
+    "maxBoundaryProposals": 3
+  },
+  "manifestMetadata": {
+    "notes": "M7b compact stream-level change-point usefulness mapping for ED, CAV, and RMS-normalized mean compressed byte value on three deterministic synthetic transition families.",
+    "versionTag": "m7b",
+    "tags": {
+      "milestone": "m7b",
+      "experimentType": "change-point-usefulness-mapping",
+      "detectorPanel": "ed-cav-rms-normalized-mean",
+      "retentionIntent": "compact-summary-first"
+    }
+  },
+  "artifactRetentionMode": "milestone"
+}

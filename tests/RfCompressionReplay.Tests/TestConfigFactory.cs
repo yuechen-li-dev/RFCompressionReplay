@@ -120,6 +120,16 @@ internal static class TestConfigFactory
         ];
     }
 
+    public static IReadOnlyList<DetectorConfig> CreateM7BDetectors()
+    {
+        return
+        [
+            new DetectorConfig(DetectorCatalog.EnergyDetectorName, 1d, DetectorCatalog.EnergyDetectorMode),
+            new DetectorConfig(DetectorCatalog.CovarianceAbsoluteValueDetectorName, 0d, DetectorCatalog.CovarianceAbsoluteValueDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName, 128d, DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorMode),
+        ];
+    }
+
     public static IReadOnlyList<DetectorConfig> CreateM5A2CompressionDetectors()
     {
         return
@@ -416,6 +426,39 @@ internal static class TestConfigFactory
             ArtifactRetentionMode: artifactRetentionMode);
     }
 
+    public static M7BChangePointConfig CreateM7BChangePointConfig(
+        string experimentId,
+        IReadOnlyList<int>? seedPanel = null,
+        IReadOnlyList<M7BStreamTaskConfig>? tasks = null,
+        IReadOnlyList<DetectorConfig>? detectors = null,
+        IReadOnlyList<double>? snrDbValues = null,
+        IReadOnlyList<int>? windowLengths = null,
+        int streamCountPerCondition = 4,
+        string artifactRetentionMode = ArtifactRetentionModes.Milestone)
+    {
+        return new M7BChangePointConfig(
+            ExperimentId: experimentId,
+            ExperimentName: "M7b Change-Point Test",
+            SeedPanel: seedPanel ?? [86420, 97531, 24680],
+            OutputDirectory: "artifacts",
+            Scenario: new ScenarioConfig(ExperimentConfigValidator.SyntheticBenchmarkScenarioName, 1, 128),
+            Benchmark: new M7BStreamBenchmarkConfig(
+                new GaussianNoiseConfig(0d, 1d),
+                tasks ?? [CreateQuietToStructuredStreamTask(), CreateCorrelatedNuisanceToStructuredTask(), CreateStructureShiftTask()]),
+            Evaluation: new M7BChangePointEvaluationConfig(
+                Detectors: detectors ?? CreateM7BDetectors(),
+                SnrDbValues: snrDbValues ?? [-9d, -3d, 0d],
+                WindowLengths: windowLengths ?? [64, 128],
+                StreamCountPerCondition: streamCountPerCondition,
+                MaxBoundaryProposals: 3,
+                WindowStrideFraction: 0.5d,
+                BoundaryToleranceWindowMultiple: 1.0d,
+                MinPeakSpacingWindowMultiple: 1.0d,
+                PeakThresholdMadMultiplier: 1.5d),
+            ManifestMetadata: new ManifestMetadataConfig("note", "m7b", new Dictionary<string, string> { ["suite"] = "tests", ["milestone"] = "m7b" }),
+            ArtifactRetentionMode: artifactRetentionMode);
+    }
+
     public static BenchmarkTaskConfig CreateOfdmTask()
     {
         return new BenchmarkTaskConfig(
@@ -477,6 +520,50 @@ internal static class TestConfigFactory
             Description: "Positive class is an OFDM-like engineered structured process mixed to the configured SNR. Negative class is a correlated Gaussian nuisance process mixed to the same configured SNR so both classes are explicitly matched in nominal signal power and energy alone is intentionally weak.",
             PositiveCase: CreateOfdmLikeCase(-3d, symbolSeed: 177) with { Name = "equal-energy-engineered-structure", TargetLabel = "engineered-structure" },
             NegativeCase: CreateCorrelatedGaussianCase(-3d) with { Name = "equal-energy-natural-correlation", TargetLabel = "natural-correlation" });
+    }
+
+    public static M7BStreamTaskConfig CreateQuietToStructuredStreamTask()
+    {
+        return new M7BStreamTaskConfig(
+            BenchmarkTaskCatalog.QuietToStructuredRegime,
+            "Noise-only, then sustained OFDM-like structure, then noise-only again. Onset and offset are both known.",
+            [
+                new M7BRegimeConfig("quiet-prefix", 1536, CreateNoiseOnlyCase(), ApplyConditionSnr: false),
+                new M7BRegimeConfig("structured-middle", 2048, CreateOfdmLikeCase(-3d) with { Name = "m7b-quiet-structured-middle", TargetLabel = "structured-regime" }),
+                new M7BRegimeConfig("quiet-suffix", 1536, CreateNoiseOnlyCase() with { Name = "m7b-quiet-suffix" }, ApplyConditionSnr: false),
+            ]);
+    }
+
+    public static M7BStreamTaskConfig CreateCorrelatedNuisanceToStructuredTask()
+    {
+        return new M7BStreamTaskConfig(
+            BenchmarkTaskCatalog.CorrelatedNuisanceToEngineeredStructure,
+            "Correlated Gaussian nuisance, then engineered OFDM-like structure, then correlated Gaussian nuisance again. Both sides are non-iid and use the same configured SNR so the transition is not just a raw energy jump.",
+            [
+                new M7BRegimeConfig("correlated-prefix", 1536, CreateCorrelatedGaussianCase(-3d) with { Name = "m7b-correlated-prefix", TargetLabel = "correlated-nuisance" }),
+                new M7BRegimeConfig("engineered-middle", 2048, CreateOfdmLikeCase(-3d, symbolSeed: 177) with { Name = "m7b-engineered-middle", TargetLabel = "engineered-structure" }),
+                new M7BRegimeConfig("correlated-suffix", 1536, CreateCorrelatedGaussianCase(-3d) with { Name = "m7b-correlated-suffix", TargetLabel = "correlated-nuisance" }),
+            ]);
+    }
+
+    public static M7BStreamTaskConfig CreateStructureShiftTask()
+    {
+        return new M7BStreamTaskConfig(
+            BenchmarkTaskCatalog.StructureToStructureRegimeShift,
+            "One OFDM-like structured regime transitions into a second OFDM-like regime with a different subcarrier organization and symbol timing. This tests structure-to-structure change detection rather than noise-vs-signal separation.",
+            [
+                new M7BRegimeConfig("structure-a", 2560, CreateOfdmLikeCase(-3d, symbolSeed: 177) with { Name = "m7b-structure-a", TargetLabel = "structure-a" }),
+                new M7BRegimeConfig(
+                    "structure-b",
+                    2560,
+                    new SyntheticCaseConfig(
+                        Name: "m7b-structure-b",
+                        TargetLabel: "structure-b",
+                        SourceType: ExperimentConfigValidator.OfdmLikeSourceType,
+                        SnrDb: -3d,
+                        GaussianEmitter: null,
+                        OfdmLike: new OfdmLikeSignalConfig(5, 40, 278, 0.45d, 1d))),
+            ]);
     }
 
     public static SyntheticCaseConfig CreateNoiseOnlyCase()

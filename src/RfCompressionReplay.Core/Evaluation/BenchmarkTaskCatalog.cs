@@ -9,6 +9,9 @@ public static class BenchmarkTaskCatalog
     public const string EqualEnergyStructuredVsUnstructured = "equal-energy-structured-vs-unstructured";
     public const string EngineeredStructureVsNaturalCorrelation = "engineered-structure-vs-natural-correlation";
     public const string EqualEnergyEngineeredStructureVsNaturalCorrelation = "equal-energy-engineered-structure-vs-natural-correlation";
+    public const string QuietToStructuredRegime = "quiet-to-structured-regime";
+    public const string CorrelatedNuisanceToEngineeredStructure = "correlated-nuisance-to-engineered-structure";
+    public const string StructureToStructureRegimeShift = "structure-to-structure-regime-shift";
 
     public static IReadOnlyList<string> SupportedTasks { get; } =
     [
@@ -19,6 +22,9 @@ public static class BenchmarkTaskCatalog
         EqualEnergyStructuredVsUnstructured,
         EngineeredStructureVsNaturalCorrelation,
         EqualEnergyEngineeredStructureVsNaturalCorrelation,
+        QuietToStructuredRegime,
+        CorrelatedNuisanceToEngineeredStructure,
+        StructureToStructureRegimeShift,
     ];
 
     public static string SupportedTasksDisplay => string.Join(", ", SupportedTasks);

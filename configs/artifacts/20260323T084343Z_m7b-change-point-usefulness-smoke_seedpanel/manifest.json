@@ -1,0 +1,72 @@
+{
+  "experimentId": "m7b-change-point-usefulness-smoke",
+  "experimentName": "M7b Change-Point / Segmentation Usefulness Mapping Smoke",
+  "utcTimestamp": "2026-03-23T08:43:43.3279696+00:00",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "gitCommit": "4de0a9de01333036910f338be0556f92ec47d1dc",
+  "environment": {
+    "machineName": "5696d144f6b7",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../m7b.change-point-usefulness-smoke.json",
+  "scenarioName": "synthetic-benchmark",
+  "streamCountPerCondition": 2,
+  "artifactPaths": [
+    "manifest.json",
+    "m7b_boundary_comparison.csv",
+    "m7b_task_summary.csv",
+    "m7b_findings.md"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "Tiny M7b smoke config for compact change-point artifact generation.",
+    "versionTag": "m7b-smoke",
+    "tags": {
+      "milestone": "m7b",
+      "experimentType": "change-point-usefulness-mapping",
+      "detectorPanel": "ed-cav-rms-normalized-mean",
+      "retentionIntent": "compact-summary-first"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "quiet-to-structured-regime",
+      "correlated-nuisance-to-engineered-structure",
+      "structure-to-structure-regime-shift"
+    ],
+    "detectorNames": [
+      "ed",
+      "cav",
+      "lzmsa-rms-normalized-mean-compressed-byte-value"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 2
+  },
+  "retention": {
+    "mode": "smoke",
+    "omittedArtifactKinds": [
+      "summary.json",
+      "summary.csv",
+      "trials.csv",
+      "roc_points.csv",
+      "roc_points_compact.csv"
+    ],
+    "regenerationNote": "M7b retains only the manifest, compact boundary comparison CSV, compact task summary CSV, and findings markdown by default. Re-run the same config locally with temporary instrumentation if you need raw trace dumps for audit work."
+  }
+}
