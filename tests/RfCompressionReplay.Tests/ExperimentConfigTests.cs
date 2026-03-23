@@ -152,6 +152,39 @@ public sealed class ExperimentConfigTests
             config.Evaluation.Detectors.Select(detector => detector.Name).ToArray());
     }
 
+    [Theory]
+    [InlineData("m6a2.complementary-value-usefulness.json", ArtifactRetentionModes.Milestone, 48)]
+    [InlineData("m6a2.complementary-value-usefulness-smoke.json", ArtifactRetentionModes.Smoke, 6)]
+    public void DeserializesM6A2Configs(string configFileName, string expectedRetentionMode, int expectedTrialCountPerCondition)
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = M6A2ComplementaryValueConfigJson.Load(path);
+
+        Assert.Equal(expectedRetentionMode, config.ArtifactRetentionMode);
+        Assert.Equal(expectedTrialCountPerCondition, config.Evaluation.TrialCountPerCondition);
+        Assert.Equal([86420, 97531, 24680], config.SeedPanel);
+        Assert.Equal(
+            [
+                BenchmarkTaskCatalog.EngineeredStructureVsNaturalCorrelation,
+                BenchmarkTaskCatalog.EqualEnergyEngineeredStructureVsNaturalCorrelation,
+            ],
+            config.Evaluation.Tasks.Select(task => task.Name).ToArray());
+        Assert.Equal(
+            [
+                DetectorCatalog.EnergyDetectorName,
+                DetectorCatalog.CovarianceAbsoluteValueDetectorName,
+                DetectorCatalog.LzmsaPaperDetectorName,
+                DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName,
+            ],
+            config.Evaluation.Detectors.Select(detector => detector.Name).ToArray());
+        Assert.Equal(
+            [
+                M6A2ComplementaryValueConfigValidator.BundleAId,
+                M6A2ComplementaryValueConfigValidator.BundleBId,
+            ],
+            config.Bundles.Select(bundle => bundle.Id).ToArray());
+    }
+
     [Fact]
     public void ValidatorReturnsClearMessagesForInvalidSyntheticBenchmarkConfig()
     {
@@ -360,6 +393,26 @@ public sealed class ExperimentConfigTests
 
         Assert.Contains("M6a1 usefulness mapping requires the exact three-task suite in order: structured-burst-vs-noise-only, colored-nuisance-vs-white-noise, equal-energy-structured-vs-unstructured.", errors);
         Assert.Contains("M6a1 usefulness mapping requires the focused detector panel exactly: ed, cav, lzmsa-paper, lzmsa-rms-normalized-mean-compressed-byte-value.", errors);
+    }
+
+    [Fact]
+    public void M6A2ValidatorRejectsWrongTaskBundleAndDetectorPanel()
+    {
+        var config = TestConfigFactory.CreateM6A2ComplementaryValueConfig(
+            "m6a2-bad",
+            tasks: [TestConfigFactory.CreateStructuredBurstTask(), TestConfigFactory.CreateEqualEnergyTask()],
+            detectors: TestConfigFactory.CreateM5A1CompressionDetectors(),
+            bundles:
+            [
+                new FeatureBundleConfig("wrong-a", "wrong", [DetectorCatalog.EnergyDetectorName]),
+                new FeatureBundleConfig("wrong-b", "wrong", [DetectorCatalog.CovarianceAbsoluteValueDetectorName]),
+            ]);
+
+        var errors = M6A2ComplementaryValueConfigValidator.Validate(config);
+
+        Assert.Contains("M6a2 complementary-value usefulness mapping requires the focused two-task suite in order: engineered-structure-vs-natural-correlation, equal-energy-engineered-structure-vs-natural-correlation.", errors);
+        Assert.Contains("M6a2 complementary-value usefulness mapping requires the focused detector panel exactly: ed, cav, lzmsa-paper, lzmsa-rms-normalized-mean-compressed-byte-value.", errors);
+        Assert.Contains("M6a2 complementary-value usefulness mapping requires exactly two bundles in order: bundle-a-ed-cav, bundle-b-ed-cav-rms-normalized-mean.", errors);
     }
 
     [Fact]

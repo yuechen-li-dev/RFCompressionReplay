@@ -89,6 +89,24 @@ public sealed class SyntheticBenchmarkTests
     }
 
     [Fact]
+    public void EqualEnergyEngineeredVsNaturalCorrelationTaskKeepsPositiveAndNegativeAveragePowerClose()
+    {
+        var builder = CreateStreamBuilder();
+        var benchmark = new SyntheticBenchmarkConfig(
+            BaseStreamLength: 16_384,
+            Noise: new GaussianNoiseConfig(0d, 1d),
+            Cases: Array.Empty<SyntheticCaseConfig>());
+        var task = TestConfigFactory.CreateEqualEnergyEngineeredStructureVsNaturalCorrelationTask();
+
+        var positiveStream = builder.BuildStream(53, 1, benchmark, task.PositiveCase with { SnrDb = -3d });
+        var negativeStream = builder.BuildStream(53, 0, benchmark, task.NegativeCase with { SnrDb = -3d });
+        var positivePower = SnrMixer.CalculateAveragePower(positiveStream);
+        var negativePower = SnrMixer.CalculateAveragePower(negativeStream);
+
+        Assert.InRange(Math.Abs(positivePower - negativePower), 0d, 0.15d);
+    }
+
+    [Fact]
     public void SnrMixerApproximatesRequestedSnrForFiniteStreams()
     {
         var noiseGenerator = new GaussianNoiseGenerator();

@@ -105,6 +105,21 @@ internal static class TestConfigFactory
         ];
     }
 
+    public static IReadOnlyList<FeatureBundleConfig> CreateM6A2Bundles()
+    {
+        return
+        [
+            new FeatureBundleConfig(
+                M6A2ComplementaryValueConfigValidator.BundleAId,
+                "Reference bundle using only ED and CAV.",
+                [DetectorCatalog.EnergyDetectorName, DetectorCatalog.CovarianceAbsoluteValueDetectorName]),
+            new FeatureBundleConfig(
+                M6A2ComplementaryValueConfigValidator.BundleBId,
+                "Reference ED+CAV bundle plus RMS-normalized mean compressed byte value.",
+                [DetectorCatalog.EnergyDetectorName, DetectorCatalog.CovarianceAbsoluteValueDetectorName, DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName]),
+        ];
+    }
+
     public static IReadOnlyList<DetectorConfig> CreateM5A2CompressionDetectors()
     {
         return
@@ -366,6 +381,41 @@ internal static class TestConfigFactory
             ArtifactRetentionMode: artifactRetentionMode);
     }
 
+    public static M6A2ComplementaryValueConfig CreateM6A2ComplementaryValueConfig(
+        string experimentId,
+        IReadOnlyList<int>? seedPanel = null,
+        IReadOnlyList<BenchmarkTaskConfig>? tasks = null,
+        IReadOnlyList<DetectorConfig>? detectors = null,
+        IReadOnlyList<FeatureBundleConfig>? bundles = null,
+        IReadOnlyList<double>? snrDbValues = null,
+        IReadOnlyList<int>? windowLengths = null,
+        int trialCountPerCondition = 12,
+        string artifactRetentionMode = ArtifactRetentionModes.Milestone)
+    {
+        return new M6A2ComplementaryValueConfig(
+            ExperimentId: experimentId,
+            ExperimentName: "M6a2 Complementary Value Test",
+            SeedPanel: seedPanel ?? [86420, 97531, 24680],
+            OutputDirectory: "artifacts",
+            Scenario: new ScenarioConfig(ExperimentConfigValidator.SyntheticBenchmarkScenarioName, 2, 128),
+            TrialCount: 4,
+            Detector: new DetectorConfig(DetectorCatalog.EnergyDetectorName, 1d, DetectorCatalog.EnergyDetectorMode),
+            Signal: null,
+            Benchmark: new SyntheticBenchmarkConfig(
+                BaseStreamLength: 4096,
+                Noise: new GaussianNoiseConfig(0d, 1d),
+                Cases: Array.Empty<SyntheticCaseConfig>()),
+            Evaluation: new EvaluationConfig(
+                Tasks: tasks ?? [CreateEngineeredStructureVsNaturalCorrelationTask(), CreateEqualEnergyEngineeredStructureVsNaturalCorrelationTask()],
+                Detectors: detectors ?? CreateM6A1Detectors(),
+                SnrDbValues: snrDbValues ?? [-9d, -3d, 0d],
+                WindowLengths: windowLengths ?? [64, 128],
+                TrialCountPerCondition: trialCountPerCondition),
+            Bundles: bundles ?? CreateM6A2Bundles(),
+            ManifestMetadata: new ManifestMetadataConfig("note", "m6a2", new Dictionary<string, string> { ["suite"] = "tests", ["milestone"] = "m6a2" }),
+            ArtifactRetentionMode: artifactRetentionMode);
+    }
+
     public static BenchmarkTaskConfig CreateOfdmTask()
     {
         return new BenchmarkTaskConfig(
@@ -409,6 +459,24 @@ internal static class TestConfigFactory
             Description: "Positive class is an OFDM-like structured process mixed to the configured SNR. Negative class is a Gaussian emitter mixed to the same configured SNR so energy alone is intentionally weak.",
             PositiveCase: CreateOfdmLikeCase(-3d) with { Name = "equal-energy-structured" },
             NegativeCase: CreateGaussianEmitterCase(-3d) with { Name = "equal-energy-unstructured", TargetLabel = "less-structured" });
+    }
+
+    public static BenchmarkTaskConfig CreateEngineeredStructureVsNaturalCorrelationTask()
+    {
+        return new BenchmarkTaskConfig(
+            Name: BenchmarkTaskCatalog.EngineeredStructureVsNaturalCorrelation,
+            Description: "Positive class is a weak organized burst-ofdm-like process mixed into Gaussian noise at the configured SNR. Negative class is a non-iid correlated Gaussian nuisance process mixed to the same SNR, so both classes retain second-order structure.",
+            PositiveCase: CreateBurstOfdmLikeCase(-3d) with { Name = "engineered-structured-burst", TargetLabel = "engineered-structure" },
+            NegativeCase: CreateCorrelatedGaussianCase(-3d) with { Name = "natural-correlated-nuisance", TargetLabel = "natural-correlation" });
+    }
+
+    public static BenchmarkTaskConfig CreateEqualEnergyEngineeredStructureVsNaturalCorrelationTask()
+    {
+        return new BenchmarkTaskConfig(
+            Name: BenchmarkTaskCatalog.EqualEnergyEngineeredStructureVsNaturalCorrelation,
+            Description: "Positive class is an OFDM-like engineered structured process mixed to the configured SNR. Negative class is a correlated Gaussian nuisance process mixed to the same configured SNR so both classes are explicitly matched in nominal signal power and energy alone is intentionally weak.",
+            PositiveCase: CreateOfdmLikeCase(-3d, symbolSeed: 177) with { Name = "equal-energy-engineered-structure", TargetLabel = "engineered-structure" },
+            NegativeCase: CreateCorrelatedGaussianCase(-3d) with { Name = "equal-energy-natural-correlation", TargetLabel = "natural-correlation" });
     }
 
     public static SyntheticCaseConfig CreateNoiseOnlyCase()

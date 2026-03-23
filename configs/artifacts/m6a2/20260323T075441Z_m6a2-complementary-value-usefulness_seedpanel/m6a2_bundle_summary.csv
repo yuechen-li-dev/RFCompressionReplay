@@ -1,0 +1,5 @@
+﻿taskFamilyId,bundleId,medianAuc,maxAuc,bestOrTiedBestConditionCount,conditionCount,conditionWinsOverBundleA,medianImprovementVsBundleA,maxImprovementVsBundleA,comparisonNote
+engineered-structure-vs-natural-correlation,bundle-b-ed-cav-rms-normalized-mean,0.562066,0.736111,10,18,10,0.004991,0.243924,RMS-normalized mean provided a modest median lift over ED+CAV alone.
+engineered-structure-vs-natural-correlation,bundle-a-ed-cav,0.551216,0.791233,8,18,0,0.000000,0.000000,Reference ED+CAV bundle.
+equal-energy-engineered-structure-vs-natural-correlation,bundle-a-ed-cav,0.603082,0.833333,10,18,0,0.000000,0.000000,Reference ED+CAV bundle.
+equal-energy-engineered-structure-vs-natural-correlation,bundle-b-ed-cav-rms-normalized-mean,0.564671,0.786024,8,18,8,-0.004775,0.121962,"RMS-normalized mean helped in some conditions, but not on the median condition."

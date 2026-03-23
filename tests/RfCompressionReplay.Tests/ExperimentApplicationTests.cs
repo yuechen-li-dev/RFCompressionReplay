@@ -1,6 +1,7 @@
 using RfCompressionReplay.Core.Artifacts;
 using RfCompressionReplay.Core.Config;
 using RfCompressionReplay.Core.Detectors;
+using RfCompressionReplay.Core.Evaluation;
 using RfCompressionReplay.Core.Execution;
 
 namespace RfCompressionReplay.Tests;
@@ -499,6 +500,50 @@ public sealed class ExperimentApplicationTests
             Assert.Contains("taskFamilyId,detectorId,medianAuc,maxAuc", File.ReadAllText(Path.Combine(runDirectory, "m6a1_task_summary.csv")));
             Assert.Contains("M6a1 Usefulness-Mapping Findings", File.ReadAllText(Path.Combine(runDirectory, "m6a1_findings.md")));
             Assert.False(Directory.Exists(Path.Combine(runDirectory, ".m6a1-temp")));
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
+    [Fact]
+    public void GeneratesM6A2CompactArtifactsForComplementaryValueRun()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+
+        try
+        {
+            var config = TestConfigFactory.CreateM6A2ComplementaryValueConfig(
+                experimentId: "m6a2-test",
+                trialCountPerCondition: 4,
+                artifactRetentionMode: ArtifactRetentionModes.Smoke) with
+            {
+                OutputDirectory = tempRoot,
+                ExperimentName = "M6a2 Complementary Value Test",
+                ManifestMetadata = new ManifestMetadataConfig(
+                    "Test M6a2 complementary value usefulness run.",
+                    "m6a2-test",
+                    new Dictionary<string, string> { ["milestone"] = "m6a2", ["experimentType"] = "complementary-value-usefulness-mapping" })
+            };
+
+            var baseApplication = CreateApplication("2026-03-23T08:06:07Z");
+            var complementaryValueApplication = new M6A2ComplementaryValueExperimentApplication(
+                new FixedRunClock(DateTimeOffset.Parse("2026-03-23T08:06:07Z")),
+                baseApplication,
+                new EnvironmentSummaryProvider(),
+                new GitCommitResolver(),
+                new TinyLogisticRegressionBundleEvaluator(new RocAucCalculator()));
+            var runDirectory = complementaryValueApplication.Run(config, Path.Combine(tempRoot, "config.json"), "/does/not/exist");
+
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m6a2_auc_comparison.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m6a2_bundle_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m6a2_findings.md")));
+            Assert.Contains("taskFamilyId,seed,snrDb,windowLength,detectorId,auc", File.ReadAllText(Path.Combine(runDirectory, "m6a2_auc_comparison.csv")));
+            Assert.Contains("taskFamilyId,bundleId,medianAuc,maxAuc", File.ReadAllText(Path.Combine(runDirectory, "m6a2_bundle_summary.csv")));
+            Assert.Contains("M6a2 Complementary-Value Usefulness Findings", File.ReadAllText(Path.Combine(runDirectory, "m6a2_findings.md")));
+            Assert.False(Directory.Exists(Path.Combine(runDirectory, ".m6a2-temp")));
         }
         finally
         {

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using RfCompressionReplay.Core.Artifacts;
 using RfCompressionReplay.Core.Config;
+using RfCompressionReplay.Core.Evaluation;
 using RfCompressionReplay.Core.Execution;
 
 if (args.Length != 1)
@@ -30,6 +31,22 @@ try
         artifactWriter,
         environmentSummaryProvider,
         gitCommitResolver);
+    var bundleEvaluator = new TinyLogisticRegressionBundleEvaluator(new RocAucCalculator());
+
+    if (IsM6A2ComplementaryValueConfig(fullConfigPath))
+    {
+        var config = M6A2ComplementaryValueConfigJson.Load(fullConfigPath);
+        var complementaryValueApplication = new M6A2ComplementaryValueExperimentApplication(
+            runClock,
+            application,
+            environmentSummaryProvider,
+            gitCommitResolver,
+            bundleEvaluator);
+        var runDirectory = complementaryValueApplication.Run(config, fullConfigPath, ResolveRepositoryRoot());
+        Console.WriteLine($"Run completed: {config.ExperimentId} ({config.Scenario.Name})");
+        Console.WriteLine($"Artifacts: {runDirectory}");
+        return 0;
+    }
 
     if (IsM6A1UsefulnessConfig(fullConfigPath))
     {
@@ -117,8 +134,15 @@ static bool IsM5A3StabilityConfig(string configPath)
 {
     using var document = JsonDocument.Parse(File.ReadAllText(configPath));
     return document.RootElement.TryGetProperty("seedPanel", out _)
+        && !IsM6A2ComplementaryValueDocument(document.RootElement)
         && !IsM6A1UsefulnessDocument(document.RootElement)
         && !document.RootElement.TryGetProperty("perturbations", out _);
+}
+
+static bool IsM6A2ComplementaryValueConfig(string configPath)
+{
+    using var document = JsonDocument.Parse(File.ReadAllText(configPath));
+    return IsM6A2ComplementaryValueDocument(document.RootElement);
 }
 
 static bool IsM6A1UsefulnessConfig(string configPath)
@@ -190,6 +214,28 @@ static bool IsM6A1UsefulnessDocument(JsonElement rootElement)
         && taskNames.Contains("structured-burst-vs-noise-only", StringComparer.Ordinal)
         && taskNames.Contains("colored-nuisance-vs-white-noise", StringComparer.Ordinal)
         && taskNames.Contains("equal-energy-structured-vs-unstructured", StringComparer.Ordinal);
+}
+
+static bool IsM6A2ComplementaryValueDocument(JsonElement rootElement)
+{
+    if (!rootElement.TryGetProperty("seedPanel", out _)
+        || !rootElement.TryGetProperty("bundles", out _)
+        || !rootElement.TryGetProperty("evaluation", out var evaluation)
+        || !evaluation.TryGetProperty("tasks", out var tasks)
+        || tasks.ValueKind != JsonValueKind.Array)
+    {
+        return false;
+    }
+
+    var taskNames = tasks.EnumerateArray()
+        .Where(task => task.TryGetProperty("name", out _))
+        .Select(task => task.GetProperty("name").GetString())
+        .Where(name => !string.IsNullOrWhiteSpace(name))
+        .ToArray();
+
+    return taskNames.Length == 2
+        && taskNames.Contains("engineered-structure-vs-natural-correlation", StringComparer.Ordinal)
+        && taskNames.Contains("equal-energy-engineered-structure-vs-natural-correlation", StringComparer.Ordinal);
 }
 
 static string ResolveRepositoryRoot()
