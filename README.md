@@ -1,8 +1,31 @@
 # RfCompressionReplay
 
-`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, M5b3 refined the scale side further with an explicit scale panel plus one simple normalization comparison, M5f freezes that arc into a concise repository-native findings package, M6a1 adds the first compact usefulness-mapping pass over a slightly more application-oriented synthetic task suite, and M6a2 adds the second usefulness-mapping pass focused on complementary value rather than detector replacement.
+`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, M5b3 refined the scale side further with an explicit scale panel plus one simple normalization comparison, M5f freezes that arc into a concise repository-native findings package, M6a1 adds the first compact usefulness-mapping pass over a slightly more application-oriented synthetic task suite, M6a2 adds the second usefulness-mapping pass focused on complementary value rather than detector replacement, and M7b adds a compact stream-level change-point / segmentation usefulness pass over three deterministic synthetic transition families.
 
-Current status: within the current synthetic usefulness-mapping suites, compression-derived features did not become strong replacement detectors for ED/CAV. The checked-in M5 arc still supports per-window RMS-normalized mean compressed byte value as the strongest practical simple proxy in this detector family, and the M6 freeze now points to `docs/M6_FINDINGS.md` plus the compact M6a1/M6a2 artifacts under `configs/artifacts/m6a1/` and `configs/artifacts/m6a2/`. The current best framing is complementary value rather than detector replacement: on the fairer M6a2 suite the standalone compression-derived pair became more competitive, but adding RMS-normalized mean to `[ED, CAV]` produced only a modest median gain on one task family and a slight median loss on the equal-energy family. This remains synthetic-only lab work, not a deployment claim.
+Current status: within the current synthetic usefulness-mapping suites, compression-derived features did not become strong replacement detectors for ED/CAV. The checked-in M5 arc still supports per-window RMS-normalized mean compressed byte value as the strongest practical simple proxy in this detector family, and the M6 freeze now points to `docs/M6_FINDINGS.md` plus the compact M6a1/M6a2 artifacts under `configs/artifacts/m6a1/` and `configs/artifacts/m6a2/`. M7b extends that question to stream-level regime transitions rather than static windows: in the checked-in synthetic stream suite the RMS-normalized mean feature remained secondary overall, but it produced a small amount of distinct boundary behavior on the correlated-nuisance and structure-shift families, which is a better fit for a cautious segmentation-helper framing than for detector replacement. This remains synthetic-only lab work, not a deployment claim.
+
+
+## What M7b Adds
+
+- A compact multi-seed **stream-level** change-point / segmentation usefulness runner for exactly three synthetic transition families:
+  - `quiet-to-structured-regime`
+  - `correlated-nuisance-to-engineered-structure`
+  - `structure-to-structure-regime-shift`
+- A focused detector panel for this milestone:
+  - `ed`
+  - `cav`
+  - `lzmsa-rms-normalized-mean-compressed-byte-value`
+- A tiny explicit and auditable boundary procedure shared across detectors:
+  - sliding-window score traces
+  - absolute adjacent-window score differences
+  - local-peak proposals above a robust median-plus-MAD threshold
+  - minimum-spacing filtering
+- Compact summary-first M7b artifacts:
+  - `manifest.json`
+  - `m7b_boundary_comparison.csv`
+  - `m7b_task_summary.csv`
+  - `m7b_findings.md`
+- Default top-level retention for M7b keeps only those compact outputs for the checked-in run rather than large per-window trace dumps.
 
 ## What M6a1 Adds
 
@@ -258,9 +281,12 @@ If a same-second rerun would collide, the harness appends a readable suffix such
   - inspect `m4a_auc_comparison.csv`, `m4a_findings.md`, and `manifest.json`
 - M4b findings freeze: `docs/M4B_FINDINGS.md`
 - M5 findings freeze: `docs/M5_FINDINGS.md`
-  - compact status of the full M5a1 → M5b3 mechanism arc, including current supported conclusion, non-conclusions, open question, and direct links to the compact milestone artifacts
 - M6 findings freeze: `docs/M6_FINDINGS.md`
   - compact status of the full M6a1 → M6a2 usefulness-mapping arc, including supported conclusion, non-conclusions, open question, and direct links to the compact milestone artifacts
+- M7b method note: `docs/M7B_CHANGE_POINT_USEFULNESS_MAPPING.md`
+- M7b change-point artifacts: `configs/artifacts/m7b/20260323T084412Z_m7b-change-point-usefulness_seedpanel/`
+  - inspect `m7b_boundary_comparison.csv`, `m7b_task_summary.csv`, `m7b_findings.md`, and `manifest.json`
+  - compact stream-level read for the checked-in M7b transition suite, with concise boundary metrics and findings
 - M5a1 checked-in artifacts: `configs/artifacts/m5a1/20260322T235141Z_m5a1-compressed-stream-decomposition_seed13579/`
   - inspect `m5a1_auc_comparison.csv`, `m5a1_delta_summary.csv`, `m5a1_findings.md`, and `manifest.json`
 - M5a2 checked-in artifacts: `configs/artifacts/m5a2/20260323T014446Z_m5a2r-compressed-stream-decomposition_seed86420/`

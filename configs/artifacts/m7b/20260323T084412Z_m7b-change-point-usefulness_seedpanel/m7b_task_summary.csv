@@ -1,0 +1,10 @@
+﻿taskFamilyId,detectorId,medianOnsetHitRate,medianOffsetHitRate,medianOnsetLocalizationError,medianOffsetLocalizationError,medianFalsePositiveCount,bestOrTiedBestConditionCount,distinctHitVsBestBaselineConditionCount,comparisonNote
+correlated-nuisance-to-engineered-structure,cav,0.125000,0.125000,64.000000,64.000000,3.000000,7,0,"usable, but not uniformly dominant once localization and false positives are included."
+correlated-nuisance-to-engineered-structure,lzmsa-rms-normalized-mean-compressed-byte-value,0.125000,0.125000,64.000000,32.000000,3.000000,12,2,"secondary overall, but it contributed distinct onset hits in 2 condition(s) where the best baseline missed."
+correlated-nuisance-to-engineered-structure,ed,0.000000,0.125000,0.000000,64.000000,3.000000,7,0,"usable, but not uniformly dominant once localization and false positives are included."
+quiet-to-structured-regime,ed,0.375000,0.250000,32.000000,32.000000,2.000000,11,0,"usable, but not uniformly dominant once localization and false positives are included."
+quiet-to-structured-regime,cav,0.250000,0.250000,48.000000,32.000000,3.000000,11,0,"usable, but not uniformly dominant once localization and false positives are included."
+quiet-to-structured-regime,lzmsa-rms-normalized-mean-compressed-byte-value,0.125000,0.125000,64.000000,64.000000,3.000000,2,0,"mostly secondary to ED/CAV in this stream suite."
+structure-to-structure-regime-shift,cav,0.125000,,64.000000,,3.000000,5,0,"usable, but not uniformly dominant once localization and false positives are included."
+structure-to-structure-regime-shift,ed,0.125000,,48.000000,,3.000000,9,0,"usable, but not uniformly dominant once localization and false positives are included."
+structure-to-structure-regime-shift,lzmsa-rms-normalized-mean-compressed-byte-value,0.125000,,64.000000,,3.000000,9,2,"secondary overall, but it contributed distinct onset hits in 2 condition(s) where the best baseline missed."
