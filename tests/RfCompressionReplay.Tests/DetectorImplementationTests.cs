@@ -1,6 +1,7 @@
 using RfCompressionReplay.Core.Compression;
 using RfCompressionReplay.Core.Config;
 using RfCompressionReplay.Core.Detectors;
+using RfCompressionReplay.Core.Evaluation;
 using RfCompressionReplay.Core.Signals;
 
 namespace RfCompressionReplay.Tests;
@@ -94,6 +95,8 @@ public sealed class DetectorImplementationTests
             .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaCompressedLengthDetectorMode));
         var normalized = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode))
             .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode));
+        var mean = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName, 0d, DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode))
+            .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName, 0d, DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode));
 
         Assert.Equal(paper.Metrics["compressedByteSum"], paper.Score);
         Assert.Equal(compressedLength.Metrics["compressedByteCount"], compressedLength.Score);
@@ -101,9 +104,14 @@ public sealed class DetectorImplementationTests
             compressedLength.Metrics["compressedByteCount"] / normalized.Metrics["inputByteCount"],
             normalized.Score,
             precision: 12);
+        Assert.Equal(
+            paper.Metrics["compressedByteSum"] / paper.Metrics["compressedByteCount"],
+            mean.Score,
+            precision: 12);
 
         Assert.NotEqual(paper.Score, compressedLength.Score);
         Assert.NotEqual(paper.Score, normalized.Score);
+        Assert.NotEqual(paper.Score, mean.Score);
         Assert.NotEqual(compressedLength.Score, normalized.Score);
     }
 
@@ -120,12 +128,37 @@ public sealed class DetectorImplementationTests
             .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaCompressedLengthDetectorMode));
         var normalized = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode))
             .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode));
+        var mean = DetectorFactory.Create(new DetectorConfig(DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName, 0d, DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode))
+            .Evaluate(input, new DetectorConfig(DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName, 0d, DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode));
 
         foreach (var metricName in new[] { "serializedByteCount", "inputByteCount", "compressedByteCount", "compressedByteSum" })
         {
             Assert.Equal(paper.Metrics[metricName], compressedLength.Metrics[metricName]);
             Assert.Equal(paper.Metrics[metricName], normalized.Metrics[metricName]);
+            Assert.Equal(paper.Metrics[metricName], mean.Metrics[metricName]);
         }
+    }
+
+    [Fact]
+    public void LzmsaMeanCompressedByteValueUsesExplicitHigherScoreOrientation()
+    {
+        Assert.Equal(
+            ScoreOrientation.HigherScoreMorePositive,
+            DetectorCatalog.GetScoreOrientation(DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName));
+    }
+
+    [Fact]
+    public void LzmsaMeanCompressedByteValueUsesHigherScoreThresholdSemantics()
+    {
+        var input = new DetectorInput(0, [CreateWindow(Enumerable.Repeat(0.25d, 64).ToArray())]);
+        var config = new DetectorConfig(
+            Name: DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName,
+            Threshold: 100d,
+            Mode: DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode);
+
+        var result = DetectorFactory.Create(config).Evaluate(input, config);
+
+        Assert.Equal(result.Score >= config.Threshold, result.IsAboveThreshold);
     }
 
 

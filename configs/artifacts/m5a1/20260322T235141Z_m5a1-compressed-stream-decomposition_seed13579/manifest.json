@@ -1,0 +1,62 @@
+{
+  "experimentId": "m5a1-compressed-stream-decomposition",
+  "experimentName": "M5a1 Synthetic Compressed-Stream Decomposition",
+  "utcTimestamp": "2026-03-22T23:51:41.0193184+00:00",
+  "seed": 13579,
+  "gitCommit": "e2349f3482f831a552d76d19efcecc29b39d6edc",
+  "environment": {
+    "machineName": "62c02edef747",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../m5a1.compressed-stream-decomposition.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCount": 72,
+  "artifactPaths": [
+    "manifest.json",
+    "summary.json",
+    "summary.csv",
+    "trials.csv",
+    "roc_points.csv",
+    "m5a1_auc_comparison.csv",
+    "m5a1_findings.md",
+    "m5a1_delta_summary.csv"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M5a1 compressed-stream decomposition: same synthetic M4a task definitions, same serialization basis, same deterministic Brotli compression path, and same ROC/AUC evaluation, now comparing paper byte-sum against compressed length, normalized compressed length, and mean compressed byte value using the identity byte_sum = compressed_length x mean_byte_value.",
+    "versionTag": "m5a1",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5a1",
+      "experimentType": "compressed-stream-decomposition-pass-1",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m4a"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "ofdm-signal-present-vs-noise-only",
+      "gaussian-emitter-vs-noise-only"
+    ],
+    "detectorNames": [
+      "lzmsa-paper",
+      "lzmsa-compressed-length",
+      "lzmsa-normalized-compressed-length",
+      "lzmsa-mean-compressed-byte-value"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 72
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "experimentId": "m5a1-compressed-stream-decomposition",
+  "experimentName": "M5a1 Synthetic Compressed-Stream Decomposition",
+  "seed": 13579,
+  "outputDirectory": "artifacts/m5a1",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "lzmsa-paper",
+    "threshold": 25000.0,
+    "mode": "paper-byte-sum"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": []
+  },
+  "evaluation": {
+    "tasks": [
+      {
+        "name": "ofdm-signal-present-vs-noise-only",
+        "description": "Positive class is an OFDM-like synthetic signal mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "ofdm-like-signal",
+          "targetLabel": "signal-present",
+          "sourceType": "ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": {
+            "subcarrierCount": 8,
+            "samplesPerSymbol": 32,
+            "symbolSeed": 77,
+            "carrierSpacing": 0.75,
+            "amplitude": 1.0
+          }
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      },
+      {
+        "name": "gaussian-emitter-vs-noise-only",
+        "description": "Positive class is an independent Gaussian emitter mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "gaussian-emitter-control",
+          "targetLabel": "signal-present",
+          "sourceType": "gaussian-emitter",
+          "snrDb": 0.0,
+          "gaussianEmitter": {
+            "mean": 0.0,
+            "standardDeviation": 1.0
+          },
+          "ofdmLike": null
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      }
+    ],
+    "detectors": [
+      {
+        "name": "lzmsa-paper",
+        "threshold": 25000.0,
+        "mode": "paper-byte-sum"
+      },
+      {
+        "name": "lzmsa-compressed-length",
+        "threshold": 64.0,
+        "mode": "compressed-byte-count"
+      },
+      {
+        "name": "lzmsa-normalized-compressed-length",
+        "threshold": 0.25,
+        "mode": "compressed-byte-count-per-input-byte"
+      },
+      {
+        "name": "lzmsa-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "mean-compressed-byte-value"
+      }
+    ],
+    "snrDbValues": [ -9.0, -3.0, 0.0 ],
+    "windowLengths": [ 64, 128 ],
+    "trialCountPerCondition": 72
+  },
+  "manifestMetadata": {
+    "notes": "M5a1 compressed-stream decomposition: same synthetic M4a task definitions, same serialization basis, same deterministic Brotli compression path, and same ROC/AUC evaluation, now comparing paper byte-sum against compressed length, normalized compressed length, and mean compressed byte value using the identity byte_sum = compressed_length x mean_byte_value.",
+    "versionTag": "m5a1",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5a1",
+      "experimentType": "compressed-stream-decomposition-pass-1",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m4a"
+    }
+  }
+}

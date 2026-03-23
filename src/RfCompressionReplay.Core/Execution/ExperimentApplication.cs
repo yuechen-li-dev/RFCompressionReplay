@@ -94,6 +94,21 @@ public sealed class ExperimentApplication
             manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M4FindingsPath));
         }
 
+        if (artifactPaths.M5A1AucComparisonCsvPath is not null)
+        {
+            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M5A1AucComparisonCsvPath));
+        }
+
+        if (artifactPaths.M5A1FindingsPath is not null)
+        {
+            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M5A1FindingsPath));
+        }
+
+        if (artifactPaths.M5A1DeltaSummaryCsvPath is not null)
+        {
+            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M5A1DeltaSummaryCsvPath));
+        }
+
         var manifest = manifestTemplate with
         {
             ArtifactPaths = manifestArtifactPaths

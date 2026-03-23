@@ -1,6 +1,6 @@
 # Detector Implementation Notes
 
-This document records the exact detector formulas and serialization contract implemented in this repository through the pre-M4 hardening pass.
+This document records the exact detector formulas and serialization contract implemented in this repository through M5a1.
 
 ## Scope of This Document
 
@@ -12,7 +12,7 @@ The repository now contains:
 - the existing `lzmsa-paper` paper-style byte-sum score path, and
 - additional compression-derived score identities that reuse the same serialization and compressed payload basis.
 
-This hardening pass does **not** claim which score identity is scientifically responsible for any later detection effect. It only makes that comparison explicit and testable for M4.
+This hardening pass does **not** claim which score identity is scientifically responsible for any later detection effect. It only makes that comparison explicit and testable through the current M4/M5a1 mechanism-comparison passes.
 
 ## Input Model Used by the Detectors
 
@@ -105,7 +105,24 @@ Orientation:
 Interpretation contract:
 
 - This is a normalized length metric, not a byte-sum statistic.
-- It exists so M4 can compare score identity while holding the serialization and compression path fixed.
+- It exists so the current comparison milestones can compare score identity while holding the serialization and compression path fixed.
+
+### LZMSA mean compressed byte value (`lzmsa-mean-compressed-byte-value`, mode `mean-compressed-byte-value`)
+
+This M5a1 variant reuses the same serialized input bytes and same compressed payload basis yet again, but derives the score as the mean value of the compressed bytes.
+
+Formula:
+
+- `score = compressedByteSum / compressedByteCount`
+
+Orientation:
+
+- `HigherScoreMorePositive`
+
+Interpretation contract:
+
+- This keeps the compressed payload basis fixed while isolating the second factor in `byteSum = compressedLength × meanCompressedByteValue`.
+- The higher-is-more-positive orientation is explicit and intentional: at fixed compressed length, increasing mean compressed byte value increases the paper-style byte-sum score.
 
 ## Shared Compression Serialization Contract
 

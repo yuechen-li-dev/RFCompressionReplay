@@ -40,6 +40,20 @@ public sealed class ExperimentConfigTests
         Assert.NotEmpty(config.Evaluation.WindowLengths);
     }
 
+    [Theory]
+    [InlineData("m5a1.compressed-stream-decomposition.json", 4)]
+    [InlineData("m5a1.compressed-stream-decomposition-smoke.json", 4)]
+    public void DeserializesM5A1Configs(string configFileName, int expectedDetectorCount)
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = ExperimentConfigJson.Load(path);
+
+        Assert.NotNull(config.Evaluation);
+        Assert.Equal(expectedDetectorCount, config.Evaluation!.Detectors.Count);
+        Assert.Contains(config.Evaluation.Detectors, detector => detector.Name == DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName);
+        Assert.Equal("m5a1", config.ManifestMetadata.Tags!["milestone"]);
+    }
+
     [Fact]
     public void ValidatorReturnsClearMessagesForInvalidSyntheticBenchmarkConfig()
     {
@@ -89,7 +103,7 @@ public sealed class ExperimentConfigTests
 
         var errors = ExperimentConfigValidator.Validate(config);
 
-        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M3. Supported detectors: ed, cav, lzmsa-paper, lzmsa-compressed-length, lzmsa-normalized-compressed-length.", errors);
+        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M3. Supported detectors: ed, cav, lzmsa-paper, lzmsa-compressed-length, lzmsa-normalized-compressed-length, lzmsa-mean-compressed-byte-value.", errors);
         Assert.Contains("Benchmark.Cases[0].SourceType 'bogus-source' is not supported in M3. Supported source types: noise-only, gaussian-emitter, ofdm-like.", errors);
     }
 
@@ -97,6 +111,7 @@ public sealed class ExperimentConfigTests
     [InlineData(DetectorCatalog.LzmsaPaperDetectorName, "compressed-length", DetectorCatalog.LzmsaPaperDetectorMode)]
     [InlineData(DetectorCatalog.LzmsaCompressedLengthDetectorName, DetectorCatalog.LzmsaPaperDetectorMode, DetectorCatalog.LzmsaCompressedLengthDetectorMode)]
     [InlineData(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, DetectorCatalog.LzmsaCompressedLengthDetectorMode, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode)]
+    [InlineData(DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName, DetectorCatalog.LzmsaCompressedLengthDetectorMode, DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode)]
     public void ValidatorRejectsUnsupportedDetectorModes(string detectorName, string invalidMode, string expectedMode)
     {
         var config = TestConfigFactory.CreateSyntheticBenchmarkConfig(
@@ -129,5 +144,37 @@ public sealed class ExperimentConfigTests
         Assert.Contains("Evaluation.SnrDbValues must contain at least one SNR value.", errors);
         Assert.Contains("Evaluation.WindowLengths[0] must be greater than zero.", errors);
         Assert.Contains("Evaluation.TrialCountPerCondition must be greater than zero.", errors);
+    }
+
+    [Theory]
+    [InlineData(-0.01d)]
+    [InlineData(255.01d)]
+    public void ValidatorRejectsOutOfRangeMeanCompressedByteValueThreshold(double invalidThreshold)
+    {
+        var config = TestConfigFactory.CreateSyntheticBenchmarkConfig(
+            experimentId: "bad-mean-threshold",
+            detectorName: DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName,
+            detectorMode: DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode,
+            threshold: invalidThreshold);
+
+        var errors = ExperimentConfigValidator.Validate(config);
+
+        Assert.Contains(
+            $"Detector.Threshold for detector '{DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName}' must be between 0 and 255 inclusive because the mean compressed byte value is bounded to that range.",
+            errors);
+    }
+
+    [Fact]
+    public void ValidatorRejectsNonFiniteThresholds()
+    {
+        var config = TestConfigFactory.CreateSyntheticBenchmarkConfig(
+            experimentId: "nan-threshold",
+            detectorName: DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName,
+            detectorMode: DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode,
+            threshold: double.NaN);
+
+        var errors = ExperimentConfigValidator.Validate(config);
+
+        Assert.Contains("Detector.Threshold must be a finite number.", errors);
     }
 }

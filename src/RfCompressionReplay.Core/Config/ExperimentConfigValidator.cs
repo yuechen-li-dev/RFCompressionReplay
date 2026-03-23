@@ -115,6 +115,17 @@ public static class ExperimentConfigValidator
         {
             errors.Add($"{prefix}.Mode '{detector.Mode}' is not supported for detector '{detector.Name}' in M3. Supported modes: {DetectorCatalog.SupportedModesDisplay(detector.Name)}.");
         }
+
+        if (double.IsNaN(detector.Threshold) || double.IsInfinity(detector.Threshold))
+        {
+            errors.Add($"{prefix}.Threshold must be a finite number.");
+        }
+
+        if (string.Equals(detector.Name, DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName, StringComparison.OrdinalIgnoreCase)
+            && (detector.Threshold < 0d || detector.Threshold > byte.MaxValue))
+        {
+            errors.Add($"{prefix}.Threshold for detector '{detector.Name}' must be between 0 and 255 inclusive because the mean compressed byte value is bounded to that range.");
+        }
     }
 
     private static void ValidateDummySignal(ExperimentConfig config, List<string> errors)

@@ -32,6 +32,11 @@ public static class DetectorFactory
                 new LzmsaWindowSerializer(),
                 new BrotliCompressionCodec(),
                 analysis => analysis.InputByteCount == 0 ? 0d : (double)analysis.CompressedByteCount / analysis.InputByteCount),
+            DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.MeanCompressedByteValue),
             _ => throw new InvalidOperationException($"Detector '{config.Name}' is not supported."),
         };
     }
