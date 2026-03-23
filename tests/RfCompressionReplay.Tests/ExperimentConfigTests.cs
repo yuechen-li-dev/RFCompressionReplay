@@ -45,6 +45,8 @@ public sealed class ExperimentConfigTests
     [Theory]
     [InlineData("m5a1.compressed-stream-decomposition.json", 4)]
     [InlineData("m5a1.compressed-stream-decomposition-smoke.json", 4)]
+    [InlineData("m5a2r.compressed-stream-decomposition.json", 9)]
+    [InlineData("m5a2r.compressed-stream-decomposition-smoke.json", 9)]
     public void DeserializesM5A1Configs(string configFileName, int expectedDetectorCount)
     {
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
@@ -54,7 +56,7 @@ public sealed class ExperimentConfigTests
         Assert.Equal(expectedDetectorCount, config.Evaluation!.Detectors.Count);
         Assert.Contains(config.Evaluation.Detectors, detector => detector.Name == DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName);
         Assert.Equal(configFileName.Contains("smoke", StringComparison.Ordinal) ? ArtifactRetentionModes.Smoke : ArtifactRetentionModes.Milestone, config.ArtifactRetentionMode);
-        Assert.Equal("m5a1", config.ManifestMetadata.Tags!["milestone"]);
+        Assert.Equal(configFileName.StartsWith("m5a2r", StringComparison.Ordinal) ? "m5a2" : "m5a1", config.ManifestMetadata.Tags!["milestone"]);
     }
 
     [Fact]
@@ -107,7 +109,7 @@ public sealed class ExperimentConfigTests
 
         var errors = ExperimentConfigValidator.Validate(config);
 
-        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M3. Supported detectors: ed, cav, lzmsa-paper, lzmsa-compressed-length, lzmsa-normalized-compressed-length, lzmsa-mean-compressed-byte-value.", errors);
+        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M3. Supported detectors: ed, cav, lzmsa-paper, lzmsa-compressed-length, lzmsa-normalized-compressed-length, lzmsa-mean-compressed-byte-value, lzmsa-compressed-byte-variance, lzmsa-compressed-byte-bucket-0-63-proportion, lzmsa-compressed-byte-bucket-64-127-proportion, lzmsa-compressed-byte-bucket-128-191-proportion, lzmsa-compressed-byte-bucket-192-255-proportion, lzmsa-prefix-third-mean-compressed-byte-value, lzmsa-suffix-third-mean-compressed-byte-value.", errors);
         Assert.Contains("Benchmark.Cases[0].SourceType 'bogus-source' is not supported in M3. Supported source types: noise-only, gaussian-emitter, ofdm-like.", errors);
     }
 
@@ -182,5 +184,4 @@ public sealed class ExperimentConfigTests
         Assert.Contains("Detector.Threshold must be a finite number.", errors);
     }
 }
-
 

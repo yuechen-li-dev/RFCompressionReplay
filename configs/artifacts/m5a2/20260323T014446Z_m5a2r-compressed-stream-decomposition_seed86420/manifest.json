@@ -1,0 +1,75 @@
+{
+  "experimentId": "m5a2r-compressed-stream-decomposition",
+  "experimentName": "M5a2r Synthetic Compressed-Stream Decomposition",
+  "utcTimestamp": "2026-03-23T01:44:46.737266+00:00",
+  "seed": 86420,
+  "gitCommit": "bd5f4eb1d8950e11029db4a340cb147ecbeca1ce",
+  "environment": {
+    "machineName": "f153b11d55f8",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.18",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../m5a2r.compressed-stream-decomposition.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCount": 72,
+  "artifactPaths": [
+    "manifest.json",
+    "summary.json",
+    "summary.csv",
+    "roc_points_compact.csv",
+    "m5a2_auc_comparison.csv",
+    "m5a2_findings.md",
+    "m5a2_delta_summary.csv"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M5a2r compressed-stream decomposition re-lands the original M5a2 benchmark scope under milestone retention: same synthetic M5a1-style evaluation grid, same deterministic Brotli-backed compression path, and the intended second-pass simple compressed-byte summaries (mean, variance, coarse histogram buckets, and prefix/suffix third means).",
+    "versionTag": "m5a2r",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5a2",
+      "reland": "m5a2r",
+      "experimentType": "compressed-stream-decomposition-pass-2",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m5a1"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "ofdm-signal-present-vs-noise-only",
+      "gaussian-emitter-vs-noise-only"
+    ],
+    "detectorNames": [
+      "lzmsa-paper",
+      "lzmsa-mean-compressed-byte-value",
+      "lzmsa-compressed-byte-variance",
+      "lzmsa-compressed-byte-bucket-0-63-proportion",
+      "lzmsa-compressed-byte-bucket-64-127-proportion",
+      "lzmsa-compressed-byte-bucket-128-191-proportion",
+      "lzmsa-compressed-byte-bucket-192-255-proportion",
+      "lzmsa-prefix-third-mean-compressed-byte-value",
+      "lzmsa-suffix-third-mean-compressed-byte-value"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 72
+  },
+  "retention": {
+    "mode": "milestone",
+    "omittedArtifactKinds": [
+      "trials.csv",
+      "roc_points.csv"
+    ],
+    "regenerationNote": "Milestone retention keeps compact, conclusion-critical artifacts only. Omitted raw trial rows and full ROC thresholds are intentionally regenerable by rerunning the same config in full retention mode with the recorded code revision, seed, and manifest metadata."
+  }
+}

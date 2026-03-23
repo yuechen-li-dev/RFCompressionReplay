@@ -10,6 +10,13 @@ public static class DetectorCatalog
     public const string LzmsaCompressedLengthDetectorName = "lzmsa-compressed-length";
     public const string LzmsaNormalizedCompressedLengthDetectorName = "lzmsa-normalized-compressed-length";
     public const string LzmsaMeanCompressedByteValueDetectorName = "lzmsa-mean-compressed-byte-value";
+    public const string LzmsaCompressedByteVarianceDetectorName = "lzmsa-compressed-byte-variance";
+    public const string LzmsaCompressedByteBucket0To63ProportionDetectorName = "lzmsa-compressed-byte-bucket-0-63-proportion";
+    public const string LzmsaCompressedByteBucket64To127ProportionDetectorName = "lzmsa-compressed-byte-bucket-64-127-proportion";
+    public const string LzmsaCompressedByteBucket128To191ProportionDetectorName = "lzmsa-compressed-byte-bucket-128-191-proportion";
+    public const string LzmsaCompressedByteBucket192To255ProportionDetectorName = "lzmsa-compressed-byte-bucket-192-255-proportion";
+    public const string LzmsaPrefixThirdMeanCompressedByteValueDetectorName = "lzmsa-prefix-third-mean-compressed-byte-value";
+    public const string LzmsaSuffixThirdMeanCompressedByteValueDetectorName = "lzmsa-suffix-third-mean-compressed-byte-value";
 
     public const string EnergyDetectorMode = "average-energy";
     public const string CovarianceAbsoluteValueDetectorMode = "lag-1-absolute-autocovariance";
@@ -17,6 +24,13 @@ public static class DetectorCatalog
     public const string LzmsaCompressedLengthDetectorMode = "compressed-byte-count";
     public const string LzmsaNormalizedCompressedLengthDetectorMode = "compressed-byte-count-per-input-byte";
     public const string LzmsaMeanCompressedByteValueDetectorMode = "mean-compressed-byte-value";
+    public const string LzmsaCompressedByteVarianceDetectorMode = "compressed-byte-variance";
+    public const string LzmsaCompressedByteBucket0To63ProportionDetectorMode = "compressed-byte-bucket-0-63-proportion";
+    public const string LzmsaCompressedByteBucket64To127ProportionDetectorMode = "compressed-byte-bucket-64-127-proportion";
+    public const string LzmsaCompressedByteBucket128To191ProportionDetectorMode = "compressed-byte-bucket-128-191-proportion";
+    public const string LzmsaCompressedByteBucket192To255ProportionDetectorMode = "compressed-byte-bucket-192-255-proportion";
+    public const string LzmsaPrefixThirdMeanCompressedByteValueDetectorMode = "prefix-third-mean-compressed-byte-value";
+    public const string LzmsaSuffixThirdMeanCompressedByteValueDetectorMode = "suffix-third-mean-compressed-byte-value";
 
     public static IReadOnlyList<string> SupportedDetectorNames { get; } =
     [
@@ -26,6 +40,13 @@ public static class DetectorCatalog
         LzmsaCompressedLengthDetectorName,
         LzmsaNormalizedCompressedLengthDetectorName,
         LzmsaMeanCompressedByteValueDetectorName,
+        LzmsaCompressedByteVarianceDetectorName,
+        LzmsaCompressedByteBucket0To63ProportionDetectorName,
+        LzmsaCompressedByteBucket64To127ProportionDetectorName,
+        LzmsaCompressedByteBucket128To191ProportionDetectorName,
+        LzmsaCompressedByteBucket192To255ProportionDetectorName,
+        LzmsaPrefixThirdMeanCompressedByteValueDetectorName,
+        LzmsaSuffixThirdMeanCompressedByteValueDetectorName,
     ];
 
     public static IReadOnlyDictionary<string, string> SupportedModesByDetector { get; } =
@@ -37,6 +58,13 @@ public static class DetectorCatalog
             [LzmsaCompressedLengthDetectorName] = LzmsaCompressedLengthDetectorMode,
             [LzmsaNormalizedCompressedLengthDetectorName] = LzmsaNormalizedCompressedLengthDetectorMode,
             [LzmsaMeanCompressedByteValueDetectorName] = LzmsaMeanCompressedByteValueDetectorMode,
+            [LzmsaCompressedByteVarianceDetectorName] = LzmsaCompressedByteVarianceDetectorMode,
+            [LzmsaCompressedByteBucket0To63ProportionDetectorName] = LzmsaCompressedByteBucket0To63ProportionDetectorMode,
+            [LzmsaCompressedByteBucket64To127ProportionDetectorName] = LzmsaCompressedByteBucket64To127ProportionDetectorMode,
+            [LzmsaCompressedByteBucket128To191ProportionDetectorName] = LzmsaCompressedByteBucket128To191ProportionDetectorMode,
+            [LzmsaCompressedByteBucket192To255ProportionDetectorName] = LzmsaCompressedByteBucket192To255ProportionDetectorMode,
+            [LzmsaPrefixThirdMeanCompressedByteValueDetectorName] = LzmsaPrefixThirdMeanCompressedByteValueDetectorMode,
+            [LzmsaSuffixThirdMeanCompressedByteValueDetectorName] = LzmsaSuffixThirdMeanCompressedByteValueDetectorMode,
         };
 
     public static IReadOnlyDictionary<string, ScoreOrientation> ScoreOrientationByDetector { get; } =
@@ -48,6 +76,13 @@ public static class DetectorCatalog
             [LzmsaCompressedLengthDetectorName] = ScoreOrientation.LowerScoreMorePositive,
             [LzmsaNormalizedCompressedLengthDetectorName] = ScoreOrientation.LowerScoreMorePositive,
             [LzmsaMeanCompressedByteValueDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaCompressedByteVarianceDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaCompressedByteBucket0To63ProportionDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaCompressedByteBucket64To127ProportionDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaCompressedByteBucket128To191ProportionDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaCompressedByteBucket192To255ProportionDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaPrefixThirdMeanCompressedByteValueDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaSuffixThirdMeanCompressedByteValueDetectorName] = ScoreOrientation.HigherScoreMorePositive,
         };
 
     public static bool IsSupportedDetector(string detectorName)

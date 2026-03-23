@@ -37,6 +37,41 @@ public static class DetectorFactory
                 new LzmsaWindowSerializer(),
                 new BrotliCompressionCodec(),
                 analysis => analysis.MeanCompressedByteValue),
+            DetectorCatalog.LzmsaCompressedByteVarianceDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaCompressedByteVarianceDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.CompressedByteVariance),
+            DetectorCatalog.LzmsaCompressedByteBucket0To63ProportionDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaCompressedByteBucket0To63ProportionDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.CompressedByteBucket0To63Proportion),
+            DetectorCatalog.LzmsaCompressedByteBucket64To127ProportionDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaCompressedByteBucket64To127ProportionDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.CompressedByteBucket64To127Proportion),
+            DetectorCatalog.LzmsaCompressedByteBucket128To191ProportionDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaCompressedByteBucket128To191ProportionDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.CompressedByteBucket128To191Proportion),
+            DetectorCatalog.LzmsaCompressedByteBucket192To255ProportionDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaCompressedByteBucket192To255ProportionDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.CompressedByteBucket192To255Proportion),
+            DetectorCatalog.LzmsaPrefixThirdMeanCompressedByteValueDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaPrefixThirdMeanCompressedByteValueDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.PrefixThirdMeanCompressedByteValue),
+            DetectorCatalog.LzmsaSuffixThirdMeanCompressedByteValueDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaSuffixThirdMeanCompressedByteValueDetectorName,
+                new LzmsaWindowSerializer(),
+                new BrotliCompressionCodec(),
+                analysis => analysis.SuffixThirdMeanCompressedByteValue),
             _ => throw new InvalidOperationException($"Detector '{config.Name}' is not supported."),
         };
     }

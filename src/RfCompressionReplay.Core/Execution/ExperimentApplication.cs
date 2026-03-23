@@ -95,6 +95,9 @@ public sealed class ExperimentApplication
         AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M5A1AucComparisonCsvPath);
         AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M5A1FindingsPath);
         AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M5A1DeltaSummaryCsvPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M5A2AucComparisonCsvPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M5A2FindingsPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M5A2DeltaSummaryCsvPath);
 
         var manifest = manifestTemplate with
         {

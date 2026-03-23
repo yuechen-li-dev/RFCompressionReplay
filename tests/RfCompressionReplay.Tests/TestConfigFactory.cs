@@ -94,6 +94,22 @@ internal static class TestConfigFactory
         ];
     }
 
+    public static IReadOnlyList<DetectorConfig> CreateM5A2CompressionDetectors()
+    {
+        return
+        [
+            new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 25000d, DetectorCatalog.LzmsaPaperDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName, 128d, DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaCompressedByteVarianceDetectorName, 1000d, DetectorCatalog.LzmsaCompressedByteVarianceDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaCompressedByteBucket0To63ProportionDetectorName, 0.25d, DetectorCatalog.LzmsaCompressedByteBucket0To63ProportionDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaCompressedByteBucket64To127ProportionDetectorName, 0.25d, DetectorCatalog.LzmsaCompressedByteBucket64To127ProportionDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaCompressedByteBucket128To191ProportionDetectorName, 0.25d, DetectorCatalog.LzmsaCompressedByteBucket128To191ProportionDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaCompressedByteBucket192To255ProportionDetectorName, 0.25d, DetectorCatalog.LzmsaCompressedByteBucket192To255ProportionDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaPrefixThirdMeanCompressedByteValueDetectorName, 128d, DetectorCatalog.LzmsaPrefixThirdMeanCompressedByteValueDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaSuffixThirdMeanCompressedByteValueDetectorName, 128d, DetectorCatalog.LzmsaSuffixThirdMeanCompressedByteValueDetectorMode),
+        ];
+    }
+
     public static BenchmarkTaskConfig CreateOfdmTask()
     {
         return new BenchmarkTaskConfig(
