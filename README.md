@@ -2,8 +2,16 @@
 
 `RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, M5b3 refined the scale side further with an explicit scale panel plus one simple normalization comparison, M5f freezes that arc into a concise repository-native findings package, M6a1 adds the first compact usefulness-mapping pass over a slightly more application-oriented synthetic task suite, M6a2 adds the second usefulness-mapping pass focused on complementary value rather than detector replacement, M7b adds a compact stream-level change-point / segmentation usefulness pass over three deterministic synthetic transition families, and M7b2 adds a direct complementary-boundary-fusion follow-up over that same stream suite.
 
-Current status: within the current synthetic usefulness-mapping suites, compression-derived features did not become strong replacement detectors for ED/CAV. The checked-in M5 arc still supports per-window RMS-normalized mean compressed byte value as the strongest practical simple proxy in this detector family, and the M6 freeze now points to `docs/M6_FINDINGS.md` plus the compact M6a1/M6a2 artifacts under `configs/artifacts/m6a1/` and `configs/artifacts/m6a2/`. M7b extended that question to stream-level regime transitions rather than static windows: in the checked-in synthetic stream suite the RMS-normalized mean feature remained secondary overall, but it produced a small amount of distinct boundary behavior on the correlated-nuisance and structure-shift families, which fit a cautious segmentation-helper framing better than detector replacement. M7b2 then tested one explicit normalized-change average fusion of ED/CAV with RMS-normalized mean over the same three stream families; in the checked-in run the fused cue produced only marginal aggregate gains, but it did recover a small number of onset-hit conditions that the best baseline or even all standalone signals missed. This remains synthetic-only lab work, not a deployment claim.
+Current status: within the current synthetic usefulness-mapping suites, compression-derived features still do not look like strong replacement detectors for ED/CAV. The checked-in M7 freeze at `docs/M7_FINDINGS.md` summarizes why M7 followed M6, where the compact M7b/M7b2 artifacts live, and what the current applied read is. In the checked-in synthetic stream suite, the segmentation/helper framing was more promising than detector replacement: RMS-normalized mean compressed byte value stayed secondary overall, but it supplied occasional complementary boundary information. M7b2 then tested one explicit normalized-change average fusion of ED/CAV with that cue; the fused signal was sometimes best or tied-best, but simple fusion did not show strong aggregate gains. This remains synthetic-only lab work, not a deployment claim.
 
+
+## M7 Findings Freeze
+
+- Findings freeze doc: `docs/M7_FINDINGS.md`
+- Compact M7b artifacts: `configs/artifacts/m7b/20260323T084412Z_m7b-change-point-usefulness_seedpanel/`
+  - inspect `m7b_findings.md`, `m7b_boundary_comparison.csv`, `m7b_task_summary.csv`, and `manifest.json`
+- Compact M7b2 artifacts: `configs/artifacts/m7b2/20260323T093359Z_m7b2-complementary-boundary-fusion_seedpanel/`
+  - inspect `m7b2_findings.md`, `m7b2_boundary_comparison.csv`, `m7b2_fusion_summary.csv`, and `manifest.json`
 
 ## What M7b2 Adds
 
@@ -308,6 +316,8 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - M5 findings freeze: `docs/M5_FINDINGS.md`
 - M6 findings freeze: `docs/M6_FINDINGS.md`
   - compact status of the full M6a1 → M6a2 usefulness-mapping arc, including supported conclusion, non-conclusions, open question, and direct links to the compact milestone artifacts
+- M7 findings freeze: `docs/M7_FINDINGS.md`
+  - compact status of the M7b → M7b2 arc, including the supported conclusion, non-conclusions, current applied interpretation, open question, and direct links to the compact M7 artifacts
 - M7b2 method note: `docs/M7B2_COMPLEMENTARY_BOUNDARY_FUSION.md`
 - M7b2 complementary-boundary-fusion artifacts: `configs/artifacts/m7b2/20260323T093359Z_m7b2-complementary-boundary-fusion_seedpanel/`
   - inspect `m7b2_boundary_comparison.csv`, `m7b2_fusion_summary.csv`, `m7b2_findings.md`, and `manifest.json`
