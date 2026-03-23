@@ -6,6 +6,8 @@ namespace RfCompressionReplay.Core.Artifacts;
 
 public sealed class ArtifactFileWriter
 {
+    private const int CompactRocPointCountPerCondition = 17;
+
     private readonly CsvArtifactWriter _csvWriter;
 
     public ArtifactFileWriter(CsvArtifactWriter csvWriter)
@@ -17,11 +19,13 @@ public sealed class ArtifactFileWriter
     {
         Directory.CreateDirectory(runDirectory);
 
+        var retention = ArtifactRetentionPlan.Create(config.ArtifactRetentionMode);
         var manifestPath = Path.Combine(runDirectory, "manifest.json");
         var summaryPath = Path.Combine(runDirectory, "summary.json");
         var summaryCsvPath = Path.Combine(runDirectory, "summary.csv");
-        var trialsPath = Path.Combine(runDirectory, "trials.csv");
-        var rocPointsPath = Path.Combine(runDirectory, "roc_points.csv");
+        string? trialsPath = null;
+        string? rocPointsPath = null;
+        string? rocPointsCompactPath = null;
         string? m4AucComparisonCsvPath = null;
         string? m4FindingsPath = null;
         string? m5A1AucComparisonCsvPath = null;
@@ -31,8 +35,25 @@ public sealed class ArtifactFileWriter
         ExperimentConfigJson.Save(manifestPath, manifest);
         ExperimentConfigJson.Save(summaryPath, result.Summary);
         _csvWriter.WriteSummary(summaryCsvPath, result.Summary.Groups);
-        _csvWriter.WriteTrials(trialsPath, result.Trials);
-        _csvWriter.WriteRocPoints(rocPointsPath, result.Evaluation?.RocPoints ?? Array.Empty<RocPointRecord>());
+
+        if (retention.WriteTrialsCsv)
+        {
+            trialsPath = Path.Combine(runDirectory, "trials.csv");
+            _csvWriter.WriteTrials(trialsPath, result.Trials);
+        }
+
+        var rocPoints = result.Evaluation?.RocPoints ?? Array.Empty<RocPointRecord>();
+        if (retention.WriteRawRocPointsCsv)
+        {
+            rocPointsPath = Path.Combine(runDirectory, "roc_points.csv");
+            _csvWriter.WriteRocPoints(rocPointsPath, rocPoints);
+        }
+
+        if (retention.WriteCompactRocPointsCsv)
+        {
+            rocPointsCompactPath = Path.Combine(runDirectory, "roc_points_compact.csv");
+            _csvWriter.WriteCompactRocPoints(rocPointsCompactPath, rocPoints, CompactRocPointCountPerCondition);
+        }
 
         if (M4ScoreIdentityComparisonReportBuilder.IsEnabled(config))
         {
@@ -55,6 +76,18 @@ public sealed class ArtifactFileWriter
             File.WriteAllText(m5A1FindingsPath, comparison.FindingsMarkdown);
         }
 
-        return new ArtifactPaths(runDirectory, manifestPath, summaryPath, summaryCsvPath, trialsPath, rocPointsPath, m4AucComparisonCsvPath, m4FindingsPath, m5A1AucComparisonCsvPath, m5A1FindingsPath, m5A1DeltaSummaryCsvPath);
+        return new ArtifactPaths(
+            runDirectory,
+            manifestPath,
+            summaryPath,
+            summaryCsvPath,
+            trialsPath,
+            rocPointsPath,
+            rocPointsCompactPath,
+            m4AucComparisonCsvPath,
+            m4FindingsPath,
+            m5A1AucComparisonCsvPath,
+            m5A1FindingsPath,
+            m5A1DeltaSummaryCsvPath);
     }
 }

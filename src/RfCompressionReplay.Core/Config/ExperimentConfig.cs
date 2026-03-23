@@ -11,7 +11,8 @@ public sealed record ExperimentConfig(
     SignalConfig? Signal,
     SyntheticBenchmarkConfig? Benchmark,
     EvaluationConfig? Evaluation,
-    ManifestMetadataConfig ManifestMetadata);
+    ManifestMetadataConfig ManifestMetadata,
+    string ArtifactRetentionMode = ArtifactRetentionModes.Full);
 
 public sealed record ScenarioConfig(
     string Name,

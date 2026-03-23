@@ -69,26 +69,101 @@ public sealed class CsvArtifactWriter
     public void WriteRocPoints(string path, IReadOnlyList<RocPointRecord> rocPoints)
     {
         using var writer = new StreamWriter(path, false, Encoding.UTF8);
-        writer.WriteLine("taskName,detectorName,detectorMode,scoreOrientation,conditionSnrDb,windowLength,threshold,tpr,fpr,truePositives,falsePositives,positiveCount,negativeCount,auc");
+        WriteRocHeader(writer, includeSourcePointCount: false);
 
         foreach (var point in rocPoints)
         {
-            writer.WriteLine(string.Join(',',
-                point.TaskName,
-                point.DetectorName,
-                point.DetectorMode,
-                point.ScoreOrientation,
-                FormatNullable(point.ConditionSnrDb),
-                point.WindowLength.ToString(CultureInfo.InvariantCulture),
-                FormatNullable(point.Threshold),
-                point.TruePositiveRate.ToString("F6", CultureInfo.InvariantCulture),
-                point.FalsePositiveRate.ToString("F6", CultureInfo.InvariantCulture),
-                point.TruePositives.ToString(CultureInfo.InvariantCulture),
-                point.FalsePositives.ToString(CultureInfo.InvariantCulture),
-                point.PositiveCount.ToString(CultureInfo.InvariantCulture),
-                point.NegativeCount.ToString(CultureInfo.InvariantCulture),
-                point.Auc.ToString("F6", CultureInfo.InvariantCulture)));
+            WriteRocPoint(writer, point, sourcePointCount: null);
         }
+    }
+
+    public void WriteCompactRocPoints(string path, IReadOnlyList<RocPointRecord> rocPoints, int maxPointsPerCondition)
+    {
+        using var writer = new StreamWriter(path, false, Encoding.UTF8);
+        WriteRocHeader(writer, includeSourcePointCount: true);
+
+        foreach (var conditionGroup in rocPoints.GroupBy(point => new
+        {
+            point.TaskName,
+            point.DetectorName,
+            point.DetectorMode,
+            point.ScoreOrientation,
+            point.ConditionSnrDb,
+            point.WindowLength,
+            point.Auc,
+        }))
+        {
+            var orderedPoints = conditionGroup.ToArray();
+            var sourcePointCount = orderedPoints.Length;
+            var selectedIndices = SelectEvenlySpacedIndices(sourcePointCount, maxPointsPerCondition);
+
+            foreach (var index in selectedIndices)
+            {
+                WriteRocPoint(writer, orderedPoints[index], sourcePointCount);
+            }
+        }
+    }
+
+    private static IReadOnlyList<int> SelectEvenlySpacedIndices(int count, int maxPointsPerCondition)
+    {
+        if (count <= 0)
+        {
+            return Array.Empty<int>();
+        }
+
+        if (count <= maxPointsPerCondition)
+        {
+            return Enumerable.Range(0, count).ToArray();
+        }
+
+        var indices = new SortedSet<int> { 0, count - 1 };
+        var denominator = maxPointsPerCondition - 1;
+        for (var slot = 1; slot < denominator; slot++)
+        {
+            var index = (int)Math.Round(slot * (count - 1d) / denominator, MidpointRounding.AwayFromZero);
+            indices.Add(index);
+        }
+
+        return indices.ToArray();
+    }
+
+    private static void WriteRocHeader(StreamWriter writer, bool includeSourcePointCount)
+    {
+        var header = "taskName,detectorName,detectorMode,scoreOrientation,conditionSnrDb,windowLength,threshold,tpr,fpr,truePositives,falsePositives,positiveCount,negativeCount,auc";
+        if (includeSourcePointCount)
+        {
+            header += ",sourcePointCount";
+        }
+
+        writer.WriteLine(header);
+    }
+
+    private static void WriteRocPoint(StreamWriter writer, RocPointRecord point, int? sourcePointCount)
+    {
+        var values = new List<string>
+        {
+            point.TaskName,
+            point.DetectorName,
+            point.DetectorMode,
+            point.ScoreOrientation,
+            FormatNullable(point.ConditionSnrDb),
+            point.WindowLength.ToString(CultureInfo.InvariantCulture),
+            FormatNullable(point.Threshold),
+            point.TruePositiveRate.ToString("F6", CultureInfo.InvariantCulture),
+            point.FalsePositiveRate.ToString("F6", CultureInfo.InvariantCulture),
+            point.TruePositives.ToString(CultureInfo.InvariantCulture),
+            point.FalsePositives.ToString(CultureInfo.InvariantCulture),
+            point.PositiveCount.ToString(CultureInfo.InvariantCulture),
+            point.NegativeCount.ToString(CultureInfo.InvariantCulture),
+            point.Auc.ToString("F6", CultureInfo.InvariantCulture),
+        };
+
+        if (sourcePointCount.HasValue)
+        {
+            values.Add(sourcePointCount.Value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        writer.WriteLine(string.Join(',', values));
     }
 
     private static string FormatString(string? value) => value ?? string.Empty;

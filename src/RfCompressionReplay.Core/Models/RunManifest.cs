@@ -13,7 +13,8 @@ public sealed record RunManifest(
     IReadOnlyList<string> ArtifactPaths,
     IReadOnlyList<string> Warnings,
     ManifestMetadata Metadata,
-    EvaluationManifest? Evaluation);
+    EvaluationManifest? Evaluation,
+    ArtifactRetentionManifest Retention);
 
 public sealed record ManifestMetadata(
     string Notes,
@@ -26,6 +27,11 @@ public sealed record EvaluationManifest(
     IReadOnlyList<double> SnrDbValues,
     IReadOnlyList<int> WindowLengths,
     int TrialCountPerCondition);
+
+public sealed record ArtifactRetentionManifest(
+    string Mode,
+    IReadOnlyList<string> OmittedArtifactKinds,
+    string RegenerationNote);
 
 public sealed record EnvironmentSummary(
     string MachineName,

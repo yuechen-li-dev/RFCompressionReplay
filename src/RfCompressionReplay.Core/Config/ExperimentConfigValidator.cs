@@ -37,6 +37,11 @@ public static class ExperimentConfigValidator
             errors.Add("OutputDirectory is required.");
         }
 
+        if (!ArtifactRetentionModes.IsSupported(config.ArtifactRetentionMode))
+        {
+            errors.Add($"ArtifactRetentionMode '{config.ArtifactRetentionMode}' is not supported. Supported modes: {ArtifactRetentionModes.SupportedModesDisplay}.");
+        }
+
         if (config.TrialCount <= 0)
         {
             errors.Add("TrialCount must be greater than zero.");

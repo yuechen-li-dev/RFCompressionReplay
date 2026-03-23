@@ -96,8 +96,15 @@
         "mode": "mean-compressed-byte-value"
       }
     ],
-    "snrDbValues": [ -9.0, -3.0, 0.0 ],
-    "windowLengths": [ 64, 128 ],
+    "snrDbValues": [
+      -9.0,
+      -3.0,
+      0.0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
     "trialCountPerCondition": 72
   },
   "manifestMetadata": {
@@ -110,5 +117,6 @@
       "benchmark": "synthetic-m3-tasks",
       "comparisonBase": "m4a"
     }
-  }
+  },
+  "artifactRetentionMode": "milestone"
 }

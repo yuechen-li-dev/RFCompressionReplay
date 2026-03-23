@@ -44,7 +44,7 @@ This orientation is chosen deliberately rather than implicitly guessed. Holding 
 
 ## Required Outputs
 
-An M5a1-configured run writes the normal evaluation artifacts plus:
+An M5a1-configured run writes the normal evaluation artifacts plus, under the selected retention mode:
 
 - `m5a1_auc_comparison.csv`
   - one row per `(task, snrDb, windowLength)` condition,
@@ -63,11 +63,13 @@ An M5a1-configured run writes the normal evaluation artifacts plus:
 
 - `configs/m5a1.compressed-stream-decomposition.json`
   - primary M5a1 run across both synthetic tasks,
+  - explicit `artifactRetentionMode: "milestone"` so checked-in runs keep compact milestone artifacts only,
   - same SNR grid as M4a (`-9`, `-3`, `0` dB),
   - same window-length grid as M4a (`64`, `128`),
   - same strengthened `72` trials per class per condition.
 - `configs/m5a1.compressed-stream-decomposition-smoke.json`
-  - tiny regression config for runtime/test hygiene.
+  - tiny regression config for runtime/test hygiene,
+  - explicit `artifactRetentionMode: "smoke"` for minimal regression outputs.
 
 ## Reading Guide
 
@@ -83,3 +85,7 @@ An M5a1-configured run writes the normal evaluation artifacts plus:
 - Current compression backend caveat remains in force.
 - No SDR claims yet.
 - Mechanism is not fully resolved by this pass.
+
+## Mx5 Retention Note
+
+Under Mx5, the checked-in M5a1 milestone run should keep the compact milestone artifact set: manifest, summary artifacts, compact ROC output, comparison CSV, findings markdown, and delta summary. Full per-trial rows and raw threshold-by-threshold ROC CSVs are intentionally omitted from milestone retention and can be regenerated locally by rerunning the same config in `full` retention mode.

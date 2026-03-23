@@ -135,13 +135,23 @@ public sealed class EvaluationTests
 
             var run = application.Run(config, sampleConfigPath, "/does/not/exist");
             var summaryCsv = File.ReadAllText(Path.Combine(run.RunDirectory, "summary.csv"));
-            var rocCsv = File.ReadAllText(Path.Combine(run.RunDirectory, "roc_points.csv"));
 
             Assert.NotEmpty(run.Result.Evaluation!.RocPoints);
             Assert.All(run.Result.Summary.Groups, group => Assert.NotNull(group.Auc));
             Assert.Contains("auc", summaryCsv, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("tpr", rocCsv, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("scoreOrientation", rocCsv);
+
+            if (string.Equals(config.ArtifactRetentionMode, ArtifactRetentionModes.Full, StringComparison.Ordinal))
+            {
+                var rocCsv = File.ReadAllText(Path.Combine(run.RunDirectory, "roc_points.csv"));
+                Assert.Contains("tpr", rocCsv, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("scoreOrientation", rocCsv);
+            }
+            else if (string.Equals(config.ArtifactRetentionMode, ArtifactRetentionModes.Milestone, StringComparison.Ordinal))
+            {
+                var compactRocCsv = File.ReadAllText(Path.Combine(run.RunDirectory, "roc_points_compact.csv"));
+                Assert.Contains("sourcePointCount", compactRocCsv);
+                Assert.False(File.Exists(Path.Combine(run.RunDirectory, "roc_points.csv")));
+            }
 
             if (string.Equals(configFileName, "m4.score-identity-smoke.json", StringComparison.Ordinal))
             {

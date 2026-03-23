@@ -40,6 +40,7 @@ public sealed class ExperimentApplication
             throw new InvalidOperationException("Configuration validation failed: " + string.Join(" ", validationErrors));
         }
 
+        var retention = ArtifactRetentionPlan.Create(config.ArtifactRetentionMode);
         var fullConfigPath = Path.GetFullPath(configPath);
         var configDirectory = Path.GetDirectoryName(fullConfigPath) ?? Directory.GetCurrentDirectory();
         var clockTime = _clock.UtcNow;
@@ -72,7 +73,11 @@ public sealed class ExperimentApplication
                 config.ManifestMetadata.Notes,
                 config.ManifestMetadata.VersionTag,
                 config.ManifestMetadata.Tags),
-            Evaluation: CreateEvaluationManifest(config));
+            Evaluation: CreateEvaluationManifest(config),
+            Retention: new ArtifactRetentionManifest(
+                retention.Mode,
+                retention.OmittedArtifactKinds,
+                retention.RegenerationNote));
 
         var artifactPaths = _artifactFileWriter.WriteRunArtifacts(runDirectory, config, result, manifestTemplate);
         var manifestArtifactPaths = new List<string>
@@ -80,34 +85,16 @@ public sealed class ExperimentApplication
             Path.GetRelativePath(runDirectory, artifactPaths.ManifestPath),
             Path.GetRelativePath(runDirectory, artifactPaths.SummaryPath),
             Path.GetRelativePath(runDirectory, artifactPaths.SummaryCsvPath),
-            Path.GetRelativePath(runDirectory, artifactPaths.TrialsCsvPath),
-            Path.GetRelativePath(runDirectory, artifactPaths.RocPointsCsvPath),
         };
 
-        if (artifactPaths.M4AucComparisonCsvPath is not null)
-        {
-            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M4AucComparisonCsvPath));
-        }
-
-        if (artifactPaths.M4FindingsPath is not null)
-        {
-            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M4FindingsPath));
-        }
-
-        if (artifactPaths.M5A1AucComparisonCsvPath is not null)
-        {
-            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M5A1AucComparisonCsvPath));
-        }
-
-        if (artifactPaths.M5A1FindingsPath is not null)
-        {
-            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M5A1FindingsPath));
-        }
-
-        if (artifactPaths.M5A1DeltaSummaryCsvPath is not null)
-        {
-            manifestArtifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPaths.M5A1DeltaSummaryCsvPath));
-        }
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.TrialsCsvPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.RocPointsCsvPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.RocPointsCompactCsvPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M4AucComparisonCsvPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M4FindingsPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M5A1AucComparisonCsvPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M5A1FindingsPath);
+        AddIfPresent(manifestArtifactPaths, runDirectory, artifactPaths.M5A1DeltaSummaryCsvPath);
 
         var manifest = manifestTemplate with
         {
@@ -117,6 +104,14 @@ public sealed class ExperimentApplication
         ExperimentConfigJson.Save(artifactPaths.ManifestPath, manifest);
         var finalizedResult = result with { Artifacts = artifactPaths };
         return new RunExecutionResult(manifest, finalizedResult, runDirectory);
+    }
+
+    private static void AddIfPresent(List<string> artifactPaths, string runDirectory, string? artifactPath)
+    {
+        if (artifactPath is not null)
+        {
+            artifactPaths.Add(Path.GetRelativePath(runDirectory, artifactPath));
+        }
     }
 
     private static EvaluationManifest? CreateEvaluationManifest(ExperimentConfig config)

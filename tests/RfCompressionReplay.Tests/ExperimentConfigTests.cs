@@ -15,6 +15,7 @@ public sealed class ExperimentConfigTests
         Assert.Equal("m2-gaussian-emitter-ed", config.ExperimentId);
         Assert.Equal(12345, config.Seed);
         Assert.Equal(ExperimentConfigValidator.SyntheticBenchmarkScenarioName, config.Scenario.Name);
+        Assert.Equal(ArtifactRetentionModes.Full, config.ArtifactRetentionMode);
         Assert.Equal(6, config.TrialCount);
         Assert.Equal(DetectorCatalog.EnergyDetectorName, config.Detector.Name);
         Assert.Equal(DetectorCatalog.EnergyDetectorMode, config.Detector.Mode);
@@ -34,6 +35,7 @@ public sealed class ExperimentConfigTests
         var config = ExperimentConfigJson.Load(path);
 
         Assert.NotNull(config.Evaluation);
+        Assert.Equal(ArtifactRetentionModes.Full, config.ArtifactRetentionMode);
         Assert.Equal(expectedDetectorCount, config.Evaluation!.Detectors.Count);
         Assert.NotEmpty(config.Evaluation.Tasks);
         Assert.NotEmpty(config.Evaluation.SnrDbValues);
@@ -51,6 +53,7 @@ public sealed class ExperimentConfigTests
         Assert.NotNull(config.Evaluation);
         Assert.Equal(expectedDetectorCount, config.Evaluation!.Detectors.Count);
         Assert.Contains(config.Evaluation.Detectors, detector => detector.Name == DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName);
+        Assert.Equal(configFileName.Contains("smoke", StringComparison.Ordinal) ? ArtifactRetentionModes.Smoke : ArtifactRetentionModes.Milestone, config.ArtifactRetentionMode);
         Assert.Equal("m5a1", config.ManifestMetadata.Tags!["milestone"]);
     }
 
@@ -68,7 +71,8 @@ public sealed class ExperimentConfigTests
             Signal: null,
             Benchmark: new SyntheticBenchmarkConfig(0, new GaussianNoiseConfig(0d, 0d), Array.Empty<SyntheticCaseConfig>()),
             Evaluation: null,
-            ManifestMetadata: ManifestMetadataConfig.Empty);
+            ManifestMetadata: ManifestMetadataConfig.Empty,
+            ArtifactRetentionMode: ArtifactRetentionModes.Full);
 
         var errors = ExperimentConfigValidator.Validate(config);
 
@@ -178,3 +182,5 @@ public sealed class ExperimentConfigTests
         Assert.Contains("Detector.Threshold must be a finite number.", errors);
     }
 }
+
+

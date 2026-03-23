@@ -11,7 +11,8 @@ internal static class TestConfigFactory
         string detectorName,
         string detectorMode,
         double threshold = 0d,
-        IReadOnlyList<SyntheticCaseConfig>? cases = null)
+        IReadOnlyList<SyntheticCaseConfig>? cases = null,
+        string artifactRetentionMode = ArtifactRetentionModes.Full)
     {
         return new ExperimentConfig(
             ExperimentId: experimentId,
@@ -36,7 +37,8 @@ internal static class TestConfigFactory
                         OfdmLike: null)
                 ]),
             Evaluation: null,
-            ManifestMetadata: new ManifestMetadataConfig("note", "m2", new Dictionary<string, string> { ["suite"] = "tests" }));
+            ManifestMetadata: new ManifestMetadataConfig("note", "m2", new Dictionary<string, string> { ["suite"] = "tests" }),
+            ArtifactRetentionMode: artifactRetentionMode);
     }
 
     public static ExperimentConfig CreateSyntheticEvaluationConfig(
@@ -45,7 +47,8 @@ internal static class TestConfigFactory
         IReadOnlyList<DetectorConfig>? detectors = null,
         IReadOnlyList<double>? snrDbValues = null,
         IReadOnlyList<int>? windowLengths = null,
-        int trialCountPerCondition = 3)
+        int trialCountPerCondition = 3,
+        string artifactRetentionMode = ArtifactRetentionModes.Full)
     {
         return new ExperimentConfig(
             ExperimentId: experimentId,
@@ -66,7 +69,8 @@ internal static class TestConfigFactory
                 SnrDbValues: snrDbValues ?? [-6d, 0d],
                 WindowLengths: windowLengths ?? [64, 128],
                 TrialCountPerCondition: trialCountPerCondition),
-            ManifestMetadata: new ManifestMetadataConfig("note", "m3", new Dictionary<string, string> { ["suite"] = "tests" }));
+            ManifestMetadata: new ManifestMetadataConfig("note", "m3", new Dictionary<string, string> { ["suite"] = "tests" }),
+            ArtifactRetentionMode: artifactRetentionMode);
     }
 
     public static IReadOnlyList<DetectorConfig> CreateM4CompressionDetectors()
