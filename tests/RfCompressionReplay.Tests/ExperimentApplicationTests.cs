@@ -377,6 +377,49 @@ public sealed class ExperimentApplicationTests
         }
     }
 
+    [Fact]
+    public void GeneratesM5B2ExplorationArtifactsForAxisSeparatedPerturbationRun()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+
+        try
+        {
+            var config = TestConfigFactory.CreateM5B2ExplorationConfig(
+                experimentId: "m5b2-test",
+                trialCountPerCondition: 2) with
+            {
+                OutputDirectory = tempRoot,
+                ExperimentName = "M5b2 Exploration Test",
+                ManifestMetadata = new ManifestMetadataConfig(
+                    "Test M5b2 perturbation-axis refinement run.",
+                    "m5b2-test",
+                    new Dictionary<string, string> { ["milestone"] = "m5b2", ["experimentType"] = "perturbation-axis-refinement" })
+            };
+
+            var baseApplication = CreateApplication("2026-03-23T06:06:07Z");
+            var explorationApplication = new M5B2ExplorationExperimentApplication(
+                new FixedRunClock(DateTimeOffset.Parse("2026-03-23T06:06:07Z")),
+                baseApplication,
+                new EnvironmentSummaryProvider(),
+                new GitCommitResolver());
+            var runDirectory = explorationApplication.Run(config, Path.Combine(tempRoot, "config.json"), "/does/not/exist");
+
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b2_auc_comparison.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b2_delta_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b2_axis_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b2_findings.md")));
+            Assert.Contains("perturbationId,perturbationAxisTag,seed,taskName,conditionSnrDb", File.ReadAllText(Path.Combine(runDirectory, "m5b2_auc_comparison.csv")));
+            Assert.Contains("perturbationAxisTag,alternativeDetectorName,featureFamily", File.ReadAllText(Path.Combine(runDirectory, "m5b2_axis_summary.csv")));
+            Assert.Contains("M5b2 Perturbation-Axis Refinement Findings", File.ReadAllText(Path.Combine(runDirectory, "m5b2_findings.md")));
+            Assert.False(Directory.Exists(Path.Combine(runDirectory, ".m5b2-temp")));
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
     private static ExperimentApplication CreateApplication(string utcTimestamp)
     {
         return new ExperimentApplication(

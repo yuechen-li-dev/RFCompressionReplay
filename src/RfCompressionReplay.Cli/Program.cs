@@ -31,6 +31,20 @@ try
         environmentSummaryProvider,
         gitCommitResolver);
 
+    if (IsM5B2ExplorationConfig(fullConfigPath))
+    {
+        var config = M5B2ExplorationConfigJson.Load(fullConfigPath);
+        var explorationApplication = new M5B2ExplorationExperimentApplication(
+            runClock,
+            application,
+            environmentSummaryProvider,
+            gitCommitResolver);
+        var runDirectory = explorationApplication.Run(config, fullConfigPath, ResolveRepositoryRoot());
+        Console.WriteLine($"Run completed: {config.ExperimentId} ({config.Scenario.Name})");
+        Console.WriteLine($"Artifacts: {runDirectory}");
+        return 0;
+    }
+
     if (IsM5B1ExplorationConfig(fullConfigPath))
     {
         var config = M5B1ExplorationConfigJson.Load(fullConfigPath);
@@ -82,7 +96,35 @@ static bool IsM5B1ExplorationConfig(string configPath)
 {
     using var document = JsonDocument.Parse(File.ReadAllText(configPath));
     return document.RootElement.TryGetProperty("seedPanel", out _)
-        && document.RootElement.TryGetProperty("perturbations", out _);
+        && document.RootElement.TryGetProperty("perturbations", out _)
+        && !HasM5B2AxisTags(document.RootElement);
+}
+
+static bool IsM5B2ExplorationConfig(string configPath)
+{
+    using var document = JsonDocument.Parse(File.ReadAllText(configPath));
+    return document.RootElement.TryGetProperty("seedPanel", out _)
+        && document.RootElement.TryGetProperty("perturbations", out _)
+        && HasM5B2AxisTags(document.RootElement);
+}
+
+static bool HasM5B2AxisTags(JsonElement rootElement)
+{
+    if (!rootElement.TryGetProperty("perturbations", out var perturbations)
+        || perturbations.ValueKind != JsonValueKind.Array)
+    {
+        return false;
+    }
+
+    foreach (var perturbation in perturbations.EnumerateArray())
+    {
+        if (!perturbation.TryGetProperty("axisTag", out _))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 static string ResolveRepositoryRoot()

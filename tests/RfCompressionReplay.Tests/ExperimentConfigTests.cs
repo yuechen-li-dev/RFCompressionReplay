@@ -89,6 +89,23 @@ public sealed class ExperimentConfigTests
         Assert.Contains(config.Perturbations, perturbation => perturbation.Representation.NumericFormat == RepresentationFormats.Float32LittleEndian);
     }
 
+    [Theory]
+    [InlineData("m5b2.perturbation-axis-refinement.json", ArtifactRetentionModes.Milestone, 72, 4)]
+    [InlineData("m5b2.perturbation-axis-refinement-smoke.json", ArtifactRetentionModes.Smoke, 4, 4)]
+    public void DeserializesM5B2Configs(string configFileName, string expectedRetentionMode, int expectedTrialCountPerCondition, int expectedPerturbationCount)
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = M5B2ExplorationConfigJson.Load(path);
+
+        Assert.Equal(expectedRetentionMode, config.ArtifactRetentionMode);
+        Assert.Equal(expectedTrialCountPerCondition, config.Evaluation.TrialCountPerCondition);
+        Assert.Equal([86420, 97531, 24680], config.SeedPanel);
+        Assert.Equal(expectedPerturbationCount, config.Perturbations.Count);
+        Assert.Equal(4, config.Evaluation.Detectors.Count);
+        Assert.Contains(config.Perturbations, perturbation => string.Equals(perturbation.AxisTag, M5B2PerturbationAxes.Scale, StringComparison.Ordinal));
+        Assert.Contains(config.Perturbations, perturbation => string.Equals(perturbation.AxisTag, M5B2PerturbationAxes.Packing, StringComparison.Ordinal));
+    }
+
     [Fact]
     public void ValidatorReturnsClearMessagesForInvalidSyntheticBenchmarkConfig()
     {
@@ -174,6 +191,28 @@ public sealed class ExperimentConfigTests
         Assert.Contains("Perturbations must include exactly one baseline representation using sampleScale 1.0 and numericFormat float64-le.", errors);
         Assert.Contains("Perturbations must include exactly one numeric scaling perturbation using float64-le serialization.", errors);
         Assert.Contains("M5b1 exploration requires the focused detector panel exactly: lzmsa-paper, lzmsa-mean-compressed-byte-value, lzmsa-compressed-byte-bucket-64-127-proportion, lzmsa-suffix-third-mean-compressed-byte-value.", errors);
+    }
+
+    [Fact]
+    public void M5B2ValidatorRejectsMissingAxisSeparationAndFocusedPanel()
+    {
+        var config = TestConfigFactory.CreateM5B2ExplorationConfig(
+            "m5b2-bad",
+            seedPanel: [7],
+            perturbations:
+            [
+                new M5B2PerturbationConfig("baseline", M5B2PerturbationAxes.Baseline, "baseline", new RepresentationConfig(1d, RepresentationFormats.Float64LittleEndian)),
+                new M5B2PerturbationConfig("scale-half", M5B2PerturbationAxes.Scale, "not isolated", new RepresentationConfig(0.5d, RepresentationFormats.Float32LittleEndian)),
+                new M5B2PerturbationConfig("float32", M5B2PerturbationAxes.Packing, "not isolated", new RepresentationConfig(0.5d, RepresentationFormats.Float32LittleEndian))
+            ],
+            detectors: TestConfigFactory.CreateM5A2CompressionDetectors());
+
+        var errors = M5B2ExplorationConfigValidator.Validate(config);
+
+        Assert.Contains("SeedPanel must contain at least two explicit seeds for M5b2 exploration.", errors);
+        Assert.Contains("Scale-only perturbation must change sampleScale away from 1.0 while keeping numericFormat float64-le.", errors);
+        Assert.Contains("Packing-only perturbation must keep sampleScale 1.0 while changing numericFormat away from float64-le.", errors);
+        Assert.Contains("M5b2 exploration requires the focused detector panel exactly: lzmsa-paper, lzmsa-mean-compressed-byte-value, lzmsa-compressed-byte-bucket-64-127-proportion, lzmsa-suffix-third-mean-compressed-byte-value.", errors);
     }
 
     [Theory]

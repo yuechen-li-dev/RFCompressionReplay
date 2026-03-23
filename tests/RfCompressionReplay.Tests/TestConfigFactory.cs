@@ -208,6 +208,68 @@ internal static class TestConfigFactory
             ArtifactRetentionMode: artifactRetentionMode);
     }
 
+    public static IReadOnlyList<M5B2PerturbationConfig> CreateM5B2Perturbations()
+    {
+        return
+        [
+            new M5B2PerturbationConfig(
+                "baseline",
+                M5B2PerturbationAxes.Baseline,
+                "Baseline representation: sampleScale 1.0 with float64-le serialization.",
+                new RepresentationConfig(1d, RepresentationFormats.Float64LittleEndian)),
+            new M5B2PerturbationConfig(
+                "scale-half",
+                M5B2PerturbationAxes.Scale,
+                "Scale-only perturbation: multiply each sample by 0.5 before float64-le serialization, with no extra clipping or normalization.",
+                new RepresentationConfig(0.5d, RepresentationFormats.Float64LittleEndian)),
+            new M5B2PerturbationConfig(
+                "float32",
+                M5B2PerturbationAxes.Packing,
+                "Packing-only perturbation: keep scale 1.0 but cast each sample to float32 before little-endian serialization.",
+                new RepresentationConfig(1d, RepresentationFormats.Float32LittleEndian)),
+            new M5B2PerturbationConfig(
+                "scale-half-float32",
+                M5B2PerturbationAxes.Combined,
+                "Combined perturbation: multiply each sample by 0.5, then cast to float32 before little-endian serialization.",
+                new RepresentationConfig(0.5d, RepresentationFormats.Float32LittleEndian)),
+        ];
+    }
+
+    public static M5B2ExplorationConfig CreateM5B2ExplorationConfig(
+        string experimentId,
+        IReadOnlyList<int>? seedPanel = null,
+        IReadOnlyList<M5B2PerturbationConfig>? perturbations = null,
+        IReadOnlyList<BenchmarkTaskConfig>? tasks = null,
+        IReadOnlyList<DetectorConfig>? detectors = null,
+        IReadOnlyList<double>? snrDbValues = null,
+        IReadOnlyList<int>? windowLengths = null,
+        int trialCountPerCondition = 3,
+        string artifactRetentionMode = ArtifactRetentionModes.Milestone)
+    {
+        return new M5B2ExplorationConfig(
+            ExperimentId: experimentId,
+            ExperimentName: "M5b2 Exploration Test",
+            SeedPanel: seedPanel ?? [7, 11, 13],
+            Perturbations: perturbations ?? CreateM5B2Perturbations(),
+            OutputDirectory: "artifacts",
+            Scenario: new ScenarioConfig(ExperimentConfigValidator.SyntheticBenchmarkScenarioName, 2, 64),
+            TrialCount: 4,
+            Detector: new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 25000d, DetectorCatalog.LzmsaPaperDetectorMode),
+            Signal: null,
+            Benchmark: new SyntheticBenchmarkConfig(
+                BaseStreamLength: 2048,
+                Noise: new GaussianNoiseConfig(0d, 1d),
+                Cases: Array.Empty<SyntheticCaseConfig>()),
+            Evaluation: new EvaluationConfig(
+                Tasks: tasks ?? [CreateOfdmTask(), CreateGaussianEmitterTask()],
+                Detectors: detectors ?? CreateM5B1CompressionDetectors(),
+                SnrDbValues: snrDbValues ?? [-6d, 0d],
+                WindowLengths: windowLengths ?? [64],
+                TrialCountPerCondition: trialCountPerCondition),
+            ManifestMetadata: new ManifestMetadataConfig("note", "m5b2", new Dictionary<string, string> { ["suite"] = "tests", ["milestone"] = "m5b2" }),
+            ArtifactRetentionMode: artifactRetentionMode);
+    }
+
     public static BenchmarkTaskConfig CreateOfdmTask()
     {
         return new BenchmarkTaskConfig(

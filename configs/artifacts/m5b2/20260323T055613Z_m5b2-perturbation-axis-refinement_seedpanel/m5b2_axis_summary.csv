@@ -1,0 +1,13 @@
+﻿perturbationAxisTag,alternativeDetectorName,featureFamily,closestNeighborCount,combinationCount,winRate,medianAbsoluteAucDeltaFromPaper,maxAbsoluteAucDeltaFromPaper,medianClosenessRank,axisMedianLeader,axisClosestLeader
+baseline,lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,11,36,0.305556,0.066165,0.205343,2.000000,lzmsa-compressed-byte-bucket-64-127-proportion,lzmsa-mean-compressed-byte-value
+baseline,lzmsa-mean-compressed-byte-value,whole-stream-mean,14,36,0.388889,0.069444,0.138503,2.000000,lzmsa-compressed-byte-bucket-64-127-proportion,lzmsa-mean-compressed-byte-value
+baseline,lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,11,36,0.305556,0.075859,0.156057,2.000000,lzmsa-compressed-byte-bucket-64-127-proportion,lzmsa-mean-compressed-byte-value
+scale,lzmsa-mean-compressed-byte-value,whole-stream-mean,29,36,0.805556,0.009934,0.029514,1.000000,lzmsa-mean-compressed-byte-value,lzmsa-mean-compressed-byte-value
+scale,lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,5,36,0.138889,0.034192,0.139564,2.000000,lzmsa-mean-compressed-byte-value,lzmsa-mean-compressed-byte-value
+scale,lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,2,36,0.055556,0.050492,0.230806,3.000000,lzmsa-mean-compressed-byte-value,lzmsa-mean-compressed-byte-value
+packing,lzmsa-mean-compressed-byte-value,whole-stream-mean,20,36,0.555556,0.020736,0.055556,1.000000,lzmsa-mean-compressed-byte-value,lzmsa-mean-compressed-byte-value
+packing,lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,10,36,0.277778,0.028743,0.126737,2.000000,lzmsa-mean-compressed-byte-value,lzmsa-mean-compressed-byte-value
+packing,lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,6,36,0.166667,0.055169,0.341628,3.000000,lzmsa-mean-compressed-byte-value,lzmsa-mean-compressed-byte-value
+combined,lzmsa-mean-compressed-byte-value,whole-stream-mean,19,36,0.527778,0.020159,0.076196,1.000000,lzmsa-mean-compressed-byte-value,lzmsa-mean-compressed-byte-value
+combined,lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,7,36,0.194444,0.039834,0.089410,2.000000,lzmsa-mean-compressed-byte-value,lzmsa-mean-compressed-byte-value
+combined,lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,10,36,0.277778,0.046586,0.247299,2.500000,lzmsa-mean-compressed-byte-value,lzmsa-mean-compressed-byte-value
