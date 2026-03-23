@@ -10,6 +10,7 @@ public static class DetectorCatalog
     public const string LzmsaCompressedLengthDetectorName = "lzmsa-compressed-length";
     public const string LzmsaNormalizedCompressedLengthDetectorName = "lzmsa-normalized-compressed-length";
     public const string LzmsaMeanCompressedByteValueDetectorName = "lzmsa-mean-compressed-byte-value";
+    public const string LzmsaRmsNormalizedMeanCompressedByteValueDetectorName = "lzmsa-rms-normalized-mean-compressed-byte-value";
     public const string LzmsaCompressedByteVarianceDetectorName = "lzmsa-compressed-byte-variance";
     public const string LzmsaCompressedByteBucket0To63ProportionDetectorName = "lzmsa-compressed-byte-bucket-0-63-proportion";
     public const string LzmsaCompressedByteBucket64To127ProportionDetectorName = "lzmsa-compressed-byte-bucket-64-127-proportion";
@@ -24,6 +25,7 @@ public static class DetectorCatalog
     public const string LzmsaCompressedLengthDetectorMode = "compressed-byte-count";
     public const string LzmsaNormalizedCompressedLengthDetectorMode = "compressed-byte-count-per-input-byte";
     public const string LzmsaMeanCompressedByteValueDetectorMode = "mean-compressed-byte-value";
+    public const string LzmsaRmsNormalizedMeanCompressedByteValueDetectorMode = "rms-normalized-mean-compressed-byte-value";
     public const string LzmsaCompressedByteVarianceDetectorMode = "compressed-byte-variance";
     public const string LzmsaCompressedByteBucket0To63ProportionDetectorMode = "compressed-byte-bucket-0-63-proportion";
     public const string LzmsaCompressedByteBucket64To127ProportionDetectorMode = "compressed-byte-bucket-64-127-proportion";
@@ -40,6 +42,7 @@ public static class DetectorCatalog
         LzmsaCompressedLengthDetectorName,
         LzmsaNormalizedCompressedLengthDetectorName,
         LzmsaMeanCompressedByteValueDetectorName,
+        LzmsaRmsNormalizedMeanCompressedByteValueDetectorName,
         LzmsaCompressedByteVarianceDetectorName,
         LzmsaCompressedByteBucket0To63ProportionDetectorName,
         LzmsaCompressedByteBucket64To127ProportionDetectorName,
@@ -58,6 +61,7 @@ public static class DetectorCatalog
             [LzmsaCompressedLengthDetectorName] = LzmsaCompressedLengthDetectorMode,
             [LzmsaNormalizedCompressedLengthDetectorName] = LzmsaNormalizedCompressedLengthDetectorMode,
             [LzmsaMeanCompressedByteValueDetectorName] = LzmsaMeanCompressedByteValueDetectorMode,
+            [LzmsaRmsNormalizedMeanCompressedByteValueDetectorName] = LzmsaRmsNormalizedMeanCompressedByteValueDetectorMode,
             [LzmsaCompressedByteVarianceDetectorName] = LzmsaCompressedByteVarianceDetectorMode,
             [LzmsaCompressedByteBucket0To63ProportionDetectorName] = LzmsaCompressedByteBucket0To63ProportionDetectorMode,
             [LzmsaCompressedByteBucket64To127ProportionDetectorName] = LzmsaCompressedByteBucket64To127ProportionDetectorMode,
@@ -76,6 +80,7 @@ public static class DetectorCatalog
             [LzmsaCompressedLengthDetectorName] = ScoreOrientation.LowerScoreMorePositive,
             [LzmsaNormalizedCompressedLengthDetectorName] = ScoreOrientation.LowerScoreMorePositive,
             [LzmsaMeanCompressedByteValueDetectorName] = ScoreOrientation.HigherScoreMorePositive,
+            [LzmsaRmsNormalizedMeanCompressedByteValueDetectorName] = ScoreOrientation.HigherScoreMorePositive,
             [LzmsaCompressedByteVarianceDetectorName] = ScoreOrientation.HigherScoreMorePositive,
             [LzmsaCompressedByteBucket0To63ProportionDetectorName] = ScoreOrientation.HigherScoreMorePositive,
             [LzmsaCompressedByteBucket64To127ProportionDetectorName] = ScoreOrientation.HigherScoreMorePositive,

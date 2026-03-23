@@ -12,6 +12,8 @@ public static class ExperimentConfigValidator
     public const string NoiseOnlySourceType = "noise-only";
     public const string GaussianEmitterSourceType = "gaussian-emitter";
     public const string OfdmLikeSourceType = "ofdm-like";
+    public const string BurstOfdmLikeSourceType = "burst-ofdm-like";
+    public const string CorrelatedGaussianSourceType = "correlated-gaussian";
 
     public static IReadOnlyList<string> Validate(ExperimentConfig config)
     {
@@ -129,9 +131,12 @@ public static class ExperimentConfigValidator
         }
 
         if (string.Equals(detector.Name, DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName, StringComparison.OrdinalIgnoreCase)
-            && (detector.Threshold < 0d || detector.Threshold > byte.MaxValue))
+            || string.Equals(detector.Name, DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName, StringComparison.OrdinalIgnoreCase))
         {
-            errors.Add($"{prefix}.Threshold for detector '{detector.Name}' must be between 0 and 255 inclusive because the mean compressed byte value is bounded to that range.");
+            if (detector.Threshold < 0d || detector.Threshold > byte.MaxValue)
+            {
+                errors.Add($"{prefix}.Threshold for detector '{detector.Name}' must be between 0 and 255 inclusive because the mean compressed byte value is bounded to that range.");
+            }
         }
     }
 
@@ -356,7 +361,7 @@ public static class ExperimentConfigValidator
 
         if (!IsSupportedSourceType(@case.SourceType))
         {
-            errors.Add($"{prefix}.SourceType '{@case.SourceType}' is not supported in M3. Supported source types: {NoiseOnlySourceType}, {GaussianEmitterSourceType}, {OfdmLikeSourceType}.");
+            errors.Add($"{prefix}.SourceType '{@case.SourceType}' is not supported in M3. Supported source types: {NoiseOnlySourceType}, {GaussianEmitterSourceType}, {OfdmLikeSourceType}, {BurstOfdmLikeSourceType}, {CorrelatedGaussianSourceType}.");
             return;
         }
 
@@ -392,24 +397,53 @@ public static class ExperimentConfigValidator
             }
             else
             {
-                if (@case.OfdmLike.SubcarrierCount <= 0)
+                ValidateOfdmLikeConfig(@case.OfdmLike, $"{prefix}.OfdmLike", errors);
+            }
+        }
+
+        if (string.Equals(@case.SourceType, BurstOfdmLikeSourceType, StringComparison.OrdinalIgnoreCase))
+        {
+            if (@case.BurstOfdmLike is null)
+            {
+                errors.Add($"{prefix}.BurstOfdmLike is required for source type '{BurstOfdmLikeSourceType}'.");
+            }
+            else
+            {
+                ValidateOfdmLikeConfig(@case.BurstOfdmLike.Carrier, $"{prefix}.BurstOfdmLike.Carrier", errors);
+
+                if (@case.BurstOfdmLike.StartFraction < 0d || @case.BurstOfdmLike.StartFraction >= 1d)
                 {
-                    errors.Add($"{prefix}.OfdmLike.SubcarrierCount must be greater than zero.");
+                    errors.Add($"{prefix}.BurstOfdmLike.StartFraction must be in [0, 1).");
                 }
 
-                if (@case.OfdmLike.SamplesPerSymbol <= 1)
+                if (@case.BurstOfdmLike.LengthFraction <= 0d || @case.BurstOfdmLike.LengthFraction > 1d)
                 {
-                    errors.Add($"{prefix}.OfdmLike.SamplesPerSymbol must be greater than one.");
+                    errors.Add($"{prefix}.BurstOfdmLike.LengthFraction must be in (0, 1].");
                 }
 
-                if (@case.OfdmLike.CarrierSpacing <= 0d)
+                if (@case.BurstOfdmLike.StartFraction + @case.BurstOfdmLike.LengthFraction > 1d)
                 {
-                    errors.Add($"{prefix}.OfdmLike.CarrierSpacing must be greater than zero.");
+                    errors.Add($"{prefix}.BurstOfdmLike.StartFraction + LengthFraction must be <= 1.");
+                }
+            }
+        }
+
+        if (string.Equals(@case.SourceType, CorrelatedGaussianSourceType, StringComparison.OrdinalIgnoreCase))
+        {
+            if (@case.CorrelatedGaussian is null)
+            {
+                errors.Add($"{prefix}.CorrelatedGaussian is required for source type '{CorrelatedGaussianSourceType}'.");
+            }
+            else
+            {
+                if (@case.CorrelatedGaussian.InnovationStandardDeviation <= 0d)
+                {
+                    errors.Add($"{prefix}.CorrelatedGaussian.InnovationStandardDeviation must be greater than zero.");
                 }
 
-                if (@case.OfdmLike.Amplitude <= 0d)
+                if (@case.CorrelatedGaussian.ArCoefficient <= -0.999d || @case.CorrelatedGaussian.ArCoefficient >= 0.999d)
                 {
-                    errors.Add($"{prefix}.OfdmLike.Amplitude must be greater than zero.");
+                    errors.Add($"{prefix}.CorrelatedGaussian.ArCoefficient must stay within (-0.999, 0.999) for a stable modest AR(1) process.");
                 }
             }
         }
@@ -419,6 +453,37 @@ public static class ExperimentConfigValidator
     {
         return string.Equals(sourceType, NoiseOnlySourceType, StringComparison.OrdinalIgnoreCase)
             || string.Equals(sourceType, GaussianEmitterSourceType, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(sourceType, OfdmLikeSourceType, StringComparison.OrdinalIgnoreCase);
+            || string.Equals(sourceType, OfdmLikeSourceType, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(sourceType, BurstOfdmLikeSourceType, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(sourceType, CorrelatedGaussianSourceType, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void ValidateOfdmLikeConfig(OfdmLikeSignalConfig? ofdmLike, string prefix, List<string> errors)
+    {
+        if (ofdmLike is null)
+        {
+            errors.Add($"{prefix} is required.");
+            return;
+        }
+
+        if (ofdmLike.SubcarrierCount <= 0)
+        {
+            errors.Add($"{prefix}.SubcarrierCount must be greater than zero.");
+        }
+
+        if (ofdmLike.SamplesPerSymbol <= 1)
+        {
+            errors.Add($"{prefix}.SamplesPerSymbol must be greater than one.");
+        }
+
+        if (ofdmLike.CarrierSpacing <= 0d)
+        {
+            errors.Add($"{prefix}.CarrierSpacing must be greater than zero.");
+        }
+
+        if (ofdmLike.Amplitude <= 0d)
+        {
+            errors.Add($"{prefix}.Amplitude must be greater than zero.");
+        }
     }
 }

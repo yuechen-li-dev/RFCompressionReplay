@@ -39,6 +39,15 @@ public static class DetectorFactory
                 serializer,
                 new BrotliCompressionCodec(),
                 analysis => analysis.MeanCompressedByteValue),
+            DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName => new LzmsaCompressionDetector(
+                DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName,
+                new LzmsaWindowSerializer(new RepresentationConfig(
+                    1d,
+                    RepresentationFormats.Float64LittleEndian,
+                    RepresentationNormalizations.Rms,
+                    1d)),
+                new BrotliCompressionCodec(),
+                analysis => analysis.MeanCompressedByteValue),
             DetectorCatalog.LzmsaCompressedByteVarianceDetectorName => new LzmsaCompressionDetector(
                 DetectorCatalog.LzmsaCompressedByteVarianceDetectorName,
                 serializer,

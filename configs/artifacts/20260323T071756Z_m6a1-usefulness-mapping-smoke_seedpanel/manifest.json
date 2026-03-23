@@ -1,0 +1,74 @@
+{
+  "experimentId": "m6a1-usefulness-mapping-smoke",
+  "experimentName": "M6a1 Synthetic Usefulness Mapping Smoke",
+  "utcTimestamp": "2026-03-23T07:17:56.0816779+00:00",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "gitCommit": "810eebd444ad40c2a9dde5f489ec586265187ea0",
+  "environment": {
+    "machineName": "d86d6588d174",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../m6a1.usefulness-mapping-smoke.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCountPerCondition": 6,
+  "artifactPaths": [
+    "manifest.json",
+    "m6a1_auc_comparison.csv",
+    "m6a1_task_summary.csv",
+    "m6a1_findings.md"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "Tiny M6a1 smoke config for regression coverage of the compact usefulness-mapping artifact path.",
+    "versionTag": "m6a1-smoke",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m6a1",
+      "experimentType": "usefulness-mapping",
+      "benchmark": "smoke",
+      "detectorPanel": "ed-cav-paper-rms-normalized-mean",
+      "taskFamilies": "structured-burst-colored-nuisance-equal-energy",
+      "retentionIntent": "compact-summary-first"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "structured-burst-vs-noise-only",
+      "colored-nuisance-vs-white-noise",
+      "equal-energy-structured-vs-unstructured"
+    ],
+    "detectorNames": [
+      "ed",
+      "cav",
+      "lzmsa-paper",
+      "lzmsa-rms-normalized-mean-compressed-byte-value"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 6
+  },
+  "retention": {
+    "mode": "smoke",
+    "omittedArtifactKinds": [
+      "trials.csv",
+      "roc_points.csv",
+      "roc_points_compact.csv"
+    ],
+    "regenerationNote": "M6a1 keeps only the top-level manifest, AUC comparison CSV, task summary CSV, and findings markdown by default. Re-run the same config through the underlying seeded experiment path if you need per-seed summary or ROC artifacts."
+  }
+}

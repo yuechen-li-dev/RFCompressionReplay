@@ -147,6 +147,8 @@ public sealed class ExperimentApplication
                 new GaussianNoiseGenerator(),
                 new GaussianEmitterGenerator(),
                 new OfdmLikeSignalGenerator(),
+                new BurstOfdmLikeGenerator(new OfdmLikeSignalGenerator()),
+                new CorrelatedGaussianProcessGenerator(),
                 new SnrMixer());
 
             if (config.Evaluation is not null)

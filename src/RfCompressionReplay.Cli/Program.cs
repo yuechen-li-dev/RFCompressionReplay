@@ -31,6 +31,20 @@ try
         environmentSummaryProvider,
         gitCommitResolver);
 
+    if (IsM6A1UsefulnessConfig(fullConfigPath))
+    {
+        var config = M6A1UsefulnessConfigJson.Load(fullConfigPath);
+        var usefulnessApplication = new M6A1UsefulnessExperimentApplication(
+            runClock,
+            application,
+            environmentSummaryProvider,
+            gitCommitResolver);
+        var runDirectory = usefulnessApplication.Run(config, fullConfigPath, ResolveRepositoryRoot());
+        Console.WriteLine($"Run completed: {config.ExperimentId} ({config.Scenario.Name})");
+        Console.WriteLine($"Artifacts: {runDirectory}");
+        return 0;
+    }
+
     if (IsM5B3ExplorationConfig(fullConfigPath))
     {
         var config = M5B3ExplorationConfigJson.Load(fullConfigPath);
@@ -103,7 +117,14 @@ static bool IsM5A3StabilityConfig(string configPath)
 {
     using var document = JsonDocument.Parse(File.ReadAllText(configPath));
     return document.RootElement.TryGetProperty("seedPanel", out _)
+        && !IsM6A1UsefulnessDocument(document.RootElement)
         && !document.RootElement.TryGetProperty("perturbations", out _);
+}
+
+static bool IsM6A1UsefulnessConfig(string configPath)
+{
+    using var document = JsonDocument.Parse(File.ReadAllText(configPath));
+    return IsM6A1UsefulnessDocument(document.RootElement);
 }
 
 static bool IsM5B1ExplorationConfig(string configPath)
@@ -147,6 +168,28 @@ static bool HasM5B2AxisTags(JsonElement rootElement)
     }
 
     return true;
+}
+
+static bool IsM6A1UsefulnessDocument(JsonElement rootElement)
+{
+    if (!rootElement.TryGetProperty("seedPanel", out _)
+        || !rootElement.TryGetProperty("evaluation", out var evaluation)
+        || !evaluation.TryGetProperty("tasks", out var tasks)
+        || tasks.ValueKind != JsonValueKind.Array)
+    {
+        return false;
+    }
+
+    var taskNames = tasks.EnumerateArray()
+        .Where(task => task.TryGetProperty("name", out _))
+        .Select(task => task.GetProperty("name").GetString())
+        .Where(name => !string.IsNullOrWhiteSpace(name))
+        .ToArray();
+
+    return taskNames.Length == 3
+        && taskNames.Contains("structured-burst-vs-noise-only", StringComparer.Ordinal)
+        && taskNames.Contains("colored-nuisance-vs-white-noise", StringComparer.Ordinal)
+        && taskNames.Contains("equal-energy-structured-vs-unstructured", StringComparer.Ordinal);
 }
 
 static string ResolveRepositoryRoot()

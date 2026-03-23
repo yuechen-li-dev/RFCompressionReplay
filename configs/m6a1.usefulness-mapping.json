@@ -1,0 +1,173 @@
+{
+  "experimentId": "m6a1-usefulness-mapping",
+  "experimentName": "M6a1 Synthetic Usefulness Mapping",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "outputDirectory": "artifacts/m6a1",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "ed",
+    "threshold": 1.0,
+    "mode": "average-energy"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": []
+  },
+  "evaluation": {
+    "tasks": [
+      {
+        "name": "structured-burst-vs-noise-only",
+        "description": "Positive class is a weak OFDM-like burst inserted into a Gaussian-noise stream at the configured SNR. Negative class is white Gaussian noise only.",
+        "positiveCase": {
+          "name": "structured-burst",
+          "targetLabel": "structured-burst-present",
+          "sourceType": "burst-ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": null,
+          "burstOfdmLike": {
+            "carrier": {
+              "subcarrierCount": 8,
+              "samplesPerSymbol": 32,
+              "symbolSeed": 91,
+              "carrierSpacing": 0.75,
+              "amplitude": 1.0
+            },
+            "startFraction": 0.35,
+            "lengthFraction": 0.18
+          },
+          "correlatedGaussian": null
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null,
+          "burstOfdmLike": null,
+          "correlatedGaussian": null
+        }
+      },
+      {
+        "name": "colored-nuisance-vs-white-noise",
+        "description": "Positive class is a modest AR(1)-style correlated Gaussian nuisance process mixed into Gaussian noise at the configured SNR. Negative class is white Gaussian noise only.",
+        "positiveCase": {
+          "name": "colored-nuisance",
+          "targetLabel": "correlated-nuisance",
+          "sourceType": "correlated-gaussian",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": null,
+          "burstOfdmLike": null,
+          "correlatedGaussian": {
+            "innovationStandardDeviation": 1.0,
+            "arCoefficient": 0.92
+          }
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null,
+          "burstOfdmLike": null,
+          "correlatedGaussian": null
+        }
+      },
+      {
+        "name": "equal-energy-structured-vs-unstructured",
+        "description": "Positive class is an OFDM-like structured process mixed to the configured SNR. Negative class is a Gaussian emitter mixed to the same configured SNR so the separator is not intended to be raw energy alone.",
+        "positiveCase": {
+          "name": "equal-energy-structured",
+          "targetLabel": "structured",
+          "sourceType": "ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": {
+            "subcarrierCount": 8,
+            "samplesPerSymbol": 32,
+            "symbolSeed": 77,
+            "carrierSpacing": 0.75,
+            "amplitude": 1.0
+          },
+          "burstOfdmLike": null,
+          "correlatedGaussian": null
+        },
+        "negativeCase": {
+          "name": "equal-energy-unstructured",
+          "targetLabel": "less-structured",
+          "sourceType": "gaussian-emitter",
+          "snrDb": -3.0,
+          "gaussianEmitter": {
+            "mean": 0.0,
+            "standardDeviation": 1.0
+          },
+          "ofdmLike": null,
+          "burstOfdmLike": null,
+          "correlatedGaussian": null
+        }
+      }
+    ],
+    "detectors": [
+      {
+        "name": "ed",
+        "threshold": 1.0,
+        "mode": "average-energy"
+      },
+      {
+        "name": "cav",
+        "threshold": 0.0,
+        "mode": "lag-1-absolute-autocovariance"
+      },
+      {
+        "name": "lzmsa-paper",
+        "threshold": 25000.0,
+        "mode": "paper-byte-sum"
+      },
+      {
+        "name": "lzmsa-rms-normalized-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "rms-normalized-mean-compressed-byte-value"
+      }
+    ],
+    "snrDbValues": [
+      -9.0,
+      -3.0,
+      0.0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 48
+  },
+  "manifestMetadata": {
+    "notes": "M6a1 is the first usefulness-mapping milestone: a compact synthetic task-suite check of whether compression-derived byte-structure detectors add practical value relative to ED and CAV.",
+    "versionTag": "m6a1",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m6a1",
+      "experimentType": "usefulness-mapping",
+      "benchmark": "synthetic-application-oriented-suite",
+      "detectorPanel": "ed-cav-paper-rms-normalized-mean",
+      "taskFamilies": "structured-burst-colored-nuisance-equal-energy",
+      "retentionIntent": "compact-summary-first"
+    }
+  },
+  "artifactRetentionMode": "milestone"
+}
