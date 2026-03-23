@@ -1,0 +1,142 @@
+{
+  "experimentId": "m5b2-perturbation-axis-refinement",
+  "experimentName": "M5b2 Synthetic Perturbation-Axis Refinement",
+  "utcTimestamp": "2026-03-23T05:56:13.6864424+00:00",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "perturbationIds": [
+    "baseline",
+    "scale-half",
+    "float32",
+    "scale-half-float32"
+  ],
+  "gitCommit": "c44bdba7e53fa1330e05256b553bd49518dbf50f",
+  "environment": {
+    "machineName": "d4a085a46f27",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../m5b2.perturbation-axis-refinement.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCountPerCondition": 72,
+  "artifactPaths": [
+    "manifest.json",
+    "m5b2_auc_comparison.csv",
+    "m5b2_delta_summary.csv",
+    "m5b2_axis_summary.csv",
+    "m5b2_findings.md"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M5b2 is a compact perturbation-axis refinement pass: hold the M5b1 synthetic tasks and focused feature panel fixed, then split scale-only vs packing-only perturbations and compare them against the baseline plus a straightforward combined condition.",
+    "versionTag": "m5b2",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5b2",
+      "experimentType": "perturbation-axis-refinement",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m5b1",
+      "seedPanel": "86420-97531-24680",
+      "featurePanel": "paper-mean-bucket64-127-suffix-third",
+      "axisSplit": "baseline-scale-packing-combined"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "ofdm-signal-present-vs-noise-only",
+      "gaussian-emitter-vs-noise-only"
+    ],
+    "detectorNames": [
+      "lzmsa-paper",
+      "lzmsa-mean-compressed-byte-value",
+      "lzmsa-compressed-byte-bucket-64-127-proportion",
+      "lzmsa-suffix-third-mean-compressed-byte-value"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 72
+  },
+  "retention": {
+    "mode": "milestone",
+    "omittedArtifactKinds": [
+      "trials.csv",
+      "roc_points.csv"
+    ],
+    "regenerationNote": "Milestone retention keeps compact, conclusion-critical artifacts only. Omitted raw trial rows and full ROC thresholds are intentionally regenerable by rerunning the same config in full retention mode with the recorded code revision, seed, and manifest metadata."
+  },
+  "seedRuns": [
+    {
+      "perturbationId": "baseline",
+      "perturbationAxisTag": "baseline",
+      "seed": 86420
+    },
+    {
+      "perturbationId": "baseline",
+      "perturbationAxisTag": "baseline",
+      "seed": 97531
+    },
+    {
+      "perturbationId": "baseline",
+      "perturbationAxisTag": "baseline",
+      "seed": 24680
+    },
+    {
+      "perturbationId": "scale-half",
+      "perturbationAxisTag": "scale",
+      "seed": 86420
+    },
+    {
+      "perturbationId": "scale-half",
+      "perturbationAxisTag": "scale",
+      "seed": 97531
+    },
+    {
+      "perturbationId": "scale-half",
+      "perturbationAxisTag": "scale",
+      "seed": 24680
+    },
+    {
+      "perturbationId": "float32",
+      "perturbationAxisTag": "packing",
+      "seed": 86420
+    },
+    {
+      "perturbationId": "float32",
+      "perturbationAxisTag": "packing",
+      "seed": 97531
+    },
+    {
+      "perturbationId": "float32",
+      "perturbationAxisTag": "packing",
+      "seed": 24680
+    },
+    {
+      "perturbationId": "scale-half-float32",
+      "perturbationAxisTag": "combined",
+      "seed": 86420
+    },
+    {
+      "perturbationId": "scale-half-float32",
+      "perturbationAxisTag": "combined",
+      "seed": 97531
+    },
+    {
+      "perturbationId": "scale-half-float32",
+      "perturbationAxisTag": "combined",
+      "seed": 24680
+    }
+  ]
+}
