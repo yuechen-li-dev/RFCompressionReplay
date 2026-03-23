@@ -334,6 +334,49 @@ public sealed class ExperimentApplicationTests
         }
     }
 
+    [Fact]
+    public void GeneratesM5B1ExplorationArtifactsForPerturbationSeedPanelRun()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+
+        try
+        {
+            var config = TestConfigFactory.CreateM5B1ExplorationConfig(
+                experimentId: "m5b1-test",
+                trialCountPerCondition: 2) with
+            {
+                OutputDirectory = tempRoot,
+                ExperimentName = "M5b1 Exploration Test",
+                ManifestMetadata = new ManifestMetadataConfig(
+                    "Test M5b1 representation perturbation exploration run.",
+                    "m5b1-test",
+                    new Dictionary<string, string> { ["milestone"] = "m5b1", ["experimentType"] = "representation-perturbation-exploration" })
+            };
+
+            var baseApplication = CreateApplication("2026-03-23T06:06:07Z");
+            var explorationApplication = new M5B1ExplorationExperimentApplication(
+                new FixedRunClock(DateTimeOffset.Parse("2026-03-23T06:06:07Z")),
+                baseApplication,
+                new EnvironmentSummaryProvider(),
+                new GitCommitResolver());
+            var runDirectory = explorationApplication.Run(config, Path.Combine(tempRoot, "config.json"), "/does/not/exist");
+
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b1_auc_comparison.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b1_delta_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b1_perturbation_stability_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b1_findings.md")));
+            Assert.Contains("perturbationId,seed,taskName,conditionSnrDb", File.ReadAllText(Path.Combine(runDirectory, "m5b1_auc_comparison.csv")));
+            Assert.Contains("groupingScope,perturbationId,alternativeDetectorName", File.ReadAllText(Path.Combine(runDirectory, "m5b1_perturbation_stability_summary.csv")));
+            Assert.Contains("M5b1 Representation Perturbation Exploration Findings", File.ReadAllText(Path.Combine(runDirectory, "m5b1_findings.md")));
+            Assert.Equal(3, Directory.GetDirectories(Path.Combine(runDirectory, "perturbation-runs")).Length);
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
     private static ExperimentApplication CreateApplication(string utcTimestamp)
     {
         return new ExperimentApplication(

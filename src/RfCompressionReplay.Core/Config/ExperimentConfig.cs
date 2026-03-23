@@ -12,7 +12,8 @@ public sealed record ExperimentConfig(
     SyntheticBenchmarkConfig? Benchmark,
     EvaluationConfig? Evaluation,
     ManifestMetadataConfig ManifestMetadata,
-    string ArtifactRetentionMode = ArtifactRetentionModes.Full);
+    string ArtifactRetentionMode = ArtifactRetentionModes.Full,
+    RepresentationConfig? Representation = null);
 
 public sealed record ScenarioConfig(
     string Name,
@@ -76,4 +77,27 @@ public sealed record ManifestMetadataConfig(
     IReadOnlyDictionary<string, string>? Tags)
 {
     public static ManifestMetadataConfig Empty { get; } = new(string.Empty, string.Empty, new Dictionary<string, string>());
+}
+
+public sealed record RepresentationConfig(
+    double SampleScale = 1d,
+    string NumericFormat = RepresentationFormats.Float64LittleEndian);
+
+public static class RepresentationFormats
+{
+    public const string Float64LittleEndian = "float64-le";
+    public const string Float32LittleEndian = "float32-le";
+
+    public static IReadOnlyList<string> SupportedFormats { get; } =
+    [
+        Float64LittleEndian,
+        Float32LittleEndian,
+    ];
+
+    public static bool IsSupported(string format)
+    {
+        return SupportedFormats.Contains(format, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static string SupportedFormatsDisplay => string.Join(", ", SupportedFormats);
 }

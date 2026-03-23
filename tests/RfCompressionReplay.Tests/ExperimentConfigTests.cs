@@ -73,6 +73,22 @@ public sealed class ExperimentConfigTests
         Assert.Equal(9, config.Evaluation.Detectors.Count);
     }
 
+    [Theory]
+    [InlineData("m5b1.representation-perturbation-exploration.json", ArtifactRetentionModes.Milestone, 72)]
+    [InlineData("m5b1.representation-perturbation-exploration-smoke.json", ArtifactRetentionModes.Smoke, 4)]
+    public void DeserializesM5B1Configs(string configFileName, string expectedRetentionMode, int expectedTrialCountPerCondition)
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = M5B1ExplorationConfigJson.Load(path);
+
+        Assert.Equal(expectedRetentionMode, config.ArtifactRetentionMode);
+        Assert.Equal(expectedTrialCountPerCondition, config.Evaluation.TrialCountPerCondition);
+        Assert.Equal([86420, 97531, 24680], config.SeedPanel);
+        Assert.Equal(3, config.Perturbations.Count);
+        Assert.Equal(4, config.Evaluation.Detectors.Count);
+        Assert.Contains(config.Perturbations, perturbation => perturbation.Representation.NumericFormat == RepresentationFormats.Float32LittleEndian);
+    }
+
     [Fact]
     public void ValidatorReturnsClearMessagesForInvalidSyntheticBenchmarkConfig()
     {
@@ -136,6 +152,28 @@ public sealed class ExperimentConfigTests
 
         Assert.Contains("SeedPanel must contain at least three explicit seeds for M5a3 stability confirmation.", errors);
         Assert.Contains("SeedPanel seeds must be distinct.", errors);
+    }
+
+    [Fact]
+    public void M5B1ValidatorRejectsMissingFocusedPanelAndPerturbationShape()
+    {
+        var config = TestConfigFactory.CreateM5B1ExplorationConfig(
+            "m5b1-bad",
+            seedPanel: [7],
+            perturbations:
+            [
+                new M5B1PerturbationConfig("baseline-a", "baseline", new RepresentationConfig(1d, RepresentationFormats.Float64LittleEndian)),
+                new M5B1PerturbationConfig("baseline-b", "duplicate baseline", new RepresentationConfig(1d, RepresentationFormats.Float64LittleEndian)),
+                new M5B1PerturbationConfig("float32", "float32", new RepresentationConfig(1d, RepresentationFormats.Float32LittleEndian)),
+            ],
+            detectors: TestConfigFactory.CreateM5A2CompressionDetectors());
+
+        var errors = M5B1ExplorationConfigValidator.Validate(config);
+
+        Assert.Contains("SeedPanel must contain at least two explicit seeds for M5b1 exploration.", errors);
+        Assert.Contains("Perturbations must include exactly one baseline representation using sampleScale 1.0 and numericFormat float64-le.", errors);
+        Assert.Contains("Perturbations must include exactly one numeric scaling perturbation using float64-le serialization.", errors);
+        Assert.Contains("M5b1 exploration requires the focused detector panel exactly: lzmsa-paper, lzmsa-mean-compressed-byte-value, lzmsa-compressed-byte-bucket-64-127-proportion, lzmsa-suffix-third-mean-compressed-byte-value.", errors);
     }
 
     [Theory]

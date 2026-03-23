@@ -1,0 +1,134 @@
+{
+  "experimentId": "m5b1-representation-perturbation-exploration",
+  "experimentName": "M5b1 Synthetic Representation Perturbation Exploration",
+  "utcTimestamp": "2026-03-23T05:18:53.5594385+00:00",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "perturbationIds": [
+    "baseline",
+    "scale-half",
+    "float32"
+  ],
+  "gitCommit": "bd8107597e32dab7225dd0ecfbf8c178c113f531",
+  "environment": {
+    "machineName": "e4d09dcfe3dc",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../m5b1.representation-perturbation-exploration.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCountPerCondition": 72,
+  "artifactPaths": [
+    "manifest.json",
+    "m5b1_auc_comparison.csv",
+    "m5b1_delta_summary.csv",
+    "m5b1_perturbation_stability_summary.csv",
+    "m5b1_findings.md"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M5b1 is the first compact representation-perturbation pass: hold synthetic tasks fixed, then test whether the lzmsa-paper nearest-neighbor family survives one numeric scaling perturbation and one serialization precision perturbation.",
+    "versionTag": "m5b1",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5b1",
+      "experimentType": "representation-perturbation-exploration",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m5a3",
+      "seedPanel": "86420-97531-24680",
+      "featurePanel": "paper-mean-bucket64-127-suffix-third"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "ofdm-signal-present-vs-noise-only",
+      "gaussian-emitter-vs-noise-only"
+    ],
+    "detectorNames": [
+      "lzmsa-paper",
+      "lzmsa-mean-compressed-byte-value",
+      "lzmsa-compressed-byte-bucket-64-127-proportion",
+      "lzmsa-suffix-third-mean-compressed-byte-value"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 72
+  },
+  "retention": {
+    "mode": "milestone",
+    "omittedArtifactKinds": [
+      "trials.csv",
+      "roc_points.csv"
+    ],
+    "regenerationNote": "Milestone retention keeps compact, conclusion-critical artifacts only. Omitted raw trial rows and full ROC thresholds are intentionally regenerable by rerunning the same config in full retention mode with the recorded code revision, seed, and manifest metadata."
+  },
+  "seedRuns": [
+    {
+      "perturbationId": "baseline",
+      "seed": 86420,
+      "relativeRunDirectory": "perturbation-runs/baseline/20260323T051853Z_m5b1-representation-perturbation-exploration_seed86420",
+      "relativeManifestPath": "perturbation-runs/baseline/20260323T051853Z_m5b1-representation-perturbation-exploration_seed86420/manifest.json"
+    },
+    {
+      "perturbationId": "baseline",
+      "seed": 97531,
+      "relativeRunDirectory": "perturbation-runs/baseline/20260323T051917Z_m5b1-representation-perturbation-exploration_seed97531",
+      "relativeManifestPath": "perturbation-runs/baseline/20260323T051917Z_m5b1-representation-perturbation-exploration_seed97531/manifest.json"
+    },
+    {
+      "perturbationId": "baseline",
+      "seed": 24680,
+      "relativeRunDirectory": "perturbation-runs/baseline/20260323T051939Z_m5b1-representation-perturbation-exploration_seed24680",
+      "relativeManifestPath": "perturbation-runs/baseline/20260323T051939Z_m5b1-representation-perturbation-exploration_seed24680/manifest.json"
+    },
+    {
+      "perturbationId": "scale-half",
+      "seed": 86420,
+      "relativeRunDirectory": "perturbation-runs/scale-half/20260323T052001Z_m5b1-representation-perturbation-exploration_seed86420",
+      "relativeManifestPath": "perturbation-runs/scale-half/20260323T052001Z_m5b1-representation-perturbation-exploration_seed86420/manifest.json"
+    },
+    {
+      "perturbationId": "scale-half",
+      "seed": 97531,
+      "relativeRunDirectory": "perturbation-runs/scale-half/20260323T052022Z_m5b1-representation-perturbation-exploration_seed97531",
+      "relativeManifestPath": "perturbation-runs/scale-half/20260323T052022Z_m5b1-representation-perturbation-exploration_seed97531/manifest.json"
+    },
+    {
+      "perturbationId": "scale-half",
+      "seed": 24680,
+      "relativeRunDirectory": "perturbation-runs/scale-half/20260323T052044Z_m5b1-representation-perturbation-exploration_seed24680",
+      "relativeManifestPath": "perturbation-runs/scale-half/20260323T052044Z_m5b1-representation-perturbation-exploration_seed24680/manifest.json"
+    },
+    {
+      "perturbationId": "float32",
+      "seed": 86420,
+      "relativeRunDirectory": "perturbation-runs/float32/20260323T052105Z_m5b1-representation-perturbation-exploration_seed86420",
+      "relativeManifestPath": "perturbation-runs/float32/20260323T052105Z_m5b1-representation-perturbation-exploration_seed86420/manifest.json"
+    },
+    {
+      "perturbationId": "float32",
+      "seed": 97531,
+      "relativeRunDirectory": "perturbation-runs/float32/20260323T052120Z_m5b1-representation-perturbation-exploration_seed97531",
+      "relativeManifestPath": "perturbation-runs/float32/20260323T052120Z_m5b1-representation-perturbation-exploration_seed97531/manifest.json"
+    },
+    {
+      "perturbationId": "float32",
+      "seed": 24680,
+      "relativeRunDirectory": "perturbation-runs/float32/20260323T052135Z_m5b1-representation-perturbation-exploration_seed24680",
+      "relativeManifestPath": "perturbation-runs/float32/20260323T052135Z_m5b1-representation-perturbation-exploration_seed24680/manifest.json"
+    }
+  ]
+}

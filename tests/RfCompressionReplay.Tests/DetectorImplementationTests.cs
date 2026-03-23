@@ -59,6 +59,31 @@ public sealed class DetectorImplementationTests
     }
 
     [Fact]
+    public void LzmsaRepresentationPerturbationsApplyScalingAndFloat32PackingDeterministically()
+    {
+        var windows = new[] { CreateWindow([1.0, -2.5, 0.125]) };
+
+        var scaledSerializer = new LzmsaWindowSerializer(new RepresentationConfig(0.5d, RepresentationFormats.Float64LittleEndian));
+        var float32Serializer = new LzmsaWindowSerializer(new RepresentationConfig(1d, RepresentationFormats.Float32LittleEndian));
+
+        var scaledBytes = scaledSerializer.Serialize(windows);
+        var float32Bytes = float32Serializer.Serialize(windows);
+
+        Assert.Equal(new byte[]
+        {
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0x3F,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF4, 0xBF,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xB0, 0x3F,
+        }, scaledBytes);
+        Assert.Equal(new byte[]
+        {
+            0x00, 0x00, 0x80, 0x3F,
+            0x00, 0x00, 0x20, 0xC0,
+            0x00, 0x00, 0x00, 0x3E,
+        }, float32Bytes);
+    }
+
+    [Fact]
     public void LzmsaPaperScoreIsDeterministicAndDistinguishesFixtures()
     {
         var detector = new LzmsaPaperDetector(new LzmsaWindowSerializer(), new BrotliCompressionCodec());
