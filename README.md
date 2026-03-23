@@ -1,8 +1,8 @@
 # RfCompressionReplay
 
-`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, M5b3 refined the scale side further with an explicit scale panel plus one simple normalization comparison, M5f freezes that arc into a concise repository-native findings package, and M6a1 adds the first compact usefulness-mapping pass over a slightly more application-oriented synthetic task suite.
+`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, M5b3 refined the scale side further with an explicit scale panel plus one simple normalization comparison, M5f freezes that arc into a concise repository-native findings package, M6a1 adds the first compact usefulness-mapping pass over a slightly more application-oriented synthetic task suite, and M6a2 adds the second usefulness-mapping pass focused on complementary value rather than detector replacement.
 
-Current status: within the current synthetic harness, the clean compressibility interpretation is no longer the best fit. The checked-in M5 arc supports a scale-sensitive coarse compressed-byte value / distribution / position neighborhood interpretation, with simple compressed-length metrics remaining insufficient and per-window RMS-normalized mean compressed byte value serving as the strongest practical simple summary identified in that mechanism arc. M6a1 then asks whether that detector family is actually useful on a compact synthetic sensing-style task suite relative to ED and CAV. In the checked-in M6a1 run, ED/CAV still dominated most tested conditions, while compression-derived detectors stayed mostly secondary and RMS-normalized mean compressed byte value only clearly beat `lzmsa-paper` on the equal-energy structured-vs-unstructured family. See `docs/M5_FINDINGS.md` for the compact M5 freeze, inspect the checked-in M6a1 artifacts under `configs/artifacts/m6a1/`, and note that milestone-style runs stay compact and summary-first rather than retaining per-trial exhaust by default. This remains synthetic-only lab work, not a deployment claim.
+Current status: within the current synthetic harness, the clean compressibility interpretation is no longer the best fit. The checked-in M5 arc supports a scale-sensitive coarse compressed-byte value / distribution / position neighborhood interpretation, with simple compressed-length metrics remaining insufficient and per-window RMS-normalized mean compressed byte value serving as the strongest practical simple summary identified in that mechanism arc. M6a1 then asked whether that detector family was useful on a compact synthetic sensing-style task suite relative to ED and CAV, and ED/CAV still dominated most checked-in M6a1 conditions. M6a2 now asks the fairer follow-on question: do compression-derived features become more useful on engineered-structure-vs-natural-correlation tasks, and does RMS-normalized mean compressed byte value add value **inside** a tiny `[ED, CAV]` bundle? In the checked-in M6a2 run, the standalone compression-derived pair became more competitive on those fairer tasks, but the practical read still looks more complementary than replacement-oriented: Bundle B only modestly improved Bundle A on one task family and did not improve the median bundle result on the equal-energy task family. See `docs/M5_FINDINGS.md` for the compact M5 freeze, `docs/M6A2_COMPLEMENTARY_VALUE_USEFULNESS_MAPPING.md` for the focused M6a2 scope/read, inspect the checked-in M6a1 and M6a2 artifacts under `configs/artifacts/m6a1/` and `configs/artifacts/m6a2/`, and note that milestone-style runs stay compact and summary-first rather than retaining per-trial exhaust by default. This remains synthetic-only lab work, not a deployment claim.
 
 ## What M6a1 Adds
 
@@ -24,6 +24,27 @@ Current status: within the current synthetic harness, the clean compressibility 
   - `m6a1_task_summary.csv`
   - `m6a1_findings.md`
 - Default top-level retention for M6a1 keeps only those compact outputs for the checked-in run rather than per-trial dumps or raw ROC tables.
+
+## What M6a2 Adds
+
+- A second compact multi-seed usefulness-mapping runner focused on **complementary value** rather than replacement:
+  - `engineered-structure-vs-natural-correlation`
+  - `equal-energy-engineered-structure-vs-natural-correlation`
+- The same focused standalone detector panel as M6a1:
+  - `ed`
+  - `cav`
+  - `lzmsa-paper`
+  - `lzmsa-rms-normalized-mean-compressed-byte-value`
+- A tiny explicit bundle comparison:
+  - Bundle A = `[ED, CAV]`
+  - Bundle B = `[ED, CAV, RMS-normalized mean compressed byte value]`
+- A deterministic leave-one-seed-out logistic readout for the bundle comparison, trained separately within each `(task family, SNR, window length)` condition so the procedure stays auditable and leakage-light.
+- Compact summary-first M6a2 artifacts:
+  - `manifest.json`
+  - `m6a2_auc_comparison.csv`
+  - `m6a2_bundle_summary.csv`
+  - `m6a2_findings.md`
+- Default top-level retention for M6a2 keeps only those compact outputs for the checked-in run rather than per-trial dumps or raw ROC tables.
 
 ## What M5a1 Adds
 
@@ -258,6 +279,9 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - M6a1 checked-in artifacts: `configs/artifacts/m6a1/20260323T071814Z_m6a1-usefulness-mapping_seedpanel/`
   - inspect `m6a1_auc_comparison.csv`, `m6a1_task_summary.csv`, `m6a1_findings.md`, and `manifest.json`
   - current usefulness-mapping note: in this compact synthetic suite, ED/CAV remained strongest overall, while the RMS-normalized mean compressed byte value proxy was mainly notable for staying slightly ahead of `lzmsa-paper` on the equal-energy structured-vs-unstructured family rather than for dominating the suite
+- M6a2 checked-in artifacts: `configs/artifacts/m6a2/20260323T075441Z_m6a2-complementary-value-usefulness_seedpanel/`
+  - inspect `m6a2_auc_comparison.csv`, `m6a2_bundle_summary.csv`, `m6a2_findings.md`, and `manifest.json`
+  - current complementary-value note: on the fairer engineered-vs-correlated synthetic tasks, the standalone compression-derived pair became more competitive than in M6a1, but the practical win condition still looks complementary rather than replacement-driven because adding RMS-normalized mean to `[ED, CAV]` only modestly improved the median bundle result on one task family and did not improve the median bundle result on the equal-energy task family
 - M5a1 decomposition guide: `docs/M5A1_COMPRESSED_STREAM_DECOMPOSITION.md`
 - M5a2 re-land guide: `docs/M5A2R_COMPRESSED_STREAM_DECOMPOSITION.md`
 - M5a3 stability guide: `docs/M5A3_STABILITY_CONFIRMATION.md`

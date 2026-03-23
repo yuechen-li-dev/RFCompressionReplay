@@ -7,6 +7,8 @@ public static class BenchmarkTaskCatalog
     public const string StructuredBurstVsNoiseOnly = "structured-burst-vs-noise-only";
     public const string ColoredNuisanceVsWhiteNoise = "colored-nuisance-vs-white-noise";
     public const string EqualEnergyStructuredVsUnstructured = "equal-energy-structured-vs-unstructured";
+    public const string EngineeredStructureVsNaturalCorrelation = "engineered-structure-vs-natural-correlation";
+    public const string EqualEnergyEngineeredStructureVsNaturalCorrelation = "equal-energy-engineered-structure-vs-natural-correlation";
 
     public static IReadOnlyList<string> SupportedTasks { get; } =
     [
@@ -15,6 +17,8 @@ public static class BenchmarkTaskCatalog
         StructuredBurstVsNoiseOnly,
         ColoredNuisanceVsWhiteNoise,
         EqualEnergyStructuredVsUnstructured,
+        EngineeredStructureVsNaturalCorrelation,
+        EqualEnergyEngineeredStructureVsNaturalCorrelation,
     ];
 
     public static string SupportedTasksDisplay => string.Join(", ", SupportedTasks);

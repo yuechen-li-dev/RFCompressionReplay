@@ -1,0 +1,169 @@
+{
+  "experimentId": "m6a2-complementary-value-usefulness-smoke",
+  "experimentName": "M6a2 Complementary-Value Usefulness Mapping Smoke",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "outputDirectory": "artifacts",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "ed",
+    "threshold": 1.0,
+    "mode": "average-energy"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": []
+  },
+  "evaluation": {
+    "tasks": [
+      {
+        "name": "engineered-structure-vs-natural-correlation",
+        "description": "Positive class is a weak organized burst-ofdm-like process mixed into Gaussian noise at the configured SNR. Negative class is a non-iid correlated Gaussian nuisance process mixed to the same SNR, so both classes retain nontrivial second-order structure.",
+        "positiveCase": {
+          "name": "engineered-structured-burst",
+          "targetLabel": "engineered-structure",
+          "sourceType": "burst-ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": null,
+          "burstOfdmLike": {
+            "carrier": {
+              "subcarrierCount": 8,
+              "samplesPerSymbol": 32,
+              "symbolSeed": 91,
+              "carrierSpacing": 0.75,
+              "amplitude": 1.0
+            },
+            "startFraction": 0.35,
+            "lengthFraction": 0.18
+          },
+          "correlatedGaussian": null
+        },
+        "negativeCase": {
+          "name": "natural-correlated-nuisance",
+          "targetLabel": "natural-correlation",
+          "sourceType": "correlated-gaussian",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": null,
+          "burstOfdmLike": null,
+          "correlatedGaussian": {
+            "innovationStandardDeviation": 1.0,
+            "arCoefficient": 0.92
+          }
+        }
+      },
+      {
+        "name": "equal-energy-engineered-structure-vs-natural-correlation",
+        "description": "Positive class is an OFDM-like engineered structured process mixed to the configured SNR. Negative class is a correlated Gaussian nuisance process mixed to the same configured SNR so both classes are explicitly matched in nominal signal power and raw energy alone is intentionally weak.",
+        "positiveCase": {
+          "name": "equal-energy-engineered-structure",
+          "targetLabel": "engineered-structure",
+          "sourceType": "ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": {
+            "subcarrierCount": 8,
+            "samplesPerSymbol": 32,
+            "symbolSeed": 177,
+            "carrierSpacing": 0.75,
+            "amplitude": 1.0
+          },
+          "burstOfdmLike": null,
+          "correlatedGaussian": null
+        },
+        "negativeCase": {
+          "name": "equal-energy-natural-correlation",
+          "targetLabel": "natural-correlation",
+          "sourceType": "correlated-gaussian",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": null,
+          "burstOfdmLike": null,
+          "correlatedGaussian": {
+            "innovationStandardDeviation": 1.0,
+            "arCoefficient": 0.92
+          }
+        }
+      }
+    ],
+    "detectors": [
+      {
+        "name": "ed",
+        "threshold": 1.0,
+        "mode": "average-energy"
+      },
+      {
+        "name": "cav",
+        "threshold": 0.0,
+        "mode": "lag-1-absolute-autocovariance"
+      },
+      {
+        "name": "lzmsa-paper",
+        "threshold": 25000.0,
+        "mode": "paper-byte-sum"
+      },
+      {
+        "name": "lzmsa-rms-normalized-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "rms-normalized-mean-compressed-byte-value"
+      }
+    ],
+    "snrDbValues": [
+      -9.0,
+      -3.0,
+      0.0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 6
+  },
+  "bundles": [
+    {
+      "id": "bundle-a-ed-cav",
+      "description": "Reference two-feature bundle using ED and CAV only.",
+      "featureDetectors": [
+        "ed",
+        "cav"
+      ]
+    },
+    {
+      "id": "bundle-b-ed-cav-rms-normalized-mean",
+      "description": "Reference three-feature bundle adding RMS-normalized mean compressed byte value on top of ED and CAV.",
+      "featureDetectors": [
+        "ed",
+        "cav",
+        "lzmsa-rms-normalized-mean-compressed-byte-value"
+      ]
+    }
+  ],
+  "manifestMetadata": {
+    "notes": "Smoke config for M6a2 complementary-value usefulness mapping.",
+    "versionTag": "m6a2-smoke",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m6a2",
+      "experimentType": "complementary-value-usefulness-mapping-smoke",
+      "benchmark": "synthetic-engineered-vs-correlated-suite",
+      "detectorPanel": "ed-cav-paper-rms-normalized-mean",
+      "bundlePanel": "bundle-a-ed-cav,bundle-b-ed-cav-rms-normalized-mean",
+      "taskFamilies": "engineered-vs-natural-correlation,equal-energy-engineered-vs-natural-correlation",
+      "retentionIntent": "compact-summary-first"
+    }
+  },
+  "artifactRetentionMode": "smoke"
+}

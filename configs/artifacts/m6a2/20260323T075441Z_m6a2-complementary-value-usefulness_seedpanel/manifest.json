@@ -1,0 +1,73 @@
+{
+  "experimentId": "m6a2-complementary-value-usefulness",
+  "experimentName": "M6a2 Complementary-Value Usefulness Mapping",
+  "utcTimestamp": "2026-03-23T07:54:41.9286811+00:00",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "gitCommit": "53ad9a236f7b977d28382bf34a65b05593158c64",
+  "environment": {
+    "machineName": "43c68b213f34",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.20",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../m6a2.complementary-value-usefulness.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCountPerCondition": 48,
+  "artifactPaths": [
+    "manifest.json",
+    "m6a2_auc_comparison.csv",
+    "m6a2_bundle_summary.csv",
+    "m6a2_findings.md"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M6a2 is the second usefulness-mapping milestone: a fairer synthetic check of whether compression-derived features are more useful on engineered-structure-vs-natural-correlation tasks and whether the RMS-normalized mean compressed byte value adds complementary value on top of ED\u002BCAV.",
+    "versionTag": "m6a2",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m6a2",
+      "experimentType": "complementary-value-usefulness-mapping",
+      "benchmark": "synthetic-engineered-vs-correlated-suite",
+      "detectorPanel": "ed-cav-paper-rms-normalized-mean",
+      "bundlePanel": "bundle-a-ed-cav,bundle-b-ed-cav-rms-normalized-mean",
+      "taskFamilies": "engineered-vs-natural-correlation,equal-energy-engineered-vs-natural-correlation",
+      "retentionIntent": "compact-summary-first"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "engineered-structure-vs-natural-correlation",
+      "equal-energy-engineered-structure-vs-natural-correlation"
+    ],
+    "detectorNames": [
+      "ed",
+      "cav",
+      "lzmsa-paper",
+      "lzmsa-rms-normalized-mean-compressed-byte-value"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 48
+  },
+  "retention": {
+    "mode": "milestone",
+    "omittedArtifactKinds": [
+      "trials.csv",
+      "roc_points.csv"
+    ],
+    "regenerationNote": "M6a2 keeps only the top-level manifest, standalone AUC comparison CSV, bundle summary CSV, and findings markdown by default. Re-run the same config through the underlying seeded experiment path if you need per-seed summary or ROC artifacts."
+  }
+}

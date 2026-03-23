@@ -205,6 +205,42 @@ public sealed class EvaluationTests
         }
     }
 
+    [Fact]
+    public void TinyBundleEvaluatorProducesConditionRowsForBothRequiredBundles()
+    {
+        var tempRoot = CreateTempRoot();
+
+        try
+        {
+            var config = TestConfigFactory.CreateM6A2ComplementaryValueConfig(
+                experimentId: "m6a2-bundle-eval",
+                trialCountPerCondition: 4) with
+            {
+                OutputDirectory = tempRoot,
+            };
+
+            var application = CreateApplication("2026-03-23T08:30:00Z");
+            var seedResults = new List<(int Seed, RfCompressionReplay.Core.Models.ExperimentResult Result)>();
+            foreach (var seed in config.SeedPanel)
+            {
+                var run = application.Run(config.ToSeededExperimentConfig(seed) with { OutputDirectory = tempRoot }, Path.Combine(tempRoot, $"seed-{seed}.json"), "/does/not/exist");
+                seedResults.Add((seed, run.Result));
+            }
+
+            var evaluator = new TinyLogisticRegressionBundleEvaluator(new RocAucCalculator());
+            var rows = evaluator.Evaluate(seedResults, config.Bundles);
+
+            Assert.Equal(config.Evaluation.Tasks.Count * config.SeedPanel.Count * config.Evaluation.SnrDbValues.Count * config.Evaluation.WindowLengths.Count * config.Bundles.Count, rows.Count);
+            Assert.Contains(rows, row => row.BundleId == M6A2ComplementaryValueConfigValidator.BundleAId);
+            Assert.Contains(rows, row => row.BundleId == M6A2ComplementaryValueConfigValidator.BundleBId);
+            Assert.All(rows, row => Assert.InRange(row.Auc, 0d, 1d));
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
     private static string CreateTempRoot()
     {
         var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
