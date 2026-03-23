@@ -1,0 +1,154 @@
+{
+  "experimentId": "m5b1-representation-perturbation-exploration",
+  "experimentName": "M5b1 Synthetic Representation Perturbation Exploration",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "perturbations": [
+    {
+      "id": "baseline",
+      "description": "Baseline representation: sampleScale 1.0 with float64-le serialization.",
+      "representation": {
+        "sampleScale": 1.0,
+        "numericFormat": "float64-le"
+      }
+    },
+    {
+      "id": "scale-half",
+      "description": "Numeric scaling perturbation: multiply each sample by 0.5 before float64-le serialization. No extra clipping or normalization is applied beyond the raw scaled IEEE-754 value.",
+      "representation": {
+        "sampleScale": 0.5,
+        "numericFormat": "float64-le"
+      }
+    },
+    {
+      "id": "float32",
+      "description": "Serialization perturbation: keep baseline scale but cast each sample to float32 before little-endian serialization. No extra clipping is applied beyond the float cast.",
+      "representation": {
+        "sampleScale": 1.0,
+        "numericFormat": "float32-le"
+      }
+    }
+  ],
+  "outputDirectory": "artifacts/m5b1",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "lzmsa-paper",
+    "threshold": 25000.0,
+    "mode": "paper-byte-sum"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": []
+  },
+  "evaluation": {
+    "tasks": [
+      {
+        "name": "ofdm-signal-present-vs-noise-only",
+        "description": "Positive class is an OFDM-like synthetic signal mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "ofdm-like-signal",
+          "targetLabel": "signal-present",
+          "sourceType": "ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": {
+            "subcarrierCount": 8,
+            "samplesPerSymbol": 32,
+            "symbolSeed": 77,
+            "carrierSpacing": 0.75,
+            "amplitude": 1.0
+          }
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      },
+      {
+        "name": "gaussian-emitter-vs-noise-only",
+        "description": "Positive class is an independent Gaussian emitter mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "gaussian-emitter-control",
+          "targetLabel": "signal-present",
+          "sourceType": "gaussian-emitter",
+          "snrDb": 0.0,
+          "gaussianEmitter": {
+            "mean": 0.0,
+            "standardDeviation": 1.0
+          },
+          "ofdmLike": null
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      }
+    ],
+    "detectors": [
+      {
+        "name": "lzmsa-paper",
+        "threshold": 25000.0,
+        "mode": "paper-byte-sum"
+      },
+      {
+        "name": "lzmsa-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "mean-compressed-byte-value"
+      },
+      {
+        "name": "lzmsa-compressed-byte-bucket-64-127-proportion",
+        "threshold": 0.25,
+        "mode": "compressed-byte-bucket-64-127-proportion"
+      },
+      {
+        "name": "lzmsa-suffix-third-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "suffix-third-mean-compressed-byte-value"
+      }
+    ],
+    "snrDbValues": [
+      -9.0,
+      -3.0,
+      0.0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 72
+  },
+  "manifestMetadata": {
+    "notes": "M5b1 is the first compact representation-perturbation pass: hold synthetic tasks fixed, then test whether the lzmsa-paper nearest-neighbor family survives one numeric scaling perturbation and one serialization precision perturbation.",
+    "versionTag": "m5b1",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5b1",
+      "experimentType": "representation-perturbation-exploration",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m5a3",
+      "seedPanel": "86420-97531-24680",
+      "featurePanel": "paper-mean-bucket64-127-suffix-third"
+    }
+  },
+  "artifactRetentionMode": "milestone"
+}

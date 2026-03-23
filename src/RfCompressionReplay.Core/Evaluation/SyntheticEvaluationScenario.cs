@@ -43,7 +43,7 @@ public sealed class SyntheticEvaluationScenario : IExperimentScenario
             for (var detectorIndex = 0; detectorIndex < config.Evaluation.Detectors.Count; detectorIndex++)
             {
                 var detectorConfig = config.Evaluation.Detectors[detectorIndex];
-                var detector = DetectorFactory.Create(detectorConfig);
+                var detector = DetectorFactory.Create(detectorConfig, config.Representation);
                 var orientation = DetectorCatalog.GetScoreOrientation(detectorConfig.Name);
 
                 for (var snrIndex = 0; snrIndex < config.Evaluation.SnrDbValues.Count; snrIndex++)

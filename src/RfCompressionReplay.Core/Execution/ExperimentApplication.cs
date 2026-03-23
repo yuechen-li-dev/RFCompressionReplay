@@ -136,7 +136,7 @@ public sealed class ExperimentApplication
     {
         if (string.Equals(config.Scenario.Name, ExperimentConfigValidator.DummyScenarioName, StringComparison.OrdinalIgnoreCase))
         {
-            IDetector detector = DetectorFactory.Create(config.Detector);
+            IDetector detector = DetectorFactory.Create(config.Detector, config.Representation);
             ISignalProvider signalProvider = new DummySignalProvider();
             return new DummyScenario(signalProvider, detector);
         }
@@ -154,7 +154,7 @@ public sealed class ExperimentApplication
                 return new SyntheticEvaluationScenario(streamBuilder, new ConsecutiveWindowSampler(), new RocAucCalculator());
             }
 
-            IDetector detector = DetectorFactory.Create(config.Detector);
+            IDetector detector = DetectorFactory.Create(config.Detector, config.Representation);
             return new SyntheticBenchmarkScenario(streamBuilder, new ConsecutiveWindowSampler(), detector);
         }
 

@@ -1,0 +1,10 @@
+﻿perturbationId,alternativeDetectorName,featureFamily,medianAbsoluteAucDeltaFromPaper,maxAbsoluteAucDeltaFromPaper
+baseline,lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,0.066165,0.205343
+baseline,lzmsa-mean-compressed-byte-value,whole-stream-mean,0.069444,0.138503
+baseline,lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,0.075859,0.156057
+float32,lzmsa-mean-compressed-byte-value,whole-stream-mean,0.020736,0.055556
+float32,lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,0.028743,0.126737
+float32,lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,0.055169,0.341628
+scale-half,lzmsa-mean-compressed-byte-value,whole-stream-mean,0.009934,0.029514
+scale-half,lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,0.034192,0.139564
+scale-half,lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,0.050492,0.230806

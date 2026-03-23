@@ -90,6 +90,8 @@ public static class ExperimentConfigValidator
             errors.Add("ManifestMetadata is required.");
         }
 
+        ValidateRepresentation(config.Representation, "Representation", errors);
+
         return errors;
     }
 
@@ -130,6 +132,32 @@ public static class ExperimentConfigValidator
             && (detector.Threshold < 0d || detector.Threshold > byte.MaxValue))
         {
             errors.Add($"{prefix}.Threshold for detector '{detector.Name}' must be between 0 and 255 inclusive because the mean compressed byte value is bounded to that range.");
+        }
+    }
+
+    private static void ValidateRepresentation(RepresentationConfig? representation, string prefix, List<string> errors)
+    {
+        if (representation is null)
+        {
+            return;
+        }
+
+        if (double.IsNaN(representation.SampleScale) || double.IsInfinity(representation.SampleScale))
+        {
+            errors.Add($"{prefix}.SampleScale must be a finite number.");
+        }
+        else if (representation.SampleScale <= 0d)
+        {
+            errors.Add($"{prefix}.SampleScale must be greater than zero.");
+        }
+
+        if (string.IsNullOrWhiteSpace(representation.NumericFormat))
+        {
+            errors.Add($"{prefix}.NumericFormat is required.");
+        }
+        else if (!RepresentationFormats.IsSupported(representation.NumericFormat))
+        {
+            errors.Add($"{prefix}.NumericFormat '{representation.NumericFormat}' is not supported. Supported formats: {RepresentationFormats.SupportedFormatsDisplay}.");
         }
     }
 
