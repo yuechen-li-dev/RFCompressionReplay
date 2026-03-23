@@ -1,0 +1,9 @@
+﻿alternativeDetectorName,featureFamily,medianAbsoluteAucDeltaFromPaper,maxAbsoluteAucDeltaFromPaper,closerThanWholeStreamMeanConditionCount
+lzmsa-mean-compressed-byte-value,whole-stream,0.066431,0.135127,0
+lzmsa-compressed-byte-variance,whole-stream,0.129497,0.339651,3
+lzmsa-compressed-byte-bucket-0-63-proportion,coarse-histogram,0.112871,0.370443,4
+lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,0.044862,0.209154,6
+lzmsa-compressed-byte-bucket-128-191-proportion,coarse-histogram,0.091930,0.259549,4
+lzmsa-compressed-byte-bucket-192-255-proportion,coarse-histogram,0.080995,0.160253,4
+lzmsa-prefix-third-mean-compressed-byte-value,coarse-positional,0.052300,0.148944,6
+lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,0.077389,0.175974,4

@@ -59,6 +59,20 @@ public sealed class ExperimentConfigTests
         Assert.Equal(configFileName.StartsWith("m5a2r", StringComparison.Ordinal) ? "m5a2" : "m5a1", config.ManifestMetadata.Tags!["milestone"]);
     }
 
+    [Theory]
+    [InlineData("m5a3.stability-confirmation.json", ArtifactRetentionModes.Milestone, 144)]
+    [InlineData("m5a3.stability-confirmation-smoke.json", ArtifactRetentionModes.Smoke, 4)]
+    public void DeserializesM5A3Configs(string configFileName, string expectedRetentionMode, int expectedTrialCountPerCondition)
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = M5A3StabilityConfigJson.Load(path);
+
+        Assert.Equal(expectedRetentionMode, config.ArtifactRetentionMode);
+        Assert.Equal(expectedTrialCountPerCondition, config.Evaluation.TrialCountPerCondition);
+        Assert.Equal([86420, 97531, 24680], config.SeedPanel);
+        Assert.Equal(9, config.Evaluation.Detectors.Count);
+    }
+
     [Fact]
     public void ValidatorReturnsClearMessagesForInvalidSyntheticBenchmarkConfig()
     {
@@ -111,6 +125,17 @@ public sealed class ExperimentConfigTests
 
         Assert.Contains("Detector.Name 'bogus-detector' is not supported in M3. Supported detectors: ed, cav, lzmsa-paper, lzmsa-compressed-length, lzmsa-normalized-compressed-length, lzmsa-mean-compressed-byte-value, lzmsa-compressed-byte-variance, lzmsa-compressed-byte-bucket-0-63-proportion, lzmsa-compressed-byte-bucket-64-127-proportion, lzmsa-compressed-byte-bucket-128-191-proportion, lzmsa-compressed-byte-bucket-192-255-proportion, lzmsa-prefix-third-mean-compressed-byte-value, lzmsa-suffix-third-mean-compressed-byte-value.", errors);
         Assert.Contains("Benchmark.Cases[0].SourceType 'bogus-source' is not supported in M3. Supported source types: noise-only, gaussian-emitter, ofdm-like.", errors);
+    }
+
+    [Fact]
+    public void M5A3ValidatorRejectsShortSeedPanels()
+    {
+        var config = TestConfigFactory.CreateM5A3StabilityConfig("m5a3-bad", seedPanel: [7, 7]);
+
+        var errors = M5A3StabilityConfigValidator.Validate(config);
+
+        Assert.Contains("SeedPanel must contain at least three explicit seeds for M5a3 stability confirmation.", errors);
+        Assert.Contains("SeedPanel seeds must be distinct.", errors);
     }
 
     [Theory]
@@ -184,4 +209,3 @@ public sealed class ExperimentConfigTests
         Assert.Contains("Detector.Threshold must be a finite number.", errors);
     }
 }
-

@@ -1,0 +1,149 @@
+{
+  "experimentId": "m5a3-stability-confirmation-smoke",
+  "experimentName": "M5a3 Synthetic Stability Confirmation Smoke",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "outputDirectory": "artifacts",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "lzmsa-paper",
+    "threshold": 25000.0,
+    "mode": "paper-byte-sum"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": []
+  },
+  "evaluation": {
+    "tasks": [
+      {
+        "name": "ofdm-signal-present-vs-noise-only",
+        "description": "Positive class is an OFDM-like synthetic signal mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "ofdm-like-signal",
+          "targetLabel": "signal-present",
+          "sourceType": "ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": {
+            "subcarrierCount": 8,
+            "samplesPerSymbol": 32,
+            "symbolSeed": 77,
+            "carrierSpacing": 0.75,
+            "amplitude": 1.0
+          }
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      },
+      {
+        "name": "gaussian-emitter-vs-noise-only",
+        "description": "Positive class is an independent Gaussian emitter mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "gaussian-emitter-control",
+          "targetLabel": "signal-present",
+          "sourceType": "gaussian-emitter",
+          "snrDb": 0.0,
+          "gaussianEmitter": {
+            "mean": 0.0,
+            "standardDeviation": 1.0
+          },
+          "ofdmLike": null
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      }
+    ],
+    "detectors": [
+      {
+        "name": "lzmsa-paper",
+        "threshold": 25000.0,
+        "mode": "paper-byte-sum"
+      },
+      {
+        "name": "lzmsa-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "mean-compressed-byte-value"
+      },
+      {
+        "name": "lzmsa-compressed-byte-variance",
+        "threshold": 1000.0,
+        "mode": "compressed-byte-variance"
+      },
+      {
+        "name": "lzmsa-compressed-byte-bucket-0-63-proportion",
+        "threshold": 0.25,
+        "mode": "compressed-byte-bucket-0-63-proportion"
+      },
+      {
+        "name": "lzmsa-compressed-byte-bucket-64-127-proportion",
+        "threshold": 0.25,
+        "mode": "compressed-byte-bucket-64-127-proportion"
+      },
+      {
+        "name": "lzmsa-compressed-byte-bucket-128-191-proportion",
+        "threshold": 0.25,
+        "mode": "compressed-byte-bucket-128-191-proportion"
+      },
+      {
+        "name": "lzmsa-compressed-byte-bucket-192-255-proportion",
+        "threshold": 0.25,
+        "mode": "compressed-byte-bucket-192-255-proportion"
+      },
+      {
+        "name": "lzmsa-prefix-third-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "prefix-third-mean-compressed-byte-value"
+      },
+      {
+        "name": "lzmsa-suffix-third-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "suffix-third-mean-compressed-byte-value"
+      }
+    ],
+    "snrDbValues": [
+      -6.0
+    ],
+    "windowLengths": [
+      64
+    ],
+    "trialCountPerCondition": 4
+  },
+  "manifestMetadata": {
+    "notes": "Tiny M5a3 smoke config for regression coverage of multi-seed stability artifact generation.",
+    "versionTag": "m5a3-smoke",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5a3",
+      "experimentType": "stability-confirmation",
+      "benchmark": "smoke",
+      "comparisonBase": "m5a2r",
+      "seedPanel": "86420-97531-24680"
+    }
+  },
+  "artifactRetentionMode": "smoke"
+}

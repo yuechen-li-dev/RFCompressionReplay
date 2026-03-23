@@ -110,6 +110,39 @@ internal static class TestConfigFactory
         ];
     }
 
+    public static M5A3StabilityConfig CreateM5A3StabilityConfig(
+        string experimentId,
+        IReadOnlyList<int>? seedPanel = null,
+        IReadOnlyList<BenchmarkTaskConfig>? tasks = null,
+        IReadOnlyList<DetectorConfig>? detectors = null,
+        IReadOnlyList<double>? snrDbValues = null,
+        IReadOnlyList<int>? windowLengths = null,
+        int trialCountPerCondition = 3,
+        string artifactRetentionMode = ArtifactRetentionModes.Milestone)
+    {
+        return new M5A3StabilityConfig(
+            ExperimentId: experimentId,
+            ExperimentName: "M5a3 Stability Test",
+            SeedPanel: seedPanel ?? [7, 11, 13],
+            OutputDirectory: "artifacts",
+            Scenario: new ScenarioConfig(ExperimentConfigValidator.SyntheticBenchmarkScenarioName, 2, 64),
+            TrialCount: 4,
+            Detector: new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 25000d, DetectorCatalog.LzmsaPaperDetectorMode),
+            Signal: null,
+            Benchmark: new SyntheticBenchmarkConfig(
+                BaseStreamLength: 2048,
+                Noise: new GaussianNoiseConfig(0d, 1d),
+                Cases: Array.Empty<SyntheticCaseConfig>()),
+            Evaluation: new EvaluationConfig(
+                Tasks: tasks ?? [CreateOfdmTask(), CreateGaussianEmitterTask()],
+                Detectors: detectors ?? CreateM5A2CompressionDetectors(),
+                SnrDbValues: snrDbValues ?? [-6d, 0d],
+                WindowLengths: windowLengths ?? [64],
+                TrialCountPerCondition: trialCountPerCondition),
+            ManifestMetadata: new ManifestMetadataConfig("note", "m5a3", new Dictionary<string, string> { ["suite"] = "tests", ["milestone"] = "m5a3" }),
+            ArtifactRetentionMode: artifactRetentionMode);
+    }
+
     public static BenchmarkTaskConfig CreateOfdmTask()
     {
         return new BenchmarkTaskConfig(

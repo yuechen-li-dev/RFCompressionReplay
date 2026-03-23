@@ -156,6 +156,19 @@ public sealed class ArtifactRetentionTests
         }
     }
 
+    [Theory]
+    [InlineData("m5a3.stability-confirmation-smoke.json", ArtifactRetentionModes.Smoke)]
+    [InlineData("m5a3.stability-confirmation.json", ArtifactRetentionModes.Milestone)]
+    public void CheckedInM5A3ConfigsDeserializeWithExpectedRetention(string configFileName, string expectedMode)
+    {
+        var sampleConfigPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = M5A3StabilityConfigJson.Load(sampleConfigPath);
+
+        Assert.Equal(expectedMode, config.ArtifactRetentionMode);
+        Assert.True(config.SeedPanel.Count >= 3);
+        Assert.Equal(9, config.Evaluation.Detectors.Count);
+    }
+
     private static string CreateTempRoot()
     {
         var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));

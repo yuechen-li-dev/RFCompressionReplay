@@ -48,6 +48,9 @@ Retains only compact, reproducibility-critical, conclusion-critical artifacts:
   - `m5a1_delta_summary.csv`
   - `m5a2_auc_comparison.csv`
   - `m5a2_delta_summary.csv`
+  - `m5a3_auc_comparison.csv`
+  - `m5a3_delta_summary.csv`
+  - `m5a3_stability_summary.csv`
 
 Intentionally omitted by default in milestone mode:
 
