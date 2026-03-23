@@ -1,0 +1,74 @@
+{
+  "experimentId": "m7b2-complementary-boundary-fusion",
+  "experimentName": "M7b2 Complementary Boundary Fusion",
+  "utcTimestamp": "2026-03-23T09:33:59.2278991+00:00",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "gitCommit": "3055b8bceb1e77205c5e2897697393d68d9e79c3",
+  "environment": {
+    "machineName": "3a925ccbc96c",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../m7b2.complementary-boundary-fusion.json",
+  "scenarioName": "synthetic-benchmark",
+  "streamCountPerCondition": 8,
+  "artifactPaths": [
+    "manifest.json",
+    "m7b2_boundary_comparison.csv",
+    "m7b2_fusion_summary.csv",
+    "m7b2_findings.md"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M7b2 compact complementary boundary fusion run for ED, CAV, RMS-normalized mean compressed byte value, and one explicit normalized-change average fusion on the established M7b transition families.",
+    "versionTag": "m7b2",
+    "tags": {
+      "milestone": "m7b2",
+      "experimentType": "complementary-boundary-fusion",
+      "detectorPanel": "ed-cav-rms-normalized-mean",
+      "fusionRule": "normalized-adjacent-change-minmax-average",
+      "retentionIntent": "compact-summary-first"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "quiet-to-structured-regime",
+      "correlated-nuisance-to-engineered-structure",
+      "structure-to-structure-regime-shift"
+    ],
+    "detectorNames": [
+      "ed",
+      "cav",
+      "lzmsa-rms-normalized-mean-compressed-byte-value",
+      "ed-cav-rms-normalized-mean-fused"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 8
+  },
+  "retention": {
+    "mode": "milestone",
+    "omittedArtifactKinds": [
+      "summary.json",
+      "summary.csv",
+      "trials.csv",
+      "roc_points.csv",
+      "roc_points_compact.csv"
+    ],
+    "regenerationNote": "M7b2 retains only the manifest, compact boundary comparison CSV, compact fusion summary CSV, and findings markdown by default. Re-run the same config locally with temporary instrumentation if you need raw trace dumps for audit work."
+  }
+}

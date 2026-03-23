@@ -1,0 +1,71 @@
+namespace RfCompressionReplay.Core.Models;
+
+public sealed record M7B2BoundaryComparisonRow(
+    string TaskFamilyId,
+    int Seed,
+    double SnrDb,
+    int WindowLength,
+    string SignalId,
+    double OnsetHitRate,
+    double? OffsetHitRate,
+    double? MedianOnsetLocalizationError,
+    double? MedianOffsetLocalizationError,
+    double MedianFalsePositiveCount,
+    double? MedianOnsetDetectionDelay,
+    double? MedianOffsetDetectionDelay,
+    int StreamCount);
+
+public sealed record M7B2FusionSummaryRow(
+    string TaskFamilyId,
+    string BestSingleSignalId,
+    double EdMedianOnsetHitRate,
+    double? EdMedianOffsetHitRate,
+    double? EdMedianOnsetLocalizationError,
+    double? EdMedianOffsetLocalizationError,
+    double EdMedianFalsePositiveCount,
+    double CavMedianOnsetHitRate,
+    double? CavMedianOffsetHitRate,
+    double? CavMedianOnsetLocalizationError,
+    double? CavMedianOffsetLocalizationError,
+    double CavMedianFalsePositiveCount,
+    double NormalizedMeanMedianOnsetHitRate,
+    double? NormalizedMeanMedianOffsetHitRate,
+    double? NormalizedMeanMedianOnsetLocalizationError,
+    double? NormalizedMeanMedianOffsetLocalizationError,
+    double NormalizedMeanMedianFalsePositiveCount,
+    string FusedSignalId,
+    double FusedMedianOnsetHitRate,
+    double? FusedMedianOffsetHitRate,
+    double? FusedMedianOnsetLocalizationError,
+    double? FusedMedianOffsetLocalizationError,
+    double FusedMedianFalsePositiveCount,
+    double FusedMinusBestSingleMedianOnsetHitRate,
+    double? FusedMinusBestSingleMedianOffsetHitRate,
+    double? FusedMinusBestSingleMedianOnsetLocalizationError,
+    double? FusedMinusBestSingleMedianOffsetLocalizationError,
+    double FusedMinusBestSingleMedianFalsePositiveCount,
+    int FusionBestOrTiedBestConditionCount,
+    int FusionRecoveredAgainstBestBaselineConditionCount,
+    int FusionRecoveredAgainstAllSinglesConditionCount,
+    string FamilyRead);
+
+public sealed record M7B2ComplementaryBoundaryFusionManifest(
+    string ExperimentId,
+    string ExperimentName,
+    DateTimeOffset UtcTimestamp,
+    IReadOnlyList<int> SeedPanel,
+    string GitCommit,
+    EnvironmentSummary Environment,
+    string ConfigFilePath,
+    string ScenarioName,
+    int StreamCountPerCondition,
+    IReadOnlyList<string> ArtifactPaths,
+    IReadOnlyList<string> Warnings,
+    ManifestMetadata Metadata,
+    EvaluationManifest Evaluation,
+    ArtifactRetentionManifest Retention);
+
+public sealed record M7B2ComplementaryBoundaryFusionArtifacts(
+    IReadOnlyList<M7B2BoundaryComparisonRow> ComparisonRows,
+    IReadOnlyList<M7B2FusionSummaryRow> FusionSummaryRows,
+    string FindingsMarkdown);

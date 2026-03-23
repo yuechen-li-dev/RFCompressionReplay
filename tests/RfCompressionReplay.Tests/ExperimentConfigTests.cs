@@ -186,6 +186,36 @@ public sealed class ExperimentConfigTests
     }
 
     [Theory]
+    [InlineData("m7b2.complementary-boundary-fusion.json", ArtifactRetentionModes.Milestone, 8)]
+    [InlineData("m7b2.complementary-boundary-fusion-smoke.json", ArtifactRetentionModes.Smoke, 2)]
+    public void DeserializesM7B2Configs(string configFileName, string expectedRetentionMode, int expectedStreamCountPerCondition)
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = M7B2ComplementaryBoundaryFusionConfigJson.Load(path);
+
+        Assert.Equal(expectedRetentionMode, config.ArtifactRetentionMode);
+        Assert.Equal(expectedStreamCountPerCondition, config.Evaluation.StreamCountPerCondition);
+        Assert.Equal([86420, 97531, 24680], config.SeedPanel);
+        Assert.Equal(
+            [
+                BenchmarkTaskCatalog.QuietToStructuredRegime,
+                BenchmarkTaskCatalog.CorrelatedNuisanceToEngineeredStructure,
+                BenchmarkTaskCatalog.StructureToStructureRegimeShift,
+            ],
+            config.Benchmark.Tasks.Select(task => task.Name).ToArray());
+        Assert.Equal(
+            [
+                DetectorCatalog.EnergyDetectorName,
+                DetectorCatalog.CovarianceAbsoluteValueDetectorName,
+                DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName,
+            ],
+            config.Evaluation.Detectors.Select(detector => detector.Name).ToArray());
+        Assert.Equal(
+            [M7B2ComplementaryBoundaryFusionConfigValidator.RequiredFusionSignalId],
+            config.Evaluation.Fusions.Select(fusion => fusion.SignalId).ToArray());
+    }
+
+    [Theory]
     [InlineData("m7b.change-point-usefulness.json", ArtifactRetentionModes.Milestone, 8)]
     [InlineData("m7b.change-point-usefulness-smoke.json", ArtifactRetentionModes.Smoke, 2)]
     public void DeserializesM7BConfigs(string configFileName, string expectedRetentionMode, int expectedStreamCountPerCondition)
@@ -440,6 +470,47 @@ public sealed class ExperimentConfigTests
         Assert.Contains("M6a2 complementary-value usefulness mapping requires the focused two-task suite in order: engineered-structure-vs-natural-correlation, equal-energy-engineered-structure-vs-natural-correlation.", errors);
         Assert.Contains("M6a2 complementary-value usefulness mapping requires the focused detector panel exactly: ed, cav, lzmsa-paper, lzmsa-rms-normalized-mean-compressed-byte-value.", errors);
         Assert.Contains("M6a2 complementary-value usefulness mapping requires exactly two bundles in order: bundle-a-ed-cav, bundle-b-ed-cav-rms-normalized-mean.", errors);
+    }
+
+    [Fact]
+    public void M7B2ValidatorRejectsWrongTaskPanelDetectorPanelAndFusionRule()
+    {
+        var config = TestConfigFactory.CreateM7B2ComplementaryBoundaryFusionConfig(
+            "m7b2-invalid",
+            seedPanel: [86420, 97531],
+            tasks: [TestConfigFactory.CreateQuietToStructuredStreamTask()],
+            detectors:
+            [
+                new DetectorConfig(DetectorCatalog.EnergyDetectorName, 1d, DetectorCatalog.EnergyDetectorMode),
+            ]) with
+        {
+            Evaluation = new M7B2BoundaryFusionEvaluationConfig(
+                Detectors:
+                [
+                    new DetectorConfig(DetectorCatalog.EnergyDetectorName, 1d, DetectorCatalog.EnergyDetectorMode),
+                ],
+                Fusions:
+                [
+                    new M7B2FusionConfig("bad-fusion", "bad", "max-of-signals", [DetectorCatalog.EnergyDetectorName])
+                ],
+                SnrDbValues: [-9d, -3d, 0d],
+                WindowLengths: [64, 128],
+                StreamCountPerCondition: 2,
+                MaxBoundaryProposals: 3,
+                WindowStrideFraction: 0.5d,
+                BoundaryToleranceWindowMultiple: 1.0d,
+                MinPeakSpacingWindowMultiple: 1.0d,
+                PeakThresholdMadMultiplier: 1.5d)
+        };
+
+        var errors = M7B2ComplementaryBoundaryFusionConfigValidator.Validate(config);
+
+        Assert.Contains("SeedPanel must contain at least three explicit seeds for M7b2 complementary boundary fusion.", errors);
+        Assert.Contains("M7b2 complementary boundary fusion requires the exact three-task stream suite in order: quiet-to-structured-regime, correlated-nuisance-to-engineered-structure, structure-to-structure-regime-shift.", errors);
+        Assert.Contains("M7b2 complementary boundary fusion requires the focused detector panel exactly: ed, cav, lzmsa-rms-normalized-mean-compressed-byte-value.", errors);
+        Assert.Contains("M7b2 complementary boundary fusion expects fusion SignalId 'ed-cav-rms-normalized-mean-fused'.", errors);
+        Assert.Contains("M7b2 complementary boundary fusion expects fusion Rule 'normalized-adjacent-change-minmax-average'.", errors);
+        Assert.Contains("M7b2 complementary boundary fusion expects fusion source detectors exactly: ed, cav, lzmsa-rms-normalized-mean-compressed-byte-value.", errors);
     }
 
     [Fact]
