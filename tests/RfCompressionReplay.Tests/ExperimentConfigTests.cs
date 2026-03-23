@@ -106,6 +106,24 @@ public sealed class ExperimentConfigTests
         Assert.Contains(config.Perturbations, perturbation => string.Equals(perturbation.AxisTag, M5B2PerturbationAxes.Packing, StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("m5b3.scale-handling-refinement.json", ArtifactRetentionModes.Milestone, 72, 4)]
+    [InlineData("m5b3.scale-handling-refinement-smoke.json", ArtifactRetentionModes.Smoke, 4, 3)]
+    public void DeserializesM5B3Configs(string configFileName, string expectedRetentionMode, int expectedTrialCountPerCondition, int expectedScaleCount)
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = M5B3ExplorationConfigJson.Load(path);
+
+        Assert.Equal(expectedRetentionMode, config.ArtifactRetentionMode);
+        Assert.Equal(expectedTrialCountPerCondition, config.Evaluation.TrialCountPerCondition);
+        Assert.Equal([86420, 97531, 24680], config.SeedPanel);
+        Assert.Equal(expectedScaleCount, config.ScaleValues.Count);
+        Assert.Equal(2, config.RepresentationFamilies.Count);
+        Assert.Equal(4, config.Evaluation.Detectors.Count);
+        Assert.Contains(config.RepresentationFamilies, family => string.Equals(family.Id, "raw-scaled", StringComparison.Ordinal));
+        Assert.Contains(config.RepresentationFamilies, family => string.Equals(family.Id, "normalized-rms", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void ValidatorReturnsClearMessagesForInvalidSyntheticBenchmarkConfig()
     {
@@ -213,6 +231,35 @@ public sealed class ExperimentConfigTests
         Assert.Contains("Scale-only perturbation must change sampleScale away from 1.0 while keeping numericFormat float64-le.", errors);
         Assert.Contains("Packing-only perturbation must keep sampleScale 1.0 while changing numericFormat away from float64-le.", errors);
         Assert.Contains("M5b2 exploration requires the focused detector panel exactly: lzmsa-paper, lzmsa-mean-compressed-byte-value, lzmsa-compressed-byte-bucket-64-127-proportion, lzmsa-suffix-third-mean-compressed-byte-value.", errors);
+    }
+
+    [Fact]
+    public void M5B3ValidatorRejectsMissingScalePanelAndFamilyShape()
+    {
+        var config = TestConfigFactory.CreateM5B3ExplorationConfig(
+            "m5b3-bad",
+            seedPanel: [7],
+            scaleValues: [1d, 2d],
+            representationFamilies:
+            [
+                new M5B3RepresentationFamilyConfig(
+                    "raw-scaled",
+                    "bad raw family",
+                    new RepresentationConfig(1d, RepresentationFormats.Float32LittleEndian, RepresentationNormalizations.None, 1d)),
+                new M5B3RepresentationFamilyConfig(
+                    "normalized-rms",
+                    "bad normalized family",
+                    new RepresentationConfig(1d, RepresentationFormats.Float64LittleEndian, RepresentationNormalizations.None, 1d))
+            ],
+            detectors: TestConfigFactory.CreateM5A2CompressionDetectors());
+
+        var errors = M5B3ExplorationConfigValidator.Validate(config);
+
+        Assert.Contains("SeedPanel must contain at least two explicit seeds for M5b3 exploration.", errors);
+        Assert.Contains("ScaleValues must contain a compact explicit scale panel of 3 or 4 values for M5b3.", errors);
+        Assert.Contains("The raw-scaled family must use numericFormat float64-le.", errors);
+        Assert.Contains("The normalized-rms family must use normalizationMode rms.", errors);
+        Assert.Contains("M5b3 exploration requires the focused detector panel exactly: lzmsa-paper, lzmsa-mean-compressed-byte-value, lzmsa-compressed-byte-bucket-64-127-proportion, lzmsa-suffix-third-mean-compressed-byte-value.", errors);
     }
 
     [Theory]

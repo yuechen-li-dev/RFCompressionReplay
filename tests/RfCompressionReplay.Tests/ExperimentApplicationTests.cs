@@ -420,6 +420,49 @@ public sealed class ExperimentApplicationTests
         }
     }
 
+    [Fact]
+    public void GeneratesM5B3ExplorationArtifactsForScaleFamilyPanelRun()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+
+        try
+        {
+            var config = TestConfigFactory.CreateM5B3ExplorationConfig(
+                experimentId: "m5b3-test",
+                trialCountPerCondition: 2) with
+            {
+                OutputDirectory = tempRoot,
+                ExperimentName = "M5b3 Exploration Test",
+                ManifestMetadata = new ManifestMetadataConfig(
+                    "Test M5b3 scale-handling refinement run.",
+                    "m5b3-test",
+                    new Dictionary<string, string> { ["milestone"] = "m5b3", ["experimentType"] = "scale-handling-refinement" })
+            };
+
+            var baseApplication = CreateApplication("2026-03-23T06:06:07Z");
+            var explorationApplication = new M5B3ExplorationExperimentApplication(
+                new FixedRunClock(DateTimeOffset.Parse("2026-03-23T06:06:07Z")),
+                baseApplication,
+                new EnvironmentSummaryProvider(),
+                new GitCommitResolver());
+            var runDirectory = explorationApplication.Run(config, Path.Combine(tempRoot, "config.json"), "/does/not/exist");
+
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b3_auc_comparison.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b3_delta_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b3_scale_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5b3_findings.md")));
+            Assert.Contains("representationFamilyId,scaleValue,seed,taskName,conditionSnrDb", File.ReadAllText(Path.Combine(runDirectory, "m5b3_auc_comparison.csv")));
+            Assert.Contains("representationFamilyId,scaleValue,alternativeDetectorName,featureFamily", File.ReadAllText(Path.Combine(runDirectory, "m5b3_scale_summary.csv")));
+            Assert.Contains("M5b3 Scale-Handling Refinement Findings", File.ReadAllText(Path.Combine(runDirectory, "m5b3_findings.md")));
+            Assert.False(Directory.Exists(Path.Combine(runDirectory, ".m5b3-temp")));
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
     private static ExperimentApplication CreateApplication(string utcTimestamp)
     {
         return new ExperimentApplication(

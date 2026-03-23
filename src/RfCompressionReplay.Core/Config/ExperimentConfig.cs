@@ -81,7 +81,9 @@ public sealed record ManifestMetadataConfig(
 
 public sealed record RepresentationConfig(
     double SampleScale = 1d,
-    string NumericFormat = RepresentationFormats.Float64LittleEndian);
+    string NumericFormat = RepresentationFormats.Float64LittleEndian,
+    string NormalizationMode = RepresentationNormalizations.None,
+    double NormalizationTarget = 1d);
 
 public static class RepresentationFormats
 {
@@ -100,4 +102,23 @@ public static class RepresentationFormats
     }
 
     public static string SupportedFormatsDisplay => string.Join(", ", SupportedFormats);
+}
+
+public static class RepresentationNormalizations
+{
+    public const string None = "none";
+    public const string Rms = "rms";
+
+    public static IReadOnlyList<string> SupportedModes { get; } =
+    [
+        None,
+        Rms,
+    ];
+
+    public static bool IsSupported(string mode)
+    {
+        return SupportedModes.Contains(mode, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static string SupportedModesDisplay => string.Join(", ", SupportedModes);
 }

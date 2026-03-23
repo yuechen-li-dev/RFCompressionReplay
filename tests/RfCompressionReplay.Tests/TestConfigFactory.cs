@@ -270,6 +270,58 @@ internal static class TestConfigFactory
             ArtifactRetentionMode: artifactRetentionMode);
     }
 
+    public static IReadOnlyList<M5B3RepresentationFamilyConfig> CreateM5B3RepresentationFamilies()
+    {
+        return
+        [
+            new M5B3RepresentationFamilyConfig(
+                "raw-scaled",
+                "Raw-scaled float64-le serialization with no normalization.",
+                new RepresentationConfig(1d, RepresentationFormats.Float64LittleEndian, RepresentationNormalizations.None, 1d)),
+            new M5B3RepresentationFamilyConfig(
+                "normalized-rms",
+                "Per-window RMS normalization to target RMS 1.0 after scaling, then float64-le serialization.",
+                new RepresentationConfig(1d, RepresentationFormats.Float64LittleEndian, RepresentationNormalizations.Rms, 1d)),
+        ];
+    }
+
+    public static M5B3ExplorationConfig CreateM5B3ExplorationConfig(
+        string experimentId,
+        IReadOnlyList<int>? seedPanel = null,
+        IReadOnlyList<double>? scaleValues = null,
+        IReadOnlyList<M5B3RepresentationFamilyConfig>? representationFamilies = null,
+        IReadOnlyList<BenchmarkTaskConfig>? tasks = null,
+        IReadOnlyList<DetectorConfig>? detectors = null,
+        IReadOnlyList<double>? snrDbValues = null,
+        IReadOnlyList<int>? windowLengths = null,
+        int trialCountPerCondition = 3,
+        string artifactRetentionMode = ArtifactRetentionModes.Milestone)
+    {
+        return new M5B3ExplorationConfig(
+            ExperimentId: experimentId,
+            ExperimentName: "M5b3 Exploration Test",
+            SeedPanel: seedPanel ?? [7, 11, 13],
+            ScaleValues: scaleValues ?? [0.5d, 1d, 2d],
+            RepresentationFamilies: representationFamilies ?? CreateM5B3RepresentationFamilies(),
+            OutputDirectory: "artifacts",
+            Scenario: new ScenarioConfig(ExperimentConfigValidator.SyntheticBenchmarkScenarioName, 2, 64),
+            TrialCount: 4,
+            Detector: new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 25000d, DetectorCatalog.LzmsaPaperDetectorMode),
+            Signal: null,
+            Benchmark: new SyntheticBenchmarkConfig(
+                BaseStreamLength: 2048,
+                Noise: new GaussianNoiseConfig(0d, 1d),
+                Cases: Array.Empty<SyntheticCaseConfig>()),
+            Evaluation: new EvaluationConfig(
+                Tasks: tasks ?? [CreateOfdmTask(), CreateGaussianEmitterTask()],
+                Detectors: detectors ?? CreateM5B1CompressionDetectors(),
+                SnrDbValues: snrDbValues ?? [-6d, 0d],
+                WindowLengths: windowLengths ?? [64],
+                TrialCountPerCondition: trialCountPerCondition),
+            ManifestMetadata: new ManifestMetadataConfig("note", "m5b3", new Dictionary<string, string> { ["suite"] = "tests", ["milestone"] = "m5b3" }),
+            ArtifactRetentionMode: artifactRetentionMode);
+    }
+
     public static BenchmarkTaskConfig CreateOfdmTask()
     {
         return new BenchmarkTaskConfig(

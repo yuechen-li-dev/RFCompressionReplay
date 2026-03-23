@@ -159,6 +159,24 @@ public static class ExperimentConfigValidator
         {
             errors.Add($"{prefix}.NumericFormat '{representation.NumericFormat}' is not supported. Supported formats: {RepresentationFormats.SupportedFormatsDisplay}.");
         }
+
+        if (string.IsNullOrWhiteSpace(representation.NormalizationMode))
+        {
+            errors.Add($"{prefix}.NormalizationMode is required.");
+        }
+        else if (!RepresentationNormalizations.IsSupported(representation.NormalizationMode))
+        {
+            errors.Add($"{prefix}.NormalizationMode '{representation.NormalizationMode}' is not supported. Supported modes: {RepresentationNormalizations.SupportedModesDisplay}.");
+        }
+
+        if (double.IsNaN(representation.NormalizationTarget) || double.IsInfinity(representation.NormalizationTarget))
+        {
+            errors.Add($"{prefix}.NormalizationTarget must be a finite number.");
+        }
+        else if (representation.NormalizationTarget <= 0d)
+        {
+            errors.Add($"{prefix}.NormalizationTarget must be greater than zero.");
+        }
     }
 
     private static void ValidateDummySignal(ExperimentConfig config, List<string> errors)

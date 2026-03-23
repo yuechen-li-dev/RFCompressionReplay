@@ -84,6 +84,28 @@ public sealed class DetectorImplementationTests
     }
 
     [Fact]
+    public void LzmsaRmsNormalizationCancelsPureScaleDifferencesDeterministically()
+    {
+        var windows = new[] { CreateWindow([1.0, -2.5, 0.125]) };
+
+        var normalizedBaseline = new LzmsaWindowSerializer(new RepresentationConfig(
+            1d,
+            RepresentationFormats.Float64LittleEndian,
+            RepresentationNormalizations.Rms,
+            1d));
+        var normalizedScaled = new LzmsaWindowSerializer(new RepresentationConfig(
+            2d,
+            RepresentationFormats.Float64LittleEndian,
+            RepresentationNormalizations.Rms,
+            1d));
+
+        var baselineBytes = normalizedBaseline.Serialize(windows);
+        var scaledBytes = normalizedScaled.Serialize(windows);
+
+        Assert.Equal(baselineBytes, scaledBytes);
+    }
+
+    [Fact]
     public void LzmsaPaperScoreIsDeterministicAndDistinguishesFixtures()
     {
         var detector = new LzmsaPaperDetector(new LzmsaWindowSerializer(), new BrotliCompressionCodec());

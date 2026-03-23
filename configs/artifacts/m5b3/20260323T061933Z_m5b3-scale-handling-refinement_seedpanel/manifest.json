@@ -1,0 +1,207 @@
+{
+  "experimentId": "m5b3-scale-handling-refinement",
+  "experimentName": "M5b3 Synthetic Scale-Handling Refinement",
+  "utcTimestamp": "2026-03-23T06:19:33.83761+00:00",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "scaleValues": [
+    0.5,
+    1,
+    2,
+    4
+  ],
+  "representationFamilyIds": [
+    "raw-scaled",
+    "normalized-rms"
+  ],
+  "gitCommit": "958fa4d29c2ff6c02562e53d44669e7eda8ce48f",
+  "environment": {
+    "machineName": "41b18ddf8275",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../m5b3.scale-handling-refinement.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCountPerCondition": 72,
+  "artifactPaths": [
+    "manifest.json",
+    "m5b3_auc_comparison.csv",
+    "m5b3_delta_summary.csv",
+    "m5b3_scale_summary.csv",
+    "m5b3_findings.md"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M5b3 is a compact scale-handling refinement pass: hold the M5b2 synthetic tasks and focused feature panel fixed, test an explicit raw scale panel, then compare it against one simple per-window RMS normalization variant.",
+    "versionTag": "m5b3",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5b3",
+      "experimentType": "scale-handling-refinement",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m5b2",
+      "seedPanel": "86420-97531-24680",
+      "featurePanel": "paper-mean-bucket64-127-suffix-third",
+      "scalePanel": "0.5-1.0-2.0-4.0",
+      "normalizationRule": "per-window-rms-target-1.0"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "ofdm-signal-present-vs-noise-only",
+      "gaussian-emitter-vs-noise-only"
+    ],
+    "detectorNames": [
+      "lzmsa-paper",
+      "lzmsa-mean-compressed-byte-value",
+      "lzmsa-compressed-byte-bucket-64-127-proportion",
+      "lzmsa-suffix-third-mean-compressed-byte-value"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 72
+  },
+  "retention": {
+    "mode": "milestone",
+    "omittedArtifactKinds": [
+      "trials.csv",
+      "roc_points.csv"
+    ],
+    "regenerationNote": "Milestone retention keeps compact, conclusion-critical artifacts only. Omitted raw trial rows and full ROC thresholds are intentionally regenerable by rerunning the same config in full retention mode with the recorded code revision, seed, and manifest metadata."
+  },
+  "seedRuns": [
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 0.5,
+      "seed": 86420
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 0.5,
+      "seed": 97531
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 0.5,
+      "seed": 24680
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 1,
+      "seed": 86420
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 1,
+      "seed": 97531
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 1,
+      "seed": 24680
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 2,
+      "seed": 86420
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 2,
+      "seed": 97531
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 2,
+      "seed": 24680
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 4,
+      "seed": 86420
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 4,
+      "seed": 97531
+    },
+    {
+      "representationFamilyId": "raw-scaled",
+      "scaleValue": 4,
+      "seed": 24680
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 0.5,
+      "seed": 86420
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 0.5,
+      "seed": 97531
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 0.5,
+      "seed": 24680
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 1,
+      "seed": 86420
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 1,
+      "seed": 97531
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 1,
+      "seed": 24680
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 2,
+      "seed": 86420
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 2,
+      "seed": 97531
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 2,
+      "seed": 24680
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 4,
+      "seed": 86420
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 4,
+      "seed": 97531
+    },
+    {
+      "representationFamilyId": "normalized-rms",
+      "scaleValue": 4,
+      "seed": 24680
+    }
+  ]
+}
