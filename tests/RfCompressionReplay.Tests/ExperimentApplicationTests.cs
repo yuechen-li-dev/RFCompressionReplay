@@ -201,6 +201,51 @@ public sealed class ExperimentApplicationTests
         }
     }
 
+    [Fact]
+    public void GeneratesM5A1ComparisonArtifactsForDecompositionRun()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+
+        try
+        {
+            var config = TestConfigFactory.CreateSyntheticEvaluationConfig(
+                experimentId: "m5a1-test",
+                tasks: [TestConfigFactory.CreateOfdmTask(), TestConfigFactory.CreateGaussianEmitterTask()],
+                detectors: TestConfigFactory.CreateM5A1CompressionDetectors(),
+                snrDbValues: [-6d, 0d],
+                windowLengths: [64],
+                trialCountPerCondition: 2) with
+            {
+                OutputDirectory = tempRoot,
+                ExperimentName = "M5a1 Comparison Test",
+                ManifestMetadata = new ManifestMetadataConfig(
+                    "Test M5a1 compressed-stream decomposition run.",
+                    "m5a1-test",
+                    new Dictionary<string, string> { ["milestone"] = "m5a1", ["experimentType"] = "compressed-stream-decomposition-pass-1" }),
+            };
+
+            var application = CreateApplication("2026-03-22T05:26:07Z");
+            var result = application.Run(config, Path.Combine(tempRoot, "config.json"), "/does/not/exist");
+            var comparisonPath = Path.Combine(result.RunDirectory, "m5a1_auc_comparison.csv");
+            var findingsPath = Path.Combine(result.RunDirectory, "m5a1_findings.md");
+            var deltaSummaryPath = Path.Combine(result.RunDirectory, "m5a1_delta_summary.csv");
+
+            Assert.True(File.Exists(comparisonPath));
+            Assert.True(File.Exists(findingsPath));
+            Assert.True(File.Exists(deltaSummaryPath));
+            Assert.Contains("m5a1_auc_comparison.csv", result.Manifest.ArtifactPaths);
+            Assert.Contains("m5a1_findings.md", result.Manifest.ArtifactPaths);
+            Assert.Contains("m5a1_delta_summary.csv", result.Manifest.ArtifactPaths);
+            Assert.Contains("aucLzmsaMeanCompressedByteValue", File.ReadAllText(comparisonPath));
+            Assert.Contains("M5a1 Compressed-Stream Decomposition Findings", File.ReadAllText(findingsPath));
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
     private static ExperimentApplication CreateApplication(string utcTimestamp)
     {
         return new ExperimentApplication(

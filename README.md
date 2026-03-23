@@ -1,10 +1,10 @@
 # RfCompressionReplay
 
-`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M4 uses the typed M0/M1/M2/M3 harness to run a first mechanism-comparison experiment: hold scalar-window serialization and Brotli compression fixed, then compare three compression-derived score identities on the same synthetic benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and ROC/AUC evaluation layer. M4a is the follow-on confirmation rerun of that same comparison question with stronger per-condition Monte Carlo evidence.
+`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extends the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass: hold scalar-window serialization and deterministic Brotli compression fixed, then compare four compression-derived score identities on the same synthetic benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and ROC/AUC evaluation layer.
 
-Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note. In the synthetic harness, the clean "works because of compressibility" interpretation is currently weakened; the next step is mechanism decomposition, not benchmark inflation.
+Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note, and M5a1 now asks whether the paper-style byte-sum behaves more like compressed length or more like mean compressed byte value when the compression path itself is held fixed. This is a local mechanism-decomposition pass, not a final mechanism theory.
 
-## What M4 / M4a Add
+## What M5a1 Adds
 
 - Config-driven named synthetic evaluation tasks for:
   - `ofdm-signal-present-vs-noise-only`
@@ -26,6 +26,10 @@ Current status: the score-identity comparison has been run and frozen in checked
   - `m4_findings.md`
   - `m4a_auc_comparison.csv`
   - `m4a_findings.md`
+- M5a1 decomposition artifacts when the evaluation run compares the four compression-derived detector identities together:
+  - `m5a1_auc_comparison.csv`
+  - `m5a1_findings.md`
+  - `m5a1_delta_summary.csv`
 - Manifest metadata that records task names and sweep axes.
 - Focused xUnit coverage for ROC/AUC sanity, score orientation, condition grouping, end-to-end sample configs, and determinism.
 
@@ -51,7 +55,7 @@ Important caveats:
 
 ## Compression-Derived Detector Variants
 
-The repository now exposes three separate compression-derived detector IDs that all share the same scalar-window serialization and Brotli compression path:
+The repository now exposes four separate compression-derived detector IDs that all share the same scalar-window serialization and Brotli compression path:
 
 - `lzmsa-paper` (`paper-byte-sum`)
   - Formula: `score = sum(compressedBytes)`
@@ -65,6 +69,10 @@ The repository now exposes three separate compression-derived detector IDs that 
   - Formula: `score = compressedByteCount / inputByteCount`
   - Orientation: `LowerScoreMorePositive`
   - Purpose: compare against a normalized compression-length metric on the same serialized input bytes.
+- `lzmsa-mean-compressed-byte-value` (`mean-compressed-byte-value`)
+  - Formula: `score = compressedByteSum / compressedByteCount`
+  - Orientation: `HigherScoreMorePositive`
+  - Purpose: keep the compression path fixed while isolating the mean-byte-value factor from the identity `byteSum = compressedLength × meanCompressedByteValue`.
 
 `inputByteCount` is the serialized scalar-window payload size in bytes before compression. The serialization contract itself is unchanged.
 
@@ -93,6 +101,7 @@ Current orientation contract:
 - `lzmsa-paper`: higher score means more evidence for the positive class.
 - `lzmsa-compressed-length`: lower score means more evidence for the positive class.
 - `lzmsa-normalized-compressed-length`: lower score means more evidence for the positive class.
+- `lzmsa-mean-compressed-byte-value`: higher score means more evidence for the positive class.
 
 ROC/AUC is computed per condition by:
 
@@ -116,6 +125,9 @@ Each run writes a deterministic per-run folder beneath the configured output roo
 - `roc_points.csv`: ROC thresholds, TPR/FPR points, class counts, and per-condition AUC.
 - `m4_auc_comparison.csv` / `m4a_auc_comparison.csv`: side-by-side AUC comparison for `lzmsa-paper`, `lzmsa-compressed-length`, and `lzmsa-normalized-compressed-length` by task, SNR, and window length when all three are run together.
 - `m4_findings.md` / `m4a_findings.md`: concise scope, comparison table, findings text, and caveats for an M4/M4a score-identity comparison run.
+- `m5a1_auc_comparison.csv`: side-by-side AUC comparison for `lzmsa-paper`, `lzmsa-compressed-length`, `lzmsa-normalized-compressed-length`, and `lzmsa-mean-compressed-byte-value` by task, SNR, and window length when all four are run together.
+- `m5a1_findings.md`: concise scope, condition summary, decomposition-focused findings text, and caveats for an M5a1 run.
+- `m5a1_delta_summary.csv`: compact aggregate median/max absolute AUC deltas between `lzmsa-paper` and each alternative M5a1 identity.
 
 If a same-second rerun would collide, the harness appends a readable suffix such as `_2` to keep artifacts isolated.
 
@@ -126,6 +138,7 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - M4a confirmation artifacts: `configs/artifacts/m4a/20260322T231911Z_m4a-score-identity-confirmation_seed24680/`
   - inspect `m4a_auc_comparison.csv`, `m4a_findings.md`, and `manifest.json`
 - M4b findings freeze: `docs/M4B_FINDINGS.md`
+- M5a1 decomposition guide: `docs/M5A1_COMPRESSED_STREAM_DECOMPOSITION.md`
 
 ## Repository Layout
 
@@ -138,6 +151,7 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - `docs/M4_SCORE_IDENTITY_COMPARISON.md`: M4 scope, outputs, and reading guide for the score-identity comparison experiment.
 - `docs/M4A_CONFIRMATION_RERUN.md`: M4a confirmation-rerun scope, strengthening choices, and reading guide.
 - `docs/M4B_FINDINGS.md`: concise M4/M4a findings freeze, supported conclusion, non-conclusions, and next mechanistic question.
+- `docs/M5A1_COMPRESSED_STREAM_DECOMPOSITION.md`: M5a1 scope, score decomposition question, outputs, and reading guide.
 - `docs/DETECTOR_IMPLEMENTATION_NOTES.md`: detector formulas and compression-statistic contract.
 - `docs/REPRODUCTION_SCOPE.md`: concise reproduction-scope statement.
 
@@ -161,6 +175,8 @@ dotnet run --project src/RfCompressionReplay.Cli -- configs/m4.score-identity-sm
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m4.score-identity-comparison.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m4a.score-identity-smoke.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m4a.score-identity-confirmation.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m5a1.compressed-stream-decomposition-smoke.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m5a1.compressed-stream-decomposition.json
 ```
 
 On success, the CLI prints the run identifier and the artifact directory.
@@ -172,12 +188,12 @@ On success, the CLI prints the run identifier and the artifact directory.
 - No plotting libraries, notebooks, or large reporting stack.
 - No threshold optimization workflow beyond explicit ROC/AUC computation.
 - No compression backend swap for this pre-M4 hardening pass.
-- No claim that the M4/M4a synthetic comparison settles the paper's original unpublished results.
+- No claim that the M4/M4a/M5a1 synthetic comparison settles the paper's original unpublished results.
 - M4/M4a findings stay within the synthetic benchmark scope and do not claim anything about private paper data or SDR performance.
 
 ## What Later Milestones Can Add
 
-- Mechanism testing across the now-explicit compression-derived score identities.
+- Further mechanism testing beyond the local M5a1 byte-sum decomposition.
 - Broader signal families or external data.
 - More standards-faithful waveform generation if later justified.
 - Figure-reproduction workflows once the synthetic evaluation layer is stable.

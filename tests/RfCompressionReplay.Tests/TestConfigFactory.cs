@@ -79,6 +79,17 @@ internal static class TestConfigFactory
         ];
     }
 
+    public static IReadOnlyList<DetectorConfig> CreateM5A1CompressionDetectors()
+    {
+        return
+        [
+            new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 25000d, DetectorCatalog.LzmsaPaperDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaCompressedLengthDetectorName, 64d, DetectorCatalog.LzmsaCompressedLengthDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorName, 0.25d, DetectorCatalog.LzmsaNormalizedCompressedLengthDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName, 128d, DetectorCatalog.LzmsaMeanCompressedByteValueDetectorMode),
+        ];
+    }
+
     public static BenchmarkTaskConfig CreateOfdmTask()
     {
         return new BenchmarkTaskConfig(

@@ -9,12 +9,14 @@ public static class DetectorCatalog
     public const string LzmsaPaperDetectorName = "lzmsa-paper";
     public const string LzmsaCompressedLengthDetectorName = "lzmsa-compressed-length";
     public const string LzmsaNormalizedCompressedLengthDetectorName = "lzmsa-normalized-compressed-length";
+    public const string LzmsaMeanCompressedByteValueDetectorName = "lzmsa-mean-compressed-byte-value";
 
     public const string EnergyDetectorMode = "average-energy";
     public const string CovarianceAbsoluteValueDetectorMode = "lag-1-absolute-autocovariance";
     public const string LzmsaPaperDetectorMode = "paper-byte-sum";
     public const string LzmsaCompressedLengthDetectorMode = "compressed-byte-count";
     public const string LzmsaNormalizedCompressedLengthDetectorMode = "compressed-byte-count-per-input-byte";
+    public const string LzmsaMeanCompressedByteValueDetectorMode = "mean-compressed-byte-value";
 
     public static IReadOnlyList<string> SupportedDetectorNames { get; } =
     [
@@ -23,6 +25,7 @@ public static class DetectorCatalog
         LzmsaPaperDetectorName,
         LzmsaCompressedLengthDetectorName,
         LzmsaNormalizedCompressedLengthDetectorName,
+        LzmsaMeanCompressedByteValueDetectorName,
     ];
 
     public static IReadOnlyDictionary<string, string> SupportedModesByDetector { get; } =
@@ -33,6 +36,7 @@ public static class DetectorCatalog
             [LzmsaPaperDetectorName] = LzmsaPaperDetectorMode,
             [LzmsaCompressedLengthDetectorName] = LzmsaCompressedLengthDetectorMode,
             [LzmsaNormalizedCompressedLengthDetectorName] = LzmsaNormalizedCompressedLengthDetectorMode,
+            [LzmsaMeanCompressedByteValueDetectorName] = LzmsaMeanCompressedByteValueDetectorMode,
         };
 
     public static IReadOnlyDictionary<string, ScoreOrientation> ScoreOrientationByDetector { get; } =
@@ -43,6 +47,7 @@ public static class DetectorCatalog
             [LzmsaPaperDetectorName] = ScoreOrientation.HigherScoreMorePositive,
             [LzmsaCompressedLengthDetectorName] = ScoreOrientation.LowerScoreMorePositive,
             [LzmsaNormalizedCompressedLengthDetectorName] = ScoreOrientation.LowerScoreMorePositive,
+            [LzmsaMeanCompressedByteValueDetectorName] = ScoreOrientation.HigherScoreMorePositive,
         };
 
     public static bool IsSupportedDetector(string detectorName)
