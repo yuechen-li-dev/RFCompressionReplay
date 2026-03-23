@@ -31,6 +31,20 @@ try
         environmentSummaryProvider,
         gitCommitResolver);
 
+    if (IsM5B3ExplorationConfig(fullConfigPath))
+    {
+        var config = M5B3ExplorationConfigJson.Load(fullConfigPath);
+        var explorationApplication = new M5B3ExplorationExperimentApplication(
+            runClock,
+            application,
+            environmentSummaryProvider,
+            gitCommitResolver);
+        var runDirectory = explorationApplication.Run(config, fullConfigPath, ResolveRepositoryRoot());
+        Console.WriteLine($"Run completed: {config.ExperimentId} ({config.Scenario.Name})");
+        Console.WriteLine($"Artifacts: {runDirectory}");
+        return 0;
+    }
+
     if (IsM5B2ExplorationConfig(fullConfigPath))
     {
         var config = M5B2ExplorationConfigJson.Load(fullConfigPath);
@@ -98,6 +112,14 @@ static bool IsM5B1ExplorationConfig(string configPath)
     return document.RootElement.TryGetProperty("seedPanel", out _)
         && document.RootElement.TryGetProperty("perturbations", out _)
         && !HasM5B2AxisTags(document.RootElement);
+}
+
+static bool IsM5B3ExplorationConfig(string configPath)
+{
+    using var document = JsonDocument.Parse(File.ReadAllText(configPath));
+    return document.RootElement.TryGetProperty("seedPanel", out _)
+        && document.RootElement.TryGetProperty("scaleValues", out _)
+        && document.RootElement.TryGetProperty("representationFamilies", out _);
 }
 
 static bool IsM5B2ExplorationConfig(string configPath)

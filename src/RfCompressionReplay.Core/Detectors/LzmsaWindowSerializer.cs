@@ -20,23 +20,60 @@ public sealed class LzmsaWindowSerializer
         var bytes = new byte[sampleCount * bytesPerSample];
         var offset = 0;
 
-        foreach (var sample in windows.SelectMany(window => window.Samples))
+        foreach (var window in windows)
         {
-            var scaledSample = sample * _representation.SampleScale;
+            var normalizedSamples = TransformWindow(window.Samples);
 
-            if (string.Equals(_representation.NumericFormat, RepresentationFormats.Float32LittleEndian, StringComparison.OrdinalIgnoreCase))
+            foreach (var scaledSample in normalizedSamples)
             {
-                BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(offset, sizeof(float)), BitConverter.SingleToInt32Bits((float)scaledSample));
-                offset += sizeof(float);
-            }
-            else
-            {
-                BinaryPrimitives.WriteInt64LittleEndian(bytes.AsSpan(offset, sizeof(double)), BitConverter.DoubleToInt64Bits(scaledSample));
-                offset += sizeof(double);
+                if (string.Equals(_representation.NumericFormat, RepresentationFormats.Float32LittleEndian, StringComparison.OrdinalIgnoreCase))
+                {
+                    BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(offset, sizeof(float)), BitConverter.SingleToInt32Bits((float)scaledSample));
+                    offset += sizeof(float);
+                }
+                else
+                {
+                    BinaryPrimitives.WriteInt64LittleEndian(bytes.AsSpan(offset, sizeof(double)), BitConverter.DoubleToInt64Bits(scaledSample));
+                    offset += sizeof(double);
+                }
             }
         }
 
         return bytes;
+    }
+
+    private IReadOnlyList<double> TransformWindow(IReadOnlyList<double> samples)
+    {
+        var scaled = samples.Select(sample => sample * _representation.SampleScale).ToArray();
+        if (!string.Equals(_representation.NormalizationMode, RepresentationNormalizations.Rms, StringComparison.OrdinalIgnoreCase))
+        {
+            return scaled;
+        }
+
+        if (scaled.Length == 0)
+        {
+            return scaled;
+        }
+
+        var sumSquares = 0d;
+        foreach (var sample in scaled)
+        {
+            sumSquares += sample * sample;
+        }
+
+        var rms = Math.Sqrt(sumSquares / scaled.Length);
+        if (rms <= 0d)
+        {
+            return scaled;
+        }
+
+        var normalizationScale = _representation.NormalizationTarget / rms;
+        for (var index = 0; index < scaled.Length; index++)
+        {
+            scaled[index] *= normalizationScale;
+        }
+
+        return scaled;
     }
 
     private int GetBytesPerSample()

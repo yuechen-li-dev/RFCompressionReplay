@@ -1,0 +1,158 @@
+{
+  "experimentId": "m5b3-scale-handling-refinement",
+  "experimentName": "M5b3 Synthetic Scale-Handling Refinement",
+  "seedPanel": [
+    86420,
+    97531,
+    24680
+  ],
+  "scaleValues": [
+    0.5,
+    1.0,
+    2.0,
+    4.0
+  ],
+  "representationFamilies": [
+    {
+      "id": "raw-scaled",
+      "description": "Raw-scaled representation family: multiply each sample by the tested scale value, then serialize as float64-le with no extra normalization.",
+      "representation": {
+        "sampleScale": 1.0,
+        "numericFormat": "float64-le",
+        "normalizationMode": "none",
+        "normalizationTarget": 1.0
+      }
+    },
+    {
+      "id": "normalized-rms",
+      "description": "Normalized representation family: multiply each sample by the tested scale value, then normalize each window to target RMS 1.0 before float64-le serialization.",
+      "representation": {
+        "sampleScale": 1.0,
+        "numericFormat": "float64-le",
+        "normalizationMode": "rms",
+        "normalizationTarget": 1.0
+      }
+    }
+  ],
+  "outputDirectory": "artifacts/m5b3",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 2,
+    "samplesPerWindow": 128
+  },
+  "trialCount": 4,
+  "detector": {
+    "name": "lzmsa-paper",
+    "threshold": 25000.0,
+    "mode": "paper-byte-sum"
+  },
+  "benchmark": {
+    "baseStreamLength": 4096,
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "cases": []
+  },
+  "evaluation": {
+    "tasks": [
+      {
+        "name": "ofdm-signal-present-vs-noise-only",
+        "description": "Positive class is an OFDM-like synthetic signal mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "ofdm-like-signal",
+          "targetLabel": "signal-present",
+          "sourceType": "ofdm-like",
+          "snrDb": -3.0,
+          "gaussianEmitter": null,
+          "ofdmLike": {
+            "subcarrierCount": 8,
+            "samplesPerSymbol": 32,
+            "symbolSeed": 77,
+            "carrierSpacing": 0.75,
+            "amplitude": 1.0
+          }
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      },
+      {
+        "name": "gaussian-emitter-vs-noise-only",
+        "description": "Positive class is an independent Gaussian emitter mixed into Gaussian background noise at the configured SNR. Negative class is Gaussian noise only.",
+        "positiveCase": {
+          "name": "gaussian-emitter-control",
+          "targetLabel": "signal-present",
+          "sourceType": "gaussian-emitter",
+          "snrDb": 0.0,
+          "gaussianEmitter": {
+            "mean": 0.0,
+            "standardDeviation": 1.0
+          },
+          "ofdmLike": null
+        },
+        "negativeCase": {
+          "name": "noise-only-baseline",
+          "targetLabel": "noise-only",
+          "sourceType": "noise-only",
+          "snrDb": null,
+          "gaussianEmitter": null,
+          "ofdmLike": null
+        }
+      }
+    ],
+    "detectors": [
+      {
+        "name": "lzmsa-paper",
+        "threshold": 25000.0,
+        "mode": "paper-byte-sum"
+      },
+      {
+        "name": "lzmsa-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "mean-compressed-byte-value"
+      },
+      {
+        "name": "lzmsa-compressed-byte-bucket-64-127-proportion",
+        "threshold": 0.25,
+        "mode": "compressed-byte-bucket-64-127-proportion"
+      },
+      {
+        "name": "lzmsa-suffix-third-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "suffix-third-mean-compressed-byte-value"
+      }
+    ],
+    "snrDbValues": [
+      -9.0,
+      -3.0,
+      0.0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 72
+  },
+  "manifestMetadata": {
+    "notes": "M5b3 is a compact scale-handling refinement pass: hold the M5b2 synthetic tasks and focused feature panel fixed, test an explicit raw scale panel, then compare it against one simple per-window RMS normalization variant.",
+    "versionTag": "m5b3",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5b3",
+      "experimentType": "scale-handling-refinement",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m5b2",
+      "seedPanel": "86420-97531-24680",
+      "featurePanel": "paper-mean-bucket64-127-suffix-third",
+      "scalePanel": "0.5-1.0-2.0-4.0",
+      "normalizationRule": "per-window-rms-target-1.0"
+    }
+  },
+  "artifactRetentionMode": "milestone"
+}

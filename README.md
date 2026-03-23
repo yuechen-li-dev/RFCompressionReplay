@@ -1,8 +1,8 @@
 # RfCompressionReplay
 
-`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, and M5b2 now refines that pass by separating scale-only versus packing/precision-only perturbations while keeping the same synthetic tasks, compression backend, and focused feature panel.
+`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, and M5b3 now refines the scale side further with an explicit scale panel plus one simple normalization comparison while keeping the same synthetic tasks, compression backend, and focused feature panel.
 
-Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note, M5a1 asks whether the paper-style byte-sum behaves more like compressed length or more like mean compressed byte value when the compression path itself is held fixed, M5a2r preserves the follow-on coarse-summary comparison in a compact checked-in form, M5a3 checks whether the M5a2r “closest simple neighbor” is actually stable under a small explicit seed panel, M5b1 asks whether that neighborhood remains qualitatively intact under modest representation perturbations, and M5b2 asks which perturbation axis is doing the most work in the M5b1 winner reshuffling. Mx5 adds an explicit artifact retention policy so milestone-style runs stay compact and reproducible without bloating the repository. This remains a local mechanism-decomposition arc plus lab-infrastructure hygiene, not a final mechanism theory.
+Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note, M5a1 asks whether the paper-style byte-sum behaves more like compressed length or more like mean compressed byte value when the compression path itself is held fixed, M5a2r preserves the follow-on coarse-summary comparison in a compact checked-in form, M5a3 checks whether the M5a2r “closest simple neighbor” is actually stable under a small explicit seed panel, M5b1 asks whether that neighborhood remains qualitatively intact under modest representation perturbations, M5b2 asks which perturbation axis is doing the most work in the M5b1 winner reshuffling, and M5b3 asks what shape the scale sensitivity takes across a small explicit panel and whether a simple normalization rule reduces it. Mx5 adds an explicit artifact retention policy so milestone-style runs stay compact and reproducible without bloating the repository. This remains a local mechanism-decomposition arc plus lab-infrastructure hygiene, not a final mechanism theory.
 
 ## What M5a1 Adds
 
@@ -50,6 +50,11 @@ Current status: the score-identity comparison has been run and frozen in checked
   - `m5b2_delta_summary.csv`
   - `m5b2_axis_summary.csv`
   - `m5b2_findings.md`
+- M5b3 scale-handling refinement artifacts when the same focused panel is rerun across explicit raw-scaled / normalized representation families and a compact multi-scale panel:
+  - `m5b3_auc_comparison.csv`
+  - `m5b3_delta_summary.csv`
+  - `m5b3_scale_summary.csv`
+  - `m5b3_findings.md`
 - Manifest metadata that records task names and sweep axes.
 - Focused xUnit coverage for ROC/AUC sanity, score orientation, condition grouping, end-to-end sample configs, and determinism.
 
@@ -105,14 +110,18 @@ The repository now exposes four separate compression-derived detector IDs that a
 
 `inputByteCount` is the serialized scalar-window payload size in bytes before compression. The serialization contract itself is unchanged.
 
-M5b1/M5b2 introduce a **configurable representation contract** for the compression-derived detector family only:
+M5b1/M5b2/M5b3 introduce a **configurable representation contract** for the compression-derived detector family only:
 
 - `sampleScale`: deterministic multiplicative factor applied to each scalar before serialization
 - `numericFormat`:
   - `float64-le` for the original baseline
   - `float32-le` for the first packing/precision perturbation
+- `normalizationMode`:
+  - `none` for the raw serialization path
+  - `rms` for per-window RMS normalization before serialization
+- `normalizationTarget`: fixed positive target used by the selected normalization rule
 
-No extra clipping, normalization, or compression-backend change is introduced by this pass. M5b2 keeps the same contract but splits the perturbations into explicit baseline, scale-only, packing-only, and optional combined axis tags so the compact summaries can compare those axes directly.
+M5b1 introduced scale and packing perturbations without extra normalization, M5b2 split those perturbations into explicit axes, and M5b3 adds exactly one simple normalization comparison: normalize each window to target RMS 1.0 before float64-le serialization. No compression-backend change is introduced by this pass.
 
 ## Synthetic Tasks Evaluated in M3
 
@@ -190,6 +199,10 @@ Core retained artifacts:
 - `m5b2_delta_summary.csv`: per-perturbation median/max absolute AUC deltas from `lzmsa-paper` for the focused M5b2 feature panel.
 - `m5b2_axis_summary.csv`: per-axis closest-neighbor win count, win rate, median/max absolute AUC delta, median closeness rank, and axis-level winners for each tested M5b2 feature.
 - `m5b2_findings.md`: concise scope, axis-level read, family-level interpretation, and caveats for an M5b2 run.
+- `m5b3_auc_comparison.csv`: side-by-side AUC comparison for `lzmsa-paper` and the same focused panel by `representationFamilyId`, `scaleValue`, `seed`, task, SNR, and window length.
+- `m5b3_delta_summary.csv`: per-representation-family closest-neighbor counts plus aggregate median/max absolute AUC deltas from `lzmsa-paper` for the focused M5b3 feature panel.
+- `m5b3_scale_summary.csv`: per-family, per-scale closest-neighbor win count, win rate, median/max absolute AUC delta, median closeness rank, and scale-level leaders for each tested M5b3 feature.
+- `m5b3_findings.md`: concise scope, scale-sensitivity read, normalization read, family-level interpretation, and caveats for an M5b3 run.
 
 See `docs/ARTIFACT_RETENTION_POLICY.md` for the detailed Mx5 policy, omitted artifact families, and regeneration guidance.
 
@@ -216,10 +229,15 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - M5b2 checked-in artifacts: `configs/artifacts/m5b2/`
   - inspect the newest `m5b2-perturbation-axis-refinement` run folder for `m5b2_auc_comparison.csv`, `m5b2_delta_summary.csv`, `m5b2_axis_summary.csv`, `m5b2_findings.md`, and `manifest.json`
   - M5b2 keeps the M5b1 focused panel fixed, then separates scale-only from packing-only perturbations so the checked-in artifacts stay summary-first
+- M5b3 checked-in artifacts: `configs/artifacts/m5b3/20260323T061933Z_m5b3-scale-handling-refinement_seedpanel/`
+  - inspect `m5b3_auc_comparison.csv`, `m5b3_delta_summary.csv`, `m5b3_scale_summary.csv`, `m5b3_findings.md`, and `manifest.json`
+  - current scale-handling note: raw scaling reshuffled the median-delta winner at `1.0x`, where `lzmsa-compressed-byte-bucket-64-127-proportion` briefly led on median delta, while the per-window RMS-normalized family kept `lzmsa-mean-compressed-byte-value` as the median-delta leader at every tested scale with fewer winner transitions overall
 - M5a1 decomposition guide: `docs/M5A1_COMPRESSED_STREAM_DECOMPOSITION.md`
 - M5a2 re-land guide: `docs/M5A2R_COMPRESSED_STREAM_DECOMPOSITION.md`
 - M5a3 stability guide: `docs/M5A3_STABILITY_CONFIRMATION.md`
 - M5b1 perturbation guide: `docs/M5B1_REPRESENTATION_PERTURBATION_EXPLORATION.md`
+- M5b2 perturbation guide: `docs/M5B2_PERTURBATION_AXIS_REFINEMENT.md`
+- M5b3 scale-handling guide: `docs/M5B3_SCALE_HANDLING_REFINEMENT.md`
 
 ## Repository Layout
 
@@ -236,6 +254,7 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - `docs/M5A3_STABILITY_CONFIRMATION.md`: M5a3 scope, fixed rerun question, outputs, and reading guide.
 - `docs/M5B1_REPRESENTATION_PERTURBATION_EXPLORATION.md`: M5b1 scope, perturbation panel, focused feature panel, compact outputs, and reading guide.
 - `docs/M5B2_PERTURBATION_AXIS_REFINEMENT.md`: M5b2 scope, axis-separated perturbation panel, focused feature panel, compact outputs, and reading guide.
+- `docs/M5B3_SCALE_HANDLING_REFINEMENT.md`: M5b3 scope, explicit scale panel, normalization rule, focused feature panel, compact outputs, and reading guide.
 - `docs/ARTIFACT_RETENTION_POLICY.md`: Mx5 retention modes, retained-vs-omitted artifact families, compact ROC policy, and regeneration expectations.
 - `docs/DETECTOR_IMPLEMENTATION_NOTES.md`: detector formulas and compression-statistic contract.
 - `docs/REPRODUCTION_SCOPE.md`: concise reproduction-scope statement.
@@ -270,6 +289,8 @@ dotnet run --project src/RfCompressionReplay.Cli -- configs/m5b1.representation-
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m5b1.representation-perturbation-exploration.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m5b2.perturbation-axis-refinement-smoke.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m5b2.perturbation-axis-refinement.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m5b3.scale-handling-refinement-smoke.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m5b3.scale-handling-refinement.json
 ```
 
 The checked-in smoke and milestone configs now set `artifactRetentionMode` explicitly; switch a config to `full` for a local rerun when you need omitted raw artifacts such as `trials.csv` or `roc_points.csv`.

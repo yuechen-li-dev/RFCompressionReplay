@@ -1,0 +1,7 @@
+﻿representationFamilyId,alternativeDetectorName,featureFamily,closestNeighborCount,combinationCount,winRate,medianAbsoluteAucDeltaFromPaper,maxAbsoluteAucDeltaFromPaper,medianClosenessRank
+normalized-rms,lzmsa-mean-compressed-byte-value,whole-stream-mean,132,144,0.916667,0.008343,0.027199,1.000000
+normalized-rms,lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,12,144,0.083333,0.034047,0.110725,2.000000
+normalized-rms,lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,0,144,0.000000,0.070843,0.233989,3.000000
+raw-scaled,lzmsa-mean-compressed-byte-value,whole-stream-mean,92,144,0.638889,0.012636,0.138503,1.000000
+raw-scaled,lzmsa-suffix-third-mean-compressed-byte-value,coarse-positional,29,144,0.201389,0.045091,0.156057,2.000000
+raw-scaled,lzmsa-compressed-byte-bucket-64-127-proportion,coarse-histogram,23,144,0.159722,0.058739,0.239680,3.000000
