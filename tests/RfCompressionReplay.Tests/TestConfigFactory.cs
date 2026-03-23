@@ -94,6 +94,17 @@ internal static class TestConfigFactory
         ];
     }
 
+    public static IReadOnlyList<DetectorConfig> CreateM6A1Detectors()
+    {
+        return
+        [
+            new DetectorConfig(DetectorCatalog.EnergyDetectorName, 1d, DetectorCatalog.EnergyDetectorMode),
+            new DetectorConfig(DetectorCatalog.CovarianceAbsoluteValueDetectorName, 0d, DetectorCatalog.CovarianceAbsoluteValueDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaPaperDetectorName, 25000d, DetectorCatalog.LzmsaPaperDetectorMode),
+            new DetectorConfig(DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName, 128d, DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorMode),
+        ];
+    }
+
     public static IReadOnlyList<DetectorConfig> CreateM5A2CompressionDetectors()
     {
         return
@@ -322,6 +333,39 @@ internal static class TestConfigFactory
             ArtifactRetentionMode: artifactRetentionMode);
     }
 
+    public static M6A1UsefulnessConfig CreateM6A1UsefulnessConfig(
+        string experimentId,
+        IReadOnlyList<int>? seedPanel = null,
+        IReadOnlyList<BenchmarkTaskConfig>? tasks = null,
+        IReadOnlyList<DetectorConfig>? detectors = null,
+        IReadOnlyList<double>? snrDbValues = null,
+        IReadOnlyList<int>? windowLengths = null,
+        int trialCountPerCondition = 12,
+        string artifactRetentionMode = ArtifactRetentionModes.Milestone)
+    {
+        return new M6A1UsefulnessConfig(
+            ExperimentId: experimentId,
+            ExperimentName: "M6a1 Usefulness Mapping Test",
+            SeedPanel: seedPanel ?? [86420, 97531, 24680],
+            OutputDirectory: "artifacts",
+            Scenario: new ScenarioConfig(ExperimentConfigValidator.SyntheticBenchmarkScenarioName, 2, 128),
+            TrialCount: 4,
+            Detector: new DetectorConfig(DetectorCatalog.EnergyDetectorName, 1d, DetectorCatalog.EnergyDetectorMode),
+            Signal: null,
+            Benchmark: new SyntheticBenchmarkConfig(
+                BaseStreamLength: 4096,
+                Noise: new GaussianNoiseConfig(0d, 1d),
+                Cases: Array.Empty<SyntheticCaseConfig>()),
+            Evaluation: new EvaluationConfig(
+                Tasks: tasks ?? [CreateStructuredBurstTask(), CreateColoredNuisanceTask(), CreateEqualEnergyTask()],
+                Detectors: detectors ?? CreateM6A1Detectors(),
+                SnrDbValues: snrDbValues ?? [-9d, -3d, 0d],
+                WindowLengths: windowLengths ?? [64, 128],
+                TrialCountPerCondition: trialCountPerCondition),
+            ManifestMetadata: new ManifestMetadataConfig("note", "m6a1", new Dictionary<string, string> { ["suite"] = "tests", ["milestone"] = "m6a1" }),
+            ArtifactRetentionMode: artifactRetentionMode);
+    }
+
     public static BenchmarkTaskConfig CreateOfdmTask()
     {
         return new BenchmarkTaskConfig(
@@ -338,6 +382,33 @@ internal static class TestConfigFactory
             Description: "Positive class is an independent Gaussian emitter mixed into Gaussian background noise. Negative class is Gaussian noise only.",
             PositiveCase: CreateGaussianEmitterCase(0d),
             NegativeCase: CreateNoiseOnlyCase());
+    }
+
+    public static BenchmarkTaskConfig CreateStructuredBurstTask()
+    {
+        return new BenchmarkTaskConfig(
+            Name: BenchmarkTaskCatalog.StructuredBurstVsNoiseOnly,
+            Description: "Positive class is a weak OFDM-like burst embedded in Gaussian noise at the configured SNR. Negative class is Gaussian white noise only.",
+            PositiveCase: CreateBurstOfdmLikeCase(-3d),
+            NegativeCase: CreateNoiseOnlyCase());
+    }
+
+    public static BenchmarkTaskConfig CreateColoredNuisanceTask()
+    {
+        return new BenchmarkTaskConfig(
+            Name: BenchmarkTaskCatalog.ColoredNuisanceVsWhiteNoise,
+            Description: "Positive class is a modest correlated Gaussian nuisance process mixed into Gaussian noise at the configured SNR. Negative class is Gaussian white noise only.",
+            PositiveCase: CreateCorrelatedGaussianCase(-3d),
+            NegativeCase: CreateNoiseOnlyCase());
+    }
+
+    public static BenchmarkTaskConfig CreateEqualEnergyTask()
+    {
+        return new BenchmarkTaskConfig(
+            Name: BenchmarkTaskCatalog.EqualEnergyStructuredVsUnstructured,
+            Description: "Positive class is an OFDM-like structured process mixed to the configured SNR. Negative class is a Gaussian emitter mixed to the same configured SNR so energy alone is intentionally weak.",
+            PositiveCase: CreateOfdmLikeCase(-3d) with { Name = "equal-energy-structured" },
+            NegativeCase: CreateGaussianEmitterCase(-3d) with { Name = "equal-energy-unstructured", TargetLabel = "less-structured" });
     }
 
     public static SyntheticCaseConfig CreateNoiseOnlyCase()
@@ -360,6 +431,37 @@ internal static class TestConfigFactory
             SnrDb: snrDb,
             GaussianEmitter: new GaussianEmitterConfig(0d, 1d),
             OfdmLike: null);
+    }
+
+    public static SyntheticCaseConfig CreateBurstOfdmLikeCase(double snrDb = -3d)
+    {
+        return new SyntheticCaseConfig(
+            Name: "structured-burst",
+            TargetLabel: "structured-burst-present",
+            SourceType: ExperimentConfigValidator.BurstOfdmLikeSourceType,
+            SnrDb: snrDb,
+            GaussianEmitter: null,
+            OfdmLike: null,
+            BurstOfdmLike: new BurstOfdmLikeConfig(
+                new OfdmLikeSignalConfig(8, 32, 91, 0.75d, 1d),
+                StartFraction: 0.35d,
+                LengthFraction: 0.18d),
+            CorrelatedGaussian: null);
+    }
+
+    public static SyntheticCaseConfig CreateCorrelatedGaussianCase(double snrDb = -3d)
+    {
+        return new SyntheticCaseConfig(
+            Name: "colored-nuisance",
+            TargetLabel: "correlated-nuisance",
+            SourceType: ExperimentConfigValidator.CorrelatedGaussianSourceType,
+            SnrDb: snrDb,
+            GaussianEmitter: null,
+            OfdmLike: null,
+            BurstOfdmLike: null,
+            CorrelatedGaussian: new CorrelatedGaussianProcessConfig(
+                InnovationStandardDeviation: 1d,
+                ArCoefficient: 0.92d));
     }
 
     public static SyntheticCaseConfig CreateOfdmLikeCase(double snrDb = -3d, int symbolSeed = 77)

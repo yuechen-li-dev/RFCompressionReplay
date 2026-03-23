@@ -1,8 +1,29 @@
 # RfCompressionReplay
 
-`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, M5b3 refined the scale side further with an explicit scale panel plus one simple normalization comparison, and M5f freezes that arc into a concise repository-native findings package.
+`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, M5b3 refined the scale side further with an explicit scale panel plus one simple normalization comparison, M5f freezes that arc into a concise repository-native findings package, and M6a1 adds the first compact usefulness-mapping pass over a slightly more application-oriented synthetic task suite.
 
-Current status: within the current synthetic harness, the clean compressibility interpretation is no longer the best fit. The checked-in M5 arc now supports a scale-sensitive coarse compressed-byte value / distribution / position neighborhood interpretation, with simple compressed-length metrics remaining insufficient and per-window RMS-normalized mean compressed byte value serving as the strongest practical simple summary identified so far. See `docs/M5_FINDINGS.md` for the compact freeze, and inspect the checked-in M5 milestone artifacts under `configs/artifacts/m5a1/`, `configs/artifacts/m5a2/`, `configs/artifacts/m5a3/`, `configs/artifacts/m5b1/`, `configs/artifacts/m5b2/`, and `configs/artifacts/m5b3/` for the compact evidence trail. Mx5 adds an explicit artifact retention policy so milestone-style runs stay compact and reproducible without bloating the repository. This remains a local mechanism-decomposition arc plus lab-infrastructure hygiene, not a final mechanism theory.
+Current status: within the current synthetic harness, the clean compressibility interpretation is no longer the best fit. The checked-in M5 arc supports a scale-sensitive coarse compressed-byte value / distribution / position neighborhood interpretation, with simple compressed-length metrics remaining insufficient and per-window RMS-normalized mean compressed byte value serving as the strongest practical simple summary identified in that mechanism arc. M6a1 then asks whether that detector family is actually useful on a compact synthetic sensing-style task suite relative to ED and CAV. In the checked-in M6a1 run, ED/CAV still dominated most tested conditions, while compression-derived detectors stayed mostly secondary and RMS-normalized mean compressed byte value only clearly beat `lzmsa-paper` on the equal-energy structured-vs-unstructured family. See `docs/M5_FINDINGS.md` for the compact M5 freeze, inspect the checked-in M6a1 artifacts under `configs/artifacts/m6a1/`, and note that milestone-style runs stay compact and summary-first rather than retaining per-trial exhaust by default. This remains synthetic-only lab work, not a deployment claim.
+
+## What M6a1 Adds
+
+- A compact multi-seed usefulness-mapping runner for a focused three-task synthetic suite:
+  - `structured-burst-vs-noise-only`
+  - `colored-nuisance-vs-white-noise`
+  - `equal-energy-structured-vs-unstructured`
+- A focused detector panel:
+  - `ed`
+  - `cav`
+  - `lzmsa-paper`
+  - `lzmsa-rms-normalized-mean-compressed-byte-value`
+- Two new simple synthetic source constructions used by that suite:
+  - a weak localized OFDM-like burst embedded in noise,
+  - a modest correlated Gaussian nuisance process.
+- Compact summary-first M6a1 artifacts:
+  - `manifest.json`
+  - `m6a1_auc_comparison.csv`
+  - `m6a1_task_summary.csv`
+  - `m6a1_findings.md`
+- Default top-level retention for M6a1 keeps only those compact outputs for the checked-in run rather than per-trial dumps or raw ROC tables.
 
 ## What M5a1 Adds
 
@@ -234,6 +255,9 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - M5b3 checked-in artifacts: `configs/artifacts/m5b3/20260323T061933Z_m5b3-scale-handling-refinement_seedpanel/`
   - inspect `m5b3_auc_comparison.csv`, `m5b3_delta_summary.csv`, `m5b3_scale_summary.csv`, `m5b3_findings.md`, and `manifest.json`
   - current scale-handling note: raw scaling reshuffled the median-delta winner at `1.0x`, where `lzmsa-compressed-byte-bucket-64-127-proportion` briefly led on median delta, while the per-window RMS-normalized family kept `lzmsa-mean-compressed-byte-value` as the median-delta leader at every tested scale with fewer winner transitions overall
+- M6a1 checked-in artifacts: `configs/artifacts/m6a1/20260323T071814Z_m6a1-usefulness-mapping_seedpanel/`
+  - inspect `m6a1_auc_comparison.csv`, `m6a1_task_summary.csv`, `m6a1_findings.md`, and `manifest.json`
+  - current usefulness-mapping note: in this compact synthetic suite, ED/CAV remained strongest overall, while the RMS-normalized mean compressed byte value proxy was mainly notable for staying slightly ahead of `lzmsa-paper` on the equal-energy structured-vs-unstructured family rather than for dominating the suite
 - M5a1 decomposition guide: `docs/M5A1_COMPRESSED_STREAM_DECOMPOSITION.md`
 - M5a2 re-land guide: `docs/M5A2R_COMPRESSED_STREAM_DECOMPOSITION.md`
 - M5a3 stability guide: `docs/M5A3_STABILITY_CONFIRMATION.md`

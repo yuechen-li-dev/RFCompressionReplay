@@ -463,6 +463,49 @@ public sealed class ExperimentApplicationTests
         }
     }
 
+    [Fact]
+    public void GeneratesM6A1CompactArtifactsForUsefulnessMappingRun()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+
+        try
+        {
+            var config = TestConfigFactory.CreateM6A1UsefulnessConfig(
+                experimentId: "m6a1-test",
+                trialCountPerCondition: 4,
+                artifactRetentionMode: ArtifactRetentionModes.Smoke) with
+            {
+                OutputDirectory = tempRoot,
+                ExperimentName = "M6a1 Usefulness Test",
+                ManifestMetadata = new ManifestMetadataConfig(
+                    "Test M6a1 usefulness mapping run.",
+                    "m6a1-test",
+                    new Dictionary<string, string> { ["milestone"] = "m6a1", ["experimentType"] = "usefulness-mapping" })
+            };
+
+            var baseApplication = CreateApplication("2026-03-23T07:06:07Z");
+            var usefulnessApplication = new M6A1UsefulnessExperimentApplication(
+                new FixedRunClock(DateTimeOffset.Parse("2026-03-23T07:06:07Z")),
+                baseApplication,
+                new EnvironmentSummaryProvider(),
+                new GitCommitResolver());
+            var runDirectory = usefulnessApplication.Run(config, Path.Combine(tempRoot, "config.json"), "/does/not/exist");
+
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m6a1_auc_comparison.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m6a1_task_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m6a1_findings.md")));
+            Assert.Contains("taskFamilyId,seed,snrDb,windowLength,detectorId,auc", File.ReadAllText(Path.Combine(runDirectory, "m6a1_auc_comparison.csv")));
+            Assert.Contains("taskFamilyId,detectorId,medianAuc,maxAuc", File.ReadAllText(Path.Combine(runDirectory, "m6a1_task_summary.csv")));
+            Assert.Contains("M6a1 Usefulness-Mapping Findings", File.ReadAllText(Path.Combine(runDirectory, "m6a1_findings.md")));
+            Assert.False(Directory.Exists(Path.Combine(runDirectory, ".m6a1-temp")));
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
     private static ExperimentApplication CreateApplication(string utcTimestamp)
     {
         return new ExperimentApplication(

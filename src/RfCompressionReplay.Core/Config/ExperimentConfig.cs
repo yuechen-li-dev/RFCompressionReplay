@@ -45,7 +45,9 @@ public sealed record SyntheticCaseConfig(
     string SourceType,
     double? SnrDb,
     GaussianEmitterConfig? GaussianEmitter,
-    OfdmLikeSignalConfig? OfdmLike);
+    OfdmLikeSignalConfig? OfdmLike,
+    BurstOfdmLikeConfig? BurstOfdmLike = null,
+    CorrelatedGaussianProcessConfig? CorrelatedGaussian = null);
 
 public sealed record GaussianEmitterConfig(
     double Mean,
@@ -57,6 +59,15 @@ public sealed record OfdmLikeSignalConfig(
     int SymbolSeed,
     double CarrierSpacing,
     double Amplitude);
+
+public sealed record BurstOfdmLikeConfig(
+    OfdmLikeSignalConfig Carrier,
+    double StartFraction,
+    double LengthFraction);
+
+public sealed record CorrelatedGaussianProcessConfig(
+    double InnovationStandardDeviation,
+    double ArCoefficient);
 
 public sealed record EvaluationConfig(
     IReadOnlyList<BenchmarkTaskConfig> Tasks,

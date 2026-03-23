@@ -195,6 +195,14 @@ public sealed class DetectorImplementationTests
     }
 
     [Fact]
+    public void LzmsaRmsNormalizedMeanCompressedByteValueUsesExplicitHigherScoreOrientation()
+    {
+        Assert.Equal(
+            ScoreOrientation.HigherScoreMorePositive,
+            DetectorCatalog.GetScoreOrientation(DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName));
+    }
+
+    [Fact]
     public void LzmsaMeanCompressedByteValueUsesHigherScoreThresholdSemantics()
     {
         var input = new DetectorInput(0, [CreateWindow(Enumerable.Repeat(0.25d, 64).ToArray())]);
@@ -206,6 +214,24 @@ public sealed class DetectorImplementationTests
         var result = DetectorFactory.Create(config).Evaluate(input, config);
 
         Assert.Equal(result.Score >= config.Threshold, result.IsAboveThreshold);
+    }
+
+    [Fact]
+    public void LzmsaRmsNormalizedMeanCompressedByteValueIgnoresPureScaleDifferences()
+    {
+        var baselineInput = new DetectorInput(0, [CreateWindow([1.0, -2.5, 0.125, 0.75])]);
+        var scaledInput = new DetectorInput(0, [CreateWindow([2.0, -5.0, 0.25, 1.5])]);
+        var config = new DetectorConfig(
+            Name: DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName,
+            Threshold: 100d,
+            Mode: DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorMode);
+
+        var detector = DetectorFactory.Create(config);
+        var baseline = detector.Evaluate(baselineInput, config);
+        var scaled = detector.Evaluate(scaledInput, config);
+
+        Assert.Equal(baseline.Score, scaled.Score);
+        Assert.Equal(baseline.Metrics["compressedByteCount"], scaled.Metrics["compressedByteCount"]);
     }
 
 

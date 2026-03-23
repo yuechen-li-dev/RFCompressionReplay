@@ -54,6 +54,41 @@ public sealed class SyntheticBenchmarkTests
     }
 
     [Fact]
+    public void BurstOfdmLikeGeneratorProducesLocalizedStructuredBurst()
+    {
+        var generator = new BurstOfdmLikeGenerator(new OfdmLikeSignalGenerator());
+        var config = new BurstOfdmLikeConfig(
+            new OfdmLikeSignalConfig(8, 32, 91, 0.75d, 1d),
+            StartFraction: 0.25d,
+            LengthFraction: 0.2d);
+
+        var samples = generator.Generate(100, config, seed: 55);
+
+        Assert.All(samples.Take(25), sample => Assert.Equal(0d, sample));
+        Assert.Contains(samples.Skip(25).Take(20), sample => Math.Abs(sample) > 1e-9);
+        Assert.All(samples.Skip(45), sample => Assert.Equal(0d, sample));
+    }
+
+    [Fact]
+    public void EqualEnergyTaskConstructionKeepsPositiveAndNegativeAveragePowerClose()
+    {
+        var builder = CreateStreamBuilder();
+        var benchmark = new SyntheticBenchmarkConfig(
+            BaseStreamLength: 16_384,
+            Noise: new GaussianNoiseConfig(0d, 1d),
+            Cases: Array.Empty<SyntheticCaseConfig>());
+        var positive = TestConfigFactory.CreateEqualEnergyTask().PositiveCase with { SnrDb = -3d };
+        var negative = TestConfigFactory.CreateEqualEnergyTask().NegativeCase with { SnrDb = -3d };
+
+        var positiveStream = builder.BuildStream(41, 1, benchmark, positive);
+        var negativeStream = builder.BuildStream(41, 0, benchmark, negative);
+        var positivePower = SnrMixer.CalculateAveragePower(positiveStream);
+        var negativePower = SnrMixer.CalculateAveragePower(negativeStream);
+
+        Assert.InRange(Math.Abs(positivePower - negativePower), 0d, 0.15d);
+    }
+
+    [Fact]
     public void SnrMixerApproximatesRequestedSnrForFiniteStreams()
     {
         var noiseGenerator = new GaussianNoiseGenerator();
@@ -137,6 +172,8 @@ public sealed class SyntheticBenchmarkTests
             new GaussianNoiseGenerator(),
             new GaussianEmitterGenerator(),
             new OfdmLikeSignalGenerator(),
+            new BurstOfdmLikeGenerator(new OfdmLikeSignalGenerator()),
+            new CorrelatedGaussianProcessGenerator(),
             new SnrMixer());
     }
 }

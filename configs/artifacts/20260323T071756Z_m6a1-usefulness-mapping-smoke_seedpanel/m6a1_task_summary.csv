@@ -1,0 +1,13 @@
+﻿taskFamilyId,detectorId,medianAuc,maxAuc,bestOrTiedBestConditionCount,conditionCount,medianGapToBestBaselineAuc,maxGapToBestBaselineAuc,medianGapToLzmsaPaperAuc,medianGapToRmsNormalizedMeanAuc,comparisonNote
+colored-nuisance-vs-white-noise,ed,1.000000,1.000000,16,18,0.000000,0.000000,0.263889,0.500000,"ed median AUC 1.000 across 18 seed-condition combinations."
+colored-nuisance-vs-white-noise,cav,0.986111,1.000000,11,18,0.000000,0.000000,0.250000,0.430556,"cav median AUC 0.986 across 18 seed-condition combinations."
+colored-nuisance-vs-white-noise,lzmsa-paper,0.625000,0.861111,1,18,-0.263889,0.000000,,0.083334,"paper median AUC 0.625; median gap vs best baseline -0.264; median gap vs normalized mean 0.083."
+colored-nuisance-vs-white-noise,lzmsa-rms-normalized-mean-compressed-byte-value,0.458333,0.750000,0,18,-0.500000,-0.055556,-0.083334,,"normalized mean median AUC 0.458; median gap vs best baseline -0.500; median gap vs paper -0.083."
+equal-energy-structured-vs-unstructured,cav,1.000000,1.000000,15,18,0.000000,0.000000,0.388889,0.347223,"cav median AUC 1.000 across 18 seed-condition combinations."
+equal-energy-structured-vs-unstructured,lzmsa-rms-normalized-mean-compressed-byte-value,0.555556,0.944444,2,18,-0.347223,0.083333,0.083333,,"normalized mean median AUC 0.556; median gap vs best baseline -0.347; median gap vs paper 0.083."
+equal-energy-structured-vs-unstructured,lzmsa-paper,0.500000,0.916667,1,18,-0.388889,0.111111,,-0.083333,"paper median AUC 0.500; median gap vs best baseline -0.389; median gap vs normalized mean -0.083."
+equal-energy-structured-vs-unstructured,ed,0.388889,0.694444,0,18,-0.486111,0.000000,-0.069445,-0.027778,"ed median AUC 0.389 across 18 seed-condition combinations."
+structured-burst-vs-noise-only,cav,0.625000,0.916667,6,18,0.000000,0.000000,0.083333,0.041667,"cav median AUC 0.625 across 18 seed-condition combinations."
+structured-burst-vs-noise-only,ed,0.611111,1.000000,6,18,-0.055556,0.000000,0.125000,0.041667,"ed median AUC 0.611 across 18 seed-condition combinations."
+structured-burst-vs-noise-only,lzmsa-paper,0.527778,0.750000,2,18,-0.180556,0.472222,,-0.041667,"paper median AUC 0.528; median gap vs best baseline -0.181; median gap vs normalized mean -0.042."
+structured-burst-vs-noise-only,lzmsa-rms-normalized-mean-compressed-byte-value,0.500000,1.000000,5,18,-0.152778,0.555555,0.041667,,"normalized mean median AUC 0.500; median gap vs best baseline -0.153; median gap vs paper 0.042."

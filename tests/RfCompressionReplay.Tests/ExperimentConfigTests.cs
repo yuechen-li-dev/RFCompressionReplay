@@ -124,6 +124,34 @@ public sealed class ExperimentConfigTests
         Assert.Contains(config.RepresentationFamilies, family => string.Equals(family.Id, "normalized-rms", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("m6a1.usefulness-mapping.json", ArtifactRetentionModes.Milestone, 48)]
+    [InlineData("m6a1.usefulness-mapping-smoke.json", ArtifactRetentionModes.Smoke, 6)]
+    public void DeserializesM6A1Configs(string configFileName, string expectedRetentionMode, int expectedTrialCountPerCondition)
+    {
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../configs", configFileName));
+        var config = M6A1UsefulnessConfigJson.Load(path);
+
+        Assert.Equal(expectedRetentionMode, config.ArtifactRetentionMode);
+        Assert.Equal(expectedTrialCountPerCondition, config.Evaluation.TrialCountPerCondition);
+        Assert.Equal([86420, 97531, 24680], config.SeedPanel);
+        Assert.Equal(
+            [
+                BenchmarkTaskCatalog.StructuredBurstVsNoiseOnly,
+                BenchmarkTaskCatalog.ColoredNuisanceVsWhiteNoise,
+                BenchmarkTaskCatalog.EqualEnergyStructuredVsUnstructured,
+            ],
+            config.Evaluation.Tasks.Select(task => task.Name).ToArray());
+        Assert.Equal(
+            [
+                DetectorCatalog.EnergyDetectorName,
+                DetectorCatalog.CovarianceAbsoluteValueDetectorName,
+                DetectorCatalog.LzmsaPaperDetectorName,
+                DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName,
+            ],
+            config.Evaluation.Detectors.Select(detector => detector.Name).ToArray());
+    }
+
     [Fact]
     public void ValidatorReturnsClearMessagesForInvalidSyntheticBenchmarkConfig()
     {
@@ -174,8 +202,9 @@ public sealed class ExperimentConfigTests
 
         var errors = ExperimentConfigValidator.Validate(config);
 
-        Assert.Contains("Detector.Name 'bogus-detector' is not supported in M3. Supported detectors: ed, cav, lzmsa-paper, lzmsa-compressed-length, lzmsa-normalized-compressed-length, lzmsa-mean-compressed-byte-value, lzmsa-compressed-byte-variance, lzmsa-compressed-byte-bucket-0-63-proportion, lzmsa-compressed-byte-bucket-64-127-proportion, lzmsa-compressed-byte-bucket-128-191-proportion, lzmsa-compressed-byte-bucket-192-255-proportion, lzmsa-prefix-third-mean-compressed-byte-value, lzmsa-suffix-third-mean-compressed-byte-value.", errors);
-        Assert.Contains("Benchmark.Cases[0].SourceType 'bogus-source' is not supported in M3. Supported source types: noise-only, gaussian-emitter, ofdm-like.", errors);
+        Assert.Contains(errors, error => error.Contains("Detector.Name 'bogus-detector' is not supported in M3.", StringComparison.Ordinal)
+            && error.Contains(DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName, StringComparison.Ordinal));
+        Assert.Contains("Benchmark.Cases[0].SourceType 'bogus-source' is not supported in M3. Supported source types: noise-only, gaussian-emitter, ofdm-like, burst-ofdm-like, correlated-gaussian.", errors);
     }
 
     [Fact]
@@ -317,6 +346,20 @@ public sealed class ExperimentConfigTests
         Assert.Contains(
             $"Detector.Threshold for detector '{DetectorCatalog.LzmsaMeanCompressedByteValueDetectorName}' must be between 0 and 255 inclusive because the mean compressed byte value is bounded to that range.",
             errors);
+    }
+
+    [Fact]
+    public void M6A1ValidatorRejectsWrongTaskPanelAndDetectorPanel()
+    {
+        var config = TestConfigFactory.CreateM6A1UsefulnessConfig(
+            "m6a1-bad",
+            tasks: [TestConfigFactory.CreateOfdmTask(), TestConfigFactory.CreateColoredNuisanceTask(), TestConfigFactory.CreateEqualEnergyTask()],
+            detectors: TestConfigFactory.CreateM5A1CompressionDetectors());
+
+        var errors = M6A1UsefulnessConfigValidator.Validate(config);
+
+        Assert.Contains("M6a1 usefulness mapping requires the exact three-task suite in order: structured-burst-vs-noise-only, colored-nuisance-vs-white-noise, equal-energy-structured-vs-unstructured.", errors);
+        Assert.Contains("M6a1 usefulness mapping requires the focused detector panel exactly: ed, cav, lzmsa-paper, lzmsa-rms-normalized-mean-compressed-byte-value.", errors);
     }
 
     [Fact]
