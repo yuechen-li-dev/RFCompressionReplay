@@ -19,8 +19,7 @@
     "manifest.json",
     "summary.json",
     "summary.csv",
-    "trials.csv",
-    "roc_points.csv",
+    "roc_points_compact.csv",
     "m5a1_auc_comparison.csv",
     "m5a1_findings.md",
     "m5a1_delta_summary.csv"
@@ -58,5 +57,13 @@
       128
     ],
     "trialCountPerCondition": 72
+  },
+  "retention": {
+    "mode": "milestone",
+    "omittedArtifactKinds": [
+      "trials.csv",
+      "roc_points.csv"
+    ],
+    "regenerationNote": "Milestone retention keeps compact, conclusion-critical artifacts only. Omitted raw trial rows and full ROC thresholds are intentionally regenerable by rerunning the same config in full retention mode with the recorded code revision, seed, and manifest metadata."
   }
 }

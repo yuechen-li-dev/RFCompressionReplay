@@ -2,7 +2,7 @@
 
 `RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extends the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass: hold scalar-window serialization and deterministic Brotli compression fixed, then compare four compression-derived score identities on the same synthetic benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and ROC/AUC evaluation layer.
 
-Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note, and M5a1 now asks whether the paper-style byte-sum behaves more like compressed length or more like mean compressed byte value when the compression path itself is held fixed. This is a local mechanism-decomposition pass, not a final mechanism theory.
+Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note, and M5a1 now asks whether the paper-style byte-sum behaves more like compressed length or more like mean compressed byte value when the compression path itself is held fixed. Mx5 now adds an explicit artifact retention policy so milestone-style runs stay compact and reproducible without bloating the repository. This is a local mechanism-decomposition pass plus lab-infrastructure hygiene, not a final mechanism theory.
 
 ## What M5a1 Adds
 
@@ -16,11 +16,12 @@ Current status: the score-identity comparison has been run and frozen in checked
   - per-condition Monte Carlo trial counts
 - Per-trial binary-label score collection suitable for ROC/AUC.
 - Deterministic ROC point generation and trapezoidal AUC calculation per `(task, detector, snrDb, windowLength)` condition.
-- Machine-readable evaluation artifacts:
-  - `trials.csv`
+- Machine-readable evaluation artifacts with explicit retention modes:
   - `summary.json`
   - `summary.csv`
-  - `roc_points.csv`
+  - `trials.csv` in `full` mode
+  - `roc_points.csv` in `full` mode
+  - `roc_points_compact.csv` in `milestone` mode
 - M4 or M4a comparison artifacts when the evaluation run compares the three compression-derived detector identities together:
   - `m4_auc_comparison.csv`
   - `m4_findings.md`
@@ -116,18 +117,29 @@ Threshold pass/fail also follows the detector's documented orientation. The lega
 
 ## Produced Artifacts
 
-Each run writes a deterministic per-run folder beneath the configured output root:
+Each run writes a deterministic per-run folder beneath the configured output root and records the chosen retention mode in `manifest.json`.
 
-- `manifest.json`: run metadata, config path, environment summary, warnings, and M3 sweep/task metadata when evaluation mode is active.
+Retention modes:
+
+- `full`: local exploratory/debug output; keeps raw `trials.csv` and raw `roc_points.csv`.
+- `milestone`: checked-in result preservation; keeps compact summaries, findings, comparison CSVs, and `roc_points_compact.csv` instead of raw ROC/trial exhaust.
+- `smoke`: minimal regression output; keeps manifest, summary artifacts, and milestone findings/comparison files when produced.
+
+Core retained artifacts:
+
+- `manifest.json`: run metadata, config path, environment summary, warnings, M3 sweep/task metadata when evaluation mode is active, and retention-policy metadata describing omitted artifact families plus how to regenerate them.
 - `summary.json`: grouped summary objects.
 - `summary.csv`: tabular per-condition score summary including class counts and AUC.
-- `trials.csv`: per-trial score records including task name, label, detector, detector mode, score orientation, condition SNR, source SNR, and window length.
-- `roc_points.csv`: ROC thresholds, TPR/FPR points, class counts, and per-condition AUC.
+- `trials.csv`: per-trial score records including task name, label, detector, detector mode, score orientation, condition SNR, source SNR, and window length in `full` mode only.
+- `roc_points.csv`: raw ROC thresholds, TPR/FPR points, class counts, and per-condition AUC in `full` mode only.
+- `roc_points_compact.csv`: deterministic downsampled ROC representation retained in `milestone` mode.
 - `m4_auc_comparison.csv` / `m4a_auc_comparison.csv`: side-by-side AUC comparison for `lzmsa-paper`, `lzmsa-compressed-length`, and `lzmsa-normalized-compressed-length` by task, SNR, and window length when all three are run together.
 - `m4_findings.md` / `m4a_findings.md`: concise scope, comparison table, findings text, and caveats for an M4/M4a score-identity comparison run.
 - `m5a1_auc_comparison.csv`: side-by-side AUC comparison for `lzmsa-paper`, `lzmsa-compressed-length`, `lzmsa-normalized-compressed-length`, and `lzmsa-mean-compressed-byte-value` by task, SNR, and window length when all four are run together.
 - `m5a1_findings.md`: concise scope, condition summary, decomposition-focused findings text, and caveats for an M5a1 run.
 - `m5a1_delta_summary.csv`: compact aggregate median/max absolute AUC deltas between `lzmsa-paper` and each alternative M5a1 identity.
+
+See `docs/ARTIFACT_RETENTION_POLICY.md` for the detailed Mx5 policy, omitted artifact families, and regeneration guidance.
 
 If a same-second rerun would collide, the harness appends a readable suffix such as `_2` to keep artifacts isolated.
 
@@ -138,6 +150,8 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - M4a confirmation artifacts: `configs/artifacts/m4a/20260322T231911Z_m4a-score-identity-confirmation_seed24680/`
   - inspect `m4a_auc_comparison.csv`, `m4a_findings.md`, and `manifest.json`
 - M4b findings freeze: `docs/M4B_FINDINGS.md`
+- M5a1 checked-in artifacts: `configs/artifacts/m5a1/20260322T235141Z_m5a1-compressed-stream-decomposition_seed13579/`
+  - inspect `m5a1_auc_comparison.csv`, `m5a1_delta_summary.csv`, `m5a1_findings.md`, and `manifest.json`
 - M5a1 decomposition guide: `docs/M5A1_COMPRESSED_STREAM_DECOMPOSITION.md`
 
 ## Repository Layout
@@ -152,6 +166,7 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - `docs/M4A_CONFIRMATION_RERUN.md`: M4a confirmation-rerun scope, strengthening choices, and reading guide.
 - `docs/M4B_FINDINGS.md`: concise M4/M4a findings freeze, supported conclusion, non-conclusions, and next mechanistic question.
 - `docs/M5A1_COMPRESSED_STREAM_DECOMPOSITION.md`: M5a1 scope, score decomposition question, outputs, and reading guide.
+- `docs/ARTIFACT_RETENTION_POLICY.md`: Mx5 retention modes, retained-vs-omitted artifact families, compact ROC policy, and regeneration expectations.
 - `docs/DETECTOR_IMPLEMENTATION_NOTES.md`: detector formulas and compression-statistic contract.
 - `docs/REPRODUCTION_SCOPE.md`: concise reproduction-scope statement.
 
@@ -178,6 +193,8 @@ dotnet run --project src/RfCompressionReplay.Cli -- configs/m4a.score-identity-c
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m5a1.compressed-stream-decomposition-smoke.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m5a1.compressed-stream-decomposition.json
 ```
+
+The checked-in smoke and milestone configs now set `artifactRetentionMode` explicitly; switch a config to `full` for a local rerun when you need omitted raw artifacts such as `trials.csv` or `roc_points.csv`.
 
 On success, the CLI prints the run identifier and the artifact directory.
 

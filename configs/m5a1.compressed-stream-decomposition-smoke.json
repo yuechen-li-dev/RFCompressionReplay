@@ -96,8 +96,13 @@
         "mode": "mean-compressed-byte-value"
       }
     ],
-    "snrDbValues": [ -6.0, 0.0 ],
-    "windowLengths": [ 64 ],
+    "snrDbValues": [
+      -6.0,
+      0.0
+    ],
+    "windowLengths": [
+      64
+    ],
     "trialCountPerCondition": 4
   },
   "manifestMetadata": {
@@ -110,5 +115,6 @@
       "benchmark": "smoke",
       "comparisonBase": "m4a"
     }
-  }
+  },
+  "artifactRetentionMode": "smoke"
 }

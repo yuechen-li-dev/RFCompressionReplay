@@ -91,8 +91,15 @@
         "mode": "compressed-byte-count-per-input-byte"
       }
     ],
-    "snrDbValues": [ -9.0, -3.0, 0.0 ],
-    "windowLengths": [ 64, 128 ],
+    "snrDbValues": [
+      -9.0,
+      -3.0,
+      0.0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
     "trialCountPerCondition": 24
   },
   "manifestMetadata": {
@@ -104,5 +111,6 @@
       "experimentType": "score-identity-comparison",
       "benchmark": "synthetic-m3-tasks"
     }
-  }
+  },
+  "artifactRetentionMode": "milestone"
 }
