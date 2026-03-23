@@ -291,6 +291,49 @@ public sealed class ExperimentApplicationTests
         }
     }
 
+    [Fact]
+    public void GeneratesM5A3StabilityArtifactsForSeedPanelRun()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+
+        try
+        {
+            var config = TestConfigFactory.CreateM5A3StabilityConfig(
+                experimentId: "m5a3-test",
+                trialCountPerCondition: 2) with
+            {
+                OutputDirectory = tempRoot,
+                ExperimentName = "M5a3 Stability Test",
+                ManifestMetadata = new ManifestMetadataConfig(
+                    "Test M5a3 stability confirmation run.",
+                    "m5a3-test",
+                    new Dictionary<string, string> { ["milestone"] = "m5a3", ["experimentType"] = "stability-confirmation" })
+            };
+
+            var baseApplication = CreateApplication("2026-03-23T05:46:07Z");
+            var stabilityApplication = new M5A3StabilityExperimentApplication(
+                new FixedRunClock(DateTimeOffset.Parse("2026-03-23T05:46:07Z")),
+                baseApplication,
+                new EnvironmentSummaryProvider(),
+                new GitCommitResolver());
+            var runDirectory = stabilityApplication.Run(config, Path.Combine(tempRoot, "config.json"), "/does/not/exist");
+
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5a3_auc_comparison.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5a3_delta_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5a3_stability_summary.csv")));
+            Assert.True(File.Exists(Path.Combine(runDirectory, "m5a3_findings.md")));
+            Assert.Contains("seed,taskName,conditionSnrDb", File.ReadAllText(Path.Combine(runDirectory, "m5a3_auc_comparison.csv")));
+            Assert.Contains("closestNeighborCount", File.ReadAllText(Path.Combine(runDirectory, "m5a3_stability_summary.csv")));
+            Assert.Contains("M5a3 Stability Confirmation Findings", File.ReadAllText(Path.Combine(runDirectory, "m5a3_findings.md")));
+            Assert.Equal(3, Directory.GetDirectories(Path.Combine(runDirectory, "seed-runs")).Length);
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, true);
+        }
+    }
+
     private static ExperimentApplication CreateApplication(string utcTimestamp)
     {
         return new ExperimentApplication(

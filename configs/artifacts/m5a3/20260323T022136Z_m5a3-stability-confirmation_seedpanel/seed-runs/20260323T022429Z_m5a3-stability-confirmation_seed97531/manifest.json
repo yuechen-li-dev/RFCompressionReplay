@@ -1,0 +1,75 @@
+{
+  "experimentId": "m5a3-stability-confirmation",
+  "experimentName": "M5a3 Synthetic Stability Confirmation",
+  "utcTimestamp": "2026-03-23T02:24:29.8717334+00:00",
+  "seed": 97531,
+  "gitCommit": "41be3eef2ec826693ff6f82a35f7c164c37d603e",
+  "environment": {
+    "machineName": "29d681b1f8da",
+    "userName": "root",
+    "operatingSystem": "Ubuntu 24.04.3 LTS",
+    "frameworkDescription": ".NET 8.0.25",
+    "processArchitecture": "X64",
+    "currentDirectory": "/workspace/RFCompressionReplay"
+  },
+  "configFilePath": "../../../../../m5a3.stability-confirmation.json",
+  "scenarioName": "synthetic-benchmark",
+  "trialCount": 144,
+  "artifactPaths": [
+    "manifest.json",
+    "summary.json",
+    "summary.csv",
+    "roc_points_compact.csv",
+    "m5a2_auc_comparison.csv",
+    "m5a2_findings.md",
+    "m5a2_delta_summary.csv"
+  ],
+  "warnings": [],
+  "metadata": {
+    "notes": "M5a3 reruns the current M5a2r feature family under a modest three-seed panel and higher per-condition trial counts to test whether the closest simple neighbor to lzmsa-paper is stable at the feature level or only at the family level.",
+    "versionTag": "m5a3",
+    "tags": {
+      "paper": "2018-rf-spectrum-sensing",
+      "milestone": "m5a3",
+      "experimentType": "stability-confirmation",
+      "benchmark": "synthetic-m3-tasks",
+      "comparisonBase": "m5a2r",
+      "seedPanel": "86420-97531-24680"
+    }
+  },
+  "evaluation": {
+    "taskNames": [
+      "ofdm-signal-present-vs-noise-only",
+      "gaussian-emitter-vs-noise-only"
+    ],
+    "detectorNames": [
+      "lzmsa-paper",
+      "lzmsa-mean-compressed-byte-value",
+      "lzmsa-compressed-byte-variance",
+      "lzmsa-compressed-byte-bucket-0-63-proportion",
+      "lzmsa-compressed-byte-bucket-64-127-proportion",
+      "lzmsa-compressed-byte-bucket-128-191-proportion",
+      "lzmsa-compressed-byte-bucket-192-255-proportion",
+      "lzmsa-prefix-third-mean-compressed-byte-value",
+      "lzmsa-suffix-third-mean-compressed-byte-value"
+    ],
+    "snrDbValues": [
+      -9,
+      -3,
+      0
+    ],
+    "windowLengths": [
+      64,
+      128
+    ],
+    "trialCountPerCondition": 144
+  },
+  "retention": {
+    "mode": "milestone",
+    "omittedArtifactKinds": [
+      "trials.csv",
+      "roc_points.csv"
+    ],
+    "regenerationNote": "Milestone retention keeps compact, conclusion-critical artifacts only. Omitted raw trial rows and full ROC thresholds are intentionally regenerable by rerunning the same config in full retention mode with the recorded code revision, seed, and manifest metadata."
+  }
+}
