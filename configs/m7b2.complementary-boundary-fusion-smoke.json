@@ -1,0 +1,204 @@
+{
+  "experimentId": "m7b2-complementary-boundary-fusion-smoke",
+  "experimentName": "M7b2 Complementary Boundary Fusion Smoke",
+  "seedPanel": [86420, 97531, 24680],
+  "outputDirectory": "artifacts",
+  "scenario": {
+    "name": "synthetic-benchmark",
+    "sampleWindowCount": 1,
+    "samplesPerWindow": 128
+  },
+  "benchmark": {
+    "noise": {
+      "mean": 0.0,
+      "standardDeviation": 1.0
+    },
+    "tasks": [
+      {
+        "name": "quiet-to-structured-regime",
+        "description": "Noise-only prefix, then a sustained OFDM-like structured regime, then noise-only suffix.",
+        "regimes": [
+          {
+            "id": "quiet-prefix",
+            "lengthSamples": 768,
+            "syntheticCase": {
+              "name": "m7b2-quiet-prefix-smoke",
+              "targetLabel": "quiet",
+              "sourceType": "noise-only"
+            },
+            "applyConditionSnr": false
+          },
+          {
+            "id": "structured-middle",
+            "lengthSamples": 1024,
+            "syntheticCase": {
+              "name": "m7b2-structured-middle-smoke",
+              "targetLabel": "structured-regime",
+              "sourceType": "ofdm-like",
+              "snrDb": -3.0,
+              "ofdmLike": {
+                "subcarrierCount": 8,
+                "samplesPerSymbol": 32,
+                "symbolSeed": 177,
+                "carrierSpacing": 0.75,
+                "amplitude": 1.0
+              }
+            }
+          },
+          {
+            "id": "quiet-suffix",
+            "lengthSamples": 768,
+            "syntheticCase": {
+              "name": "m7b2-quiet-suffix-smoke",
+              "targetLabel": "quiet",
+              "sourceType": "noise-only"
+            },
+            "applyConditionSnr": false
+          }
+        ]
+      },
+      {
+        "name": "correlated-nuisance-to-engineered-structure",
+        "description": "Correlated nuisance, then engineered OFDM-like structure, then correlated nuisance again.",
+        "regimes": [
+          {
+            "id": "correlated-prefix",
+            "lengthSamples": 768,
+            "syntheticCase": {
+              "name": "m7b2-correlated-prefix-smoke",
+              "targetLabel": "correlated-nuisance",
+              "sourceType": "correlated-gaussian",
+              "snrDb": -3.0,
+              "correlatedGaussian": {
+                "innovationStandardDeviation": 1.0,
+                "arCoefficient": 0.92
+              }
+            }
+          },
+          {
+            "id": "engineered-middle",
+            "lengthSamples": 1024,
+            "syntheticCase": {
+              "name": "m7b2-engineered-middle-smoke",
+              "targetLabel": "engineered-structure",
+              "sourceType": "ofdm-like",
+              "snrDb": -3.0,
+              "ofdmLike": {
+                "subcarrierCount": 8,
+                "samplesPerSymbol": 32,
+                "symbolSeed": 177,
+                "carrierSpacing": 0.75,
+                "amplitude": 1.0
+              }
+            }
+          },
+          {
+            "id": "correlated-suffix",
+            "lengthSamples": 768,
+            "syntheticCase": {
+              "name": "m7b2-correlated-suffix-smoke",
+              "targetLabel": "correlated-nuisance",
+              "sourceType": "correlated-gaussian",
+              "snrDb": -3.0,
+              "correlatedGaussian": {
+                "innovationStandardDeviation": 1.0,
+                "arCoefficient": 0.92
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "structure-to-structure-regime-shift",
+        "description": "One OFDM-like structure shifts into another OFDM-like structure with different organization.",
+        "regimes": [
+          {
+            "id": "structure-a",
+            "lengthSamples": 1280,
+            "syntheticCase": {
+              "name": "m7b2-structure-a-smoke",
+              "targetLabel": "structure-a",
+              "sourceType": "ofdm-like",
+              "snrDb": -3.0,
+              "ofdmLike": {
+                "subcarrierCount": 8,
+                "samplesPerSymbol": 32,
+                "symbolSeed": 177,
+                "carrierSpacing": 0.75,
+                "amplitude": 1.0
+              }
+            }
+          },
+          {
+            "id": "structure-b",
+            "lengthSamples": 1280,
+            "syntheticCase": {
+              "name": "m7b2-structure-b-smoke",
+              "targetLabel": "structure-b",
+              "sourceType": "ofdm-like",
+              "snrDb": -3.0,
+              "ofdmLike": {
+                "subcarrierCount": 5,
+                "samplesPerSymbol": 40,
+                "symbolSeed": 278,
+                "carrierSpacing": 0.45,
+                "amplitude": 1.0
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "evaluation": {
+    "detectors": [
+      {
+        "name": "ed",
+        "threshold": 1.0,
+        "mode": "average-energy"
+      },
+      {
+        "name": "cav",
+        "threshold": 0.0,
+        "mode": "lag-1-absolute-autocovariance"
+      },
+      {
+        "name": "lzmsa-rms-normalized-mean-compressed-byte-value",
+        "threshold": 128.0,
+        "mode": "rms-normalized-mean-compressed-byte-value"
+      }
+    ],
+    "fusions": [
+      {
+        "signalId": "ed-cav-rms-normalized-mean-fused",
+        "description": "Per-stream min-max normalization of each detector's adjacent-window change trace followed by an equal-weight average before the same peak-picking boundary proposal rule.",
+        "rule": "normalized-adjacent-change-minmax-average",
+        "sourceDetectorIds": [
+          "ed",
+          "cav",
+          "lzmsa-rms-normalized-mean-compressed-byte-value"
+        ]
+      }
+    ],
+    "snrDbValues": [-9.0, -3.0, 0.0],
+    "windowLengths": [64, 128],
+    "streamCountPerCondition": 2,
+    "windowStrideFraction": 0.5,
+    "boundaryToleranceWindowMultiple": 1.0,
+    "minPeakSpacingWindowMultiple": 1.0,
+    "peakThresholdMadMultiplier": 1.5,
+    "maxBoundaryProposals": 3
+  },
+  "manifestMetadata": {
+    "notes": "Tiny M7b2 smoke config for compact complementary boundary fusion artifact generation.",
+    "versionTag": "m7b2-smoke",
+    "tags": {
+      "milestone": "m7b2",
+      "experimentType": "complementary-boundary-fusion",
+      "detectorPanel": "ed-cav-rms-normalized-mean",
+      "fusionRule": "normalized-adjacent-change-minmax-average",
+      "retentionIntent": "compact-summary-first"
+    }
+  },
+  "artifactRetentionMode": "smoke"
+}

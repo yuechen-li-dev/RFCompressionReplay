@@ -426,6 +426,51 @@ internal static class TestConfigFactory
             ArtifactRetentionMode: artifactRetentionMode);
     }
 
+    public static M7B2ComplementaryBoundaryFusionConfig CreateM7B2ComplementaryBoundaryFusionConfig(
+        string experimentId,
+        IReadOnlyList<int>? seedPanel = null,
+        IReadOnlyList<M7BStreamTaskConfig>? tasks = null,
+        IReadOnlyList<DetectorConfig>? detectors = null,
+        IReadOnlyList<double>? snrDbValues = null,
+        IReadOnlyList<int>? windowLengths = null,
+        int streamCountPerCondition = 4,
+        string artifactRetentionMode = ArtifactRetentionModes.Milestone)
+    {
+        return new M7B2ComplementaryBoundaryFusionConfig(
+            ExperimentId: experimentId,
+            ExperimentName: "M7b2 Complementary Boundary Fusion Test",
+            SeedPanel: seedPanel ?? [86420, 97531, 24680],
+            OutputDirectory: "artifacts",
+            Scenario: new ScenarioConfig(ExperimentConfigValidator.SyntheticBenchmarkScenarioName, 1, 128),
+            Benchmark: new M7BStreamBenchmarkConfig(
+                new GaussianNoiseConfig(0d, 1d),
+                tasks ?? [CreateQuietToStructuredStreamTask(), CreateCorrelatedNuisanceToStructuredTask(), CreateStructureShiftTask()]),
+            Evaluation: new M7B2BoundaryFusionEvaluationConfig(
+                Detectors: detectors ?? CreateM7BDetectors(),
+                Fusions:
+                [
+                    new M7B2FusionConfig(
+                        M7B2ComplementaryBoundaryFusionConfigValidator.RequiredFusionSignalId,
+                        "Per-stream min-max normalization of each detector's adjacent-window change trace followed by an equal-weight average before the same peak-picking rule.",
+                        M7B2ComplementaryBoundaryFusionConfigValidator.NormalizedChangeAverageRule,
+                        [
+                            DetectorCatalog.EnergyDetectorName,
+                            DetectorCatalog.CovarianceAbsoluteValueDetectorName,
+                            DetectorCatalog.LzmsaRmsNormalizedMeanCompressedByteValueDetectorName,
+                        ])
+                ],
+                SnrDbValues: snrDbValues ?? [-9d, -3d, 0d],
+                WindowLengths: windowLengths ?? [64, 128],
+                StreamCountPerCondition: streamCountPerCondition,
+                MaxBoundaryProposals: 3,
+                WindowStrideFraction: 0.5d,
+                BoundaryToleranceWindowMultiple: 1.0d,
+                MinPeakSpacingWindowMultiple: 1.0d,
+                PeakThresholdMadMultiplier: 1.5d),
+            ManifestMetadata: new ManifestMetadataConfig("note", "m7b2", new Dictionary<string, string> { ["suite"] = "tests", ["milestone"] = "m7b2" }),
+            ArtifactRetentionMode: artifactRetentionMode);
+    }
+
     public static M7BChangePointConfig CreateM7BChangePointConfig(
         string experimentId,
         IReadOnlyList<int>? seedPanel = null,

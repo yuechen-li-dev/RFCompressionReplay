@@ -40,6 +40,68 @@ public static class M7BChangePointAnalyzer
         return scores;
     }
 
+    public static IReadOnlyList<double> ComputeAdjacentChangeTrace(IReadOnlyList<double> scoreTrace)
+    {
+        if (scoreTrace.Count < 2)
+        {
+            return Array.Empty<double>();
+        }
+
+        var changes = new double[scoreTrace.Count - 1];
+        for (var index = 0; index < changes.Length; index++)
+        {
+            changes[index] = Math.Abs(scoreTrace[index + 1] - scoreTrace[index]);
+        }
+
+        return changes;
+    }
+
+    public static IReadOnlyList<double> NormalizeTraceMinMax(IReadOnlyList<double> trace)
+    {
+        if (trace.Count == 0)
+        {
+            return Array.Empty<double>();
+        }
+
+        var min = trace.Min();
+        var max = trace.Max();
+        if (max - min <= 1e-12d)
+        {
+            return Enumerable.Repeat(0d, trace.Count).ToArray();
+        }
+
+        var normalized = new double[trace.Count];
+        for (var index = 0; index < trace.Count; index++)
+        {
+            normalized[index] = (trace[index] - min) / (max - min);
+        }
+
+        return normalized;
+    }
+
+    public static IReadOnlyList<double> ComputeNormalizedAverageFusionChangeTrace(IReadOnlyList<IReadOnlyList<double>> traces)
+    {
+        if (traces.Count == 0)
+        {
+            return Array.Empty<double>();
+        }
+
+        var length = traces[0].Count;
+        if (traces.Any(trace => trace.Count != length))
+        {
+            throw new InvalidOperationException("All fusion source traces must have the same length.");
+        }
+
+        var normalizedTraces = traces.Select(NormalizeTraceMinMax).ToArray();
+        var fused = new double[length];
+        for (var index = 0; index < length; index++)
+        {
+            fused[index] = normalizedTraces.Average(trace => trace[index]);
+        }
+
+        return fused;
+    }
+
     public static IReadOnlyList<int> ProposeBoundaries(
         IReadOnlyList<double> scoreTrace,
         int streamLength,
@@ -49,27 +111,44 @@ public static class M7BChangePointAnalyzer
         int minPeakSpacing,
         int maxBoundaryProposals)
     {
-        if (scoreTrace.Count < 2)
+        return ProposeBoundariesFromChangeTrace(
+            ComputeAdjacentChangeTrace(scoreTrace),
+            streamLength,
+            windowLength,
+            stride,
+            peakThresholdMadMultiplier,
+            minPeakSpacing,
+            maxBoundaryProposals);
+    }
+
+    public static IReadOnlyList<int> ProposeBoundariesFromChangeTrace(
+        IReadOnlyList<double> changes,
+        int streamLength,
+        int windowLength,
+        int stride,
+        double peakThresholdMadMultiplier,
+        int minPeakSpacing,
+        int maxBoundaryProposals)
+    {
+        if (changes.Count == 0)
         {
             return Array.Empty<int>();
         }
 
         var starts = GetWindowStarts(streamLength, windowLength, stride);
-        var changes = new double[scoreTrace.Count - 1];
-        var positions = new int[changes.Length];
-        for (var index = 0; index < changes.Length; index++)
+        var positions = new int[changes.Count];
+        for (var index = 0; index < changes.Count; index++)
         {
-            changes[index] = Math.Abs(scoreTrace[index + 1] - scoreTrace[index]);
             positions[index] = Math.Min(streamLength - 1, starts[index] + stride);
         }
 
         var threshold = CalculateRobustThreshold(changes, peakThresholdMadMultiplier);
         var localPeaks = new List<(int Position, double Magnitude)>();
-        for (var index = 0; index < changes.Length; index++)
+        for (var index = 0; index < changes.Count; index++)
         {
             var current = changes[index];
             var left = index == 0 ? double.NegativeInfinity : changes[index - 1];
-            var right = index == changes.Length - 1 ? double.NegativeInfinity : changes[index + 1];
+            var right = index == changes.Count - 1 ? double.NegativeInfinity : changes[index + 1];
             if (current < threshold)
             {
                 continue;

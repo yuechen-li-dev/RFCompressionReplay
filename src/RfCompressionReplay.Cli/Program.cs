@@ -33,6 +33,19 @@ try
         gitCommitResolver);
     var bundleEvaluator = new TinyLogisticRegressionBundleEvaluator(new RocAucCalculator());
 
+    if (IsM7B2ComplementaryBoundaryFusionConfig(fullConfigPath))
+    {
+        var config = M7B2ComplementaryBoundaryFusionConfigJson.Load(fullConfigPath);
+        var boundaryFusionApplication = new M7B2ComplementaryBoundaryFusionExperimentApplication(
+            runClock,
+            environmentSummaryProvider,
+            gitCommitResolver);
+        var runDirectory = boundaryFusionApplication.Run(config, fullConfigPath, ResolveRepositoryRoot());
+        Console.WriteLine($"Run completed: {config.ExperimentId} ({config.Scenario.Name})");
+        Console.WriteLine($"Artifacts: {runDirectory}");
+        return 0;
+    }
+
     if (IsM7BChangePointConfig(fullConfigPath))
     {
         var config = M7BChangePointConfigJson.Load(fullConfigPath);
@@ -153,10 +166,16 @@ static bool IsM5A3StabilityConfig(string configPath)
         && !document.RootElement.TryGetProperty("perturbations", out _);
 }
 
+static bool IsM7B2ComplementaryBoundaryFusionConfig(string configPath)
+{
+    using var document = JsonDocument.Parse(File.ReadAllText(configPath));
+    return IsM7B2ComplementaryBoundaryFusionDocument(document.RootElement);
+}
+
 static bool IsM7BChangePointConfig(string configPath)
 {
     using var document = JsonDocument.Parse(File.ReadAllText(configPath));
-    return IsM7BChangePointDocument(document.RootElement);
+    return IsM7BChangePointDocument(document.RootElement) && !IsM7B2ComplementaryBoundaryFusionDocument(document.RootElement);
 }
 
 static bool IsM6A2ComplementaryValueConfig(string configPath)
@@ -256,6 +275,15 @@ static bool IsM7BChangePointDocument(JsonElement rootElement)
         && taskNames.Contains("quiet-to-structured-regime", StringComparer.Ordinal)
         && taskNames.Contains("correlated-nuisance-to-engineered-structure", StringComparer.Ordinal)
         && taskNames.Contains("structure-to-structure-regime-shift", StringComparer.Ordinal);
+}
+
+static bool IsM7B2ComplementaryBoundaryFusionDocument(JsonElement rootElement)
+{
+    return IsM7BChangePointDocument(rootElement)
+        && rootElement.TryGetProperty("evaluation", out var evaluation)
+        && evaluation.TryGetProperty("fusions", out var fusions)
+        && fusions.ValueKind == JsonValueKind.Array
+        && fusions.GetArrayLength() > 0;
 }
 
 static bool IsM6A2ComplementaryValueDocument(JsonElement rootElement)
