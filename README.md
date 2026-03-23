@@ -1,8 +1,8 @@
 # RfCompressionReplay
 
-`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, and M5b3 now refines the scale side further with an explicit scale panel plus one simple normalization comparison while keeping the same synthetic tasks, compression backend, and focused feature panel.
+`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, M5a2r re-landed the second compressed-stream decomposition pass under the current milestone-retention policy, M5a3 added a narrow multi-seed stability confirmation pass over that same M5a2 feature family, M5b1 added the first representation-perturbation exploration pass, M5b2 refined that pass by separating scale-only versus packing/precision-only perturbations, M5b3 refined the scale side further with an explicit scale panel plus one simple normalization comparison, and M5f freezes that arc into a concise repository-native findings package.
 
-Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note, M5a1 asks whether the paper-style byte-sum behaves more like compressed length or more like mean compressed byte value when the compression path itself is held fixed, M5a2r preserves the follow-on coarse-summary comparison in a compact checked-in form, M5a3 checks whether the M5a2r “closest simple neighbor” is actually stable under a small explicit seed panel, M5b1 asks whether that neighborhood remains qualitatively intact under modest representation perturbations, M5b2 asks which perturbation axis is doing the most work in the M5b1 winner reshuffling, and M5b3 asks what shape the scale sensitivity takes across a small explicit panel and whether a simple normalization rule reduces it. Mx5 adds an explicit artifact retention policy so milestone-style runs stay compact and reproducible without bloating the repository. This remains a local mechanism-decomposition arc plus lab-infrastructure hygiene, not a final mechanism theory.
+Current status: within the current synthetic harness, the clean compressibility interpretation is no longer the best fit. The checked-in M5 arc now supports a scale-sensitive coarse compressed-byte value / distribution / position neighborhood interpretation, with simple compressed-length metrics remaining insufficient and per-window RMS-normalized mean compressed byte value serving as the strongest practical simple summary identified so far. See `docs/M5_FINDINGS.md` for the compact freeze, and inspect the checked-in M5 milestone artifacts under `configs/artifacts/m5a1/`, `configs/artifacts/m5a2/`, `configs/artifacts/m5a3/`, `configs/artifacts/m5b1/`, `configs/artifacts/m5b2/`, and `configs/artifacts/m5b3/` for the compact evidence trail. Mx5 adds an explicit artifact retention policy so milestone-style runs stay compact and reproducible without bloating the repository. This remains a local mechanism-decomposition arc plus lab-infrastructure hygiene, not a final mechanism theory.
 
 ## What M5a1 Adds
 
@@ -215,6 +215,8 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - M4a confirmation artifacts: `configs/artifacts/m4a/20260322T231911Z_m4a-score-identity-confirmation_seed24680/`
   - inspect `m4a_auc_comparison.csv`, `m4a_findings.md`, and `manifest.json`
 - M4b findings freeze: `docs/M4B_FINDINGS.md`
+- M5 findings freeze: `docs/M5_FINDINGS.md`
+  - compact status of the full M5a1 → M5b3 mechanism arc, including current supported conclusion, non-conclusions, open question, and direct links to the compact milestone artifacts
 - M5a1 checked-in artifacts: `configs/artifacts/m5a1/20260322T235141Z_m5a1-compressed-stream-decomposition_seed13579/`
   - inspect `m5a1_auc_comparison.csv`, `m5a1_delta_summary.csv`, `m5a1_findings.md`, and `manifest.json`
 - M5a2 checked-in artifacts: `configs/artifacts/m5a2/20260323T014446Z_m5a2r-compressed-stream-decomposition_seed86420/`
@@ -223,11 +225,11 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - M5a3 checked-in artifacts: `configs/artifacts/m5a3/20260323T022136Z_m5a3-stability-confirmation_seedpanel/`
   - inspect `m5a3_stability_summary.csv`, `m5a3_auc_comparison.csv`, `m5a3_findings.md`, and `manifest.json`
   - current stability note: `lzmsa-mean-compressed-byte-value` had the most closest-neighbor wins in the checked-in rerun panel, but not enough to support a stable single-feature winner; the artifact-backed conclusion remains that the nearest-neighbor set stayed split across whole-stream, coarse-positional, and coarse-histogram summaries
-- M5b1 checked-in artifacts: `configs/artifacts/m5b1/`
-  - inspect the newest `m5b1-representation-perturbation-exploration` run folder for `m5b1_auc_comparison.csv`, `m5b1_delta_summary.csv`, `m5b1_perturbation_stability_summary.csv`, `m5b1_findings.md`, and `manifest.json`
+- M5b1 checked-in artifacts: `configs/artifacts/m5b1/20260323T051853Z_m5b1-representation-perturbation-exploration_seedpanel/`
+  - inspect `m5b1_auc_comparison.csv`, `m5b1_delta_summary.csv`, `m5b1_perturbation_stability_summary.csv`, `m5b1_findings.md`, and `manifest.json`
   - the M5b1 focused panel is intentionally small: whole-stream mean, the current best checked-in histogram representative (`bucket-64-127`), and the current positional representative (`suffix-third mean`)
-- M5b2 checked-in artifacts: `configs/artifacts/m5b2/`
-  - inspect the newest `m5b2-perturbation-axis-refinement` run folder for `m5b2_auc_comparison.csv`, `m5b2_delta_summary.csv`, `m5b2_axis_summary.csv`, `m5b2_findings.md`, and `manifest.json`
+- M5b2 checked-in artifacts: `configs/artifacts/m5b2/20260323T055613Z_m5b2-perturbation-axis-refinement_seedpanel/`
+  - inspect `m5b2_auc_comparison.csv`, `m5b2_delta_summary.csv`, `m5b2_axis_summary.csv`, `m5b2_findings.md`, and `manifest.json`
   - M5b2 keeps the M5b1 focused panel fixed, then separates scale-only from packing-only perturbations so the checked-in artifacts stay summary-first
 - M5b3 checked-in artifacts: `configs/artifacts/m5b3/20260323T061933Z_m5b3-scale-handling-refinement_seedpanel/`
   - inspect `m5b3_auc_comparison.csv`, `m5b3_delta_summary.csv`, `m5b3_scale_summary.csv`, `m5b3_findings.md`, and `manifest.json`
