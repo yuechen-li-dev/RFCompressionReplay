@@ -1,6 +1,6 @@
 # Detector Implementation Notes
 
-This document records the exact detector formulas and serialization contract implemented in this repository through M5a1.
+This document records the exact detector formulas and serialization contract implemented in this repository through M5a2r.
 
 ## Scope of This Document
 
@@ -12,7 +12,7 @@ The repository now contains:
 - the existing `lzmsa-paper` paper-style byte-sum score path, and
 - additional compression-derived score identities that reuse the same serialization and compressed payload basis.
 
-This hardening pass does **not** claim which score identity is scientifically responsible for any later detection effect. It only makes that comparison explicit and testable through the current M4/M5a1 mechanism-comparison passes.
+This hardening pass does **not** claim which score identity is scientifically responsible for any later detection effect. It only makes that comparison explicit and testable through the current M4/M5a1/M5a2r mechanism-comparison passes.
 
 ## Input Model Used by the Detectors
 
@@ -123,6 +123,51 @@ Interpretation contract:
 
 - This keeps the compressed payload basis fixed while isolating the second factor in `byteSum = compressedLength × meanCompressedByteValue`.
 - The higher-is-more-positive orientation is explicit and intentional: at fixed compressed length, increasing mean compressed byte value increases the paper-style byte-sum score.
+
+### LZMSA compressed byte variance (`lzmsa-compressed-byte-variance`, mode `compressed-byte-variance`)
+
+This M5a2r variant keeps the same compressed payload basis but summarizes the spread of compressed byte values.
+
+Formula:
+
+- `score = mean((compressedByte_i - meanCompressedByteValue)^2)`
+
+Orientation:
+
+- `HigherScoreMorePositive`
+
+### LZMSA coarse histogram bucket proportions
+
+These M5a2r variants summarize the fraction of compressed bytes that fall in one coarse inclusive bucket:
+
+- `lzmsa-compressed-byte-bucket-0-63-proportion`
+- `lzmsa-compressed-byte-bucket-64-127-proportion`
+- `lzmsa-compressed-byte-bucket-128-191-proportion`
+- `lzmsa-compressed-byte-bucket-192-255-proportion`
+
+Formula:
+
+- `score = bucketByteCount / compressedByteCount`
+
+Orientation:
+
+- `HigherScoreMorePositive`
+
+### LZMSA prefix/suffix-third mean compressed byte value
+
+These M5a2r variants keep the same compressed payload basis but summarize coarse byte position:
+
+- `lzmsa-prefix-third-mean-compressed-byte-value`
+- `lzmsa-suffix-third-mean-compressed-byte-value`
+
+Formula:
+
+- `score = mean(compressedBytes over first floor(count / 3), minimum 1 when non-empty)`
+- `score = mean(compressedBytes over last floor(count / 3), minimum 1 when non-empty)`
+
+Orientation:
+
+- `HigherScoreMorePositive`
 
 ## Shared Compression Serialization Contract
 

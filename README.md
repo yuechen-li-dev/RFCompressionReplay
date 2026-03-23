@@ -1,8 +1,8 @@
 # RfCompressionReplay
 
-`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extends the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass: hold scalar-window serialization and deterministic Brotli compression fixed, then compare four compression-derived score identities on the same synthetic benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and ROC/AUC evaluation layer.
+`RfCompressionReplay` is a .NET 8 experiment harness for an independent reproduction of a 2018 RF spectrum-sensing paper. M5a1 extended the typed M0/M1/M2/M3/M4/M4a harness with the first compressed-stream decomposition pass, and M5a2r now re-lands the second compressed-stream decomposition pass under the current milestone-retention policy: hold scalar-window serialization and deterministic Brotli compression fixed, then compare `lzmsa-paper` against simple compressed-byte summaries on the same synthetic benchmark tasks, SNR sweeps, window-length sweeps, Monte Carlo score collection, and ROC/AUC evaluation layer.
 
-Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note, and M5a1 now asks whether the paper-style byte-sum behaves more like compressed length or more like mean compressed byte value when the compression path itself is held fixed. Mx5 now adds an explicit artifact retention policy so milestone-style runs stay compact and reproducible without bloating the repository. This is a local mechanism-decomposition pass plus lab-infrastructure hygiene, not a final mechanism theory.
+Current status: the score-identity comparison has been run and frozen in checked-in M4/M4a artifacts plus the M4b findings note, M5a1 asks whether the paper-style byte-sum behaves more like compressed length or more like mean compressed byte value when the compression path itself is held fixed, and M5a2r preserves the follow-on coarse-summary comparison in a compact checked-in form. Mx5 adds an explicit artifact retention policy so milestone-style runs stay compact and reproducible without bloating the repository. This remains a local mechanism-decomposition arc plus lab-infrastructure hygiene, not a final mechanism theory.
 
 ## What M5a1 Adds
 
@@ -31,6 +31,10 @@ Current status: the score-identity comparison has been run and frozen in checked
   - `m5a1_auc_comparison.csv`
   - `m5a1_findings.md`
   - `m5a1_delta_summary.csv`
+- M5a2 decomposition artifacts when the evaluation run compares the intended coarse compressed-byte summary family together:
+  - `m5a2_auc_comparison.csv`
+  - `m5a2_findings.md`
+  - `m5a2_delta_summary.csv`
 - Manifest metadata that records task names and sweep axes.
 - Focused xUnit coverage for ROC/AUC sanity, score orientation, condition grouping, end-to-end sample configs, and determinism.
 
@@ -74,6 +78,15 @@ The repository now exposes four separate compression-derived detector IDs that a
   - Formula: `score = compressedByteSum / compressedByteCount`
   - Orientation: `HigherScoreMorePositive`
   - Purpose: keep the compression path fixed while isolating the mean-byte-value factor from the identity `byteSum = compressedLength × meanCompressedByteValue`.
+- M5a2r adds:
+  - `lzmsa-compressed-byte-variance`
+  - `lzmsa-compressed-byte-bucket-0-63-proportion`
+  - `lzmsa-compressed-byte-bucket-64-127-proportion`
+  - `lzmsa-compressed-byte-bucket-128-191-proportion`
+  - `lzmsa-compressed-byte-bucket-192-255-proportion`
+  - `lzmsa-prefix-third-mean-compressed-byte-value`
+  - `lzmsa-suffix-third-mean-compressed-byte-value`
+  - Purpose: test whether coarse distribution or positional compressed-byte summaries explain `lzmsa-paper` better than whole-stream mean compressed byte value alone.
 
 `inputByteCount` is the serialized scalar-window payload size in bytes before compression. The serialization contract itself is unchanged.
 
@@ -138,6 +151,9 @@ Core retained artifacts:
 - `m5a1_auc_comparison.csv`: side-by-side AUC comparison for `lzmsa-paper`, `lzmsa-compressed-length`, `lzmsa-normalized-compressed-length`, and `lzmsa-mean-compressed-byte-value` by task, SNR, and window length when all four are run together.
 - `m5a1_findings.md`: concise scope, condition summary, decomposition-focused findings text, and caveats for an M5a1 run.
 - `m5a1_delta_summary.csv`: compact aggregate median/max absolute AUC deltas between `lzmsa-paper` and each alternative M5a1 identity.
+- `m5a2_auc_comparison.csv`: side-by-side AUC comparison for `lzmsa-paper` and the intended M5a2 coarse summary detectors by task, SNR, and window length.
+- `m5a2_findings.md`: concise scope, condition summary, key finding, and caveats for an M5a2r run.
+- `m5a2_delta_summary.csv`: compact aggregate median/max absolute AUC deltas between `lzmsa-paper` and each alternative M5a2 detector, including feature-family labels and the count of conditions where a detector beat whole-stream mean compressed byte value.
 
 See `docs/ARTIFACT_RETENTION_POLICY.md` for the detailed Mx5 policy, omitted artifact families, and regeneration guidance.
 
@@ -152,7 +168,11 @@ If a same-second rerun would collide, the harness appends a readable suffix such
 - M4b findings freeze: `docs/M4B_FINDINGS.md`
 - M5a1 checked-in artifacts: `configs/artifacts/m5a1/20260322T235141Z_m5a1-compressed-stream-decomposition_seed13579/`
   - inspect `m5a1_auc_comparison.csv`, `m5a1_delta_summary.csv`, `m5a1_findings.md`, and `manifest.json`
+- M5a2 checked-in artifacts: `configs/artifacts/m5a2/20260323T014446Z_m5a2r-compressed-stream-decomposition_seed86420/`
+  - inspect `m5a2_auc_comparison.csv`, `m5a2_delta_summary.csv`, `m5a2_findings.md`, and `manifest.json`
+  - current re-land note: this same-scope rerun on current main materially changed the previously reported unmerged M5a2 finding; the checked-in compact artifacts now show `lzmsa-compressed-byte-bucket-64-127-proportion` as the closest tested simple neighbor to `lzmsa-paper`, with the coarse histogram family narrowly best overall
 - M5a1 decomposition guide: `docs/M5A1_COMPRESSED_STREAM_DECOMPOSITION.md`
+- M5a2 re-land guide: `docs/M5A2R_COMPRESSED_STREAM_DECOMPOSITION.md`
 
 ## Repository Layout
 
@@ -192,6 +212,8 @@ dotnet run --project src/RfCompressionReplay.Cli -- configs/m4a.score-identity-s
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m4a.score-identity-confirmation.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m5a1.compressed-stream-decomposition-smoke.json
 dotnet run --project src/RfCompressionReplay.Cli -- configs/m5a1.compressed-stream-decomposition.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m5a2r.compressed-stream-decomposition-smoke.json
+dotnet run --project src/RfCompressionReplay.Cli -- configs/m5a2r.compressed-stream-decomposition.json
 ```
 
 The checked-in smoke and milestone configs now set `artifactRetentionMode` explicitly; switch a config to `full` for a local rerun when you need omitted raw artifacts such as `trials.csv` or `roc_points.csv`.

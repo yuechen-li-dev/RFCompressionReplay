@@ -119,6 +119,8 @@ public sealed class ArtifactRetentionTests
     [Theory]
     [InlineData("m5a1.compressed-stream-decomposition-smoke.json", ArtifactRetentionModes.Smoke)]
     [InlineData("m5a1.compressed-stream-decomposition.json", ArtifactRetentionModes.Milestone)]
+    [InlineData("m5a2r.compressed-stream-decomposition-smoke.json", ArtifactRetentionModes.Smoke)]
+    [InlineData("m5a2r.compressed-stream-decomposition.json", ArtifactRetentionModes.Milestone)]
     public void CheckedInRetentionConfigsRunEndToEnd(string configFileName, string expectedMode)
     {
         var tempRoot = CreateTempRoot();

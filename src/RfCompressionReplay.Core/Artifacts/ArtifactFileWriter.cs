@@ -31,6 +31,9 @@ public sealed class ArtifactFileWriter
         string? m5A1AucComparisonCsvPath = null;
         string? m5A1FindingsPath = null;
         string? m5A1DeltaSummaryCsvPath = null;
+        string? m5A2AucComparisonCsvPath = null;
+        string? m5A2FindingsPath = null;
+        string? m5A2DeltaSummaryCsvPath = null;
 
         ExperimentConfigJson.Save(manifestPath, manifest);
         ExperimentConfigJson.Save(summaryPath, result.Summary);
@@ -76,6 +79,17 @@ public sealed class ArtifactFileWriter
             File.WriteAllText(m5A1FindingsPath, comparison.FindingsMarkdown);
         }
 
+        if (M5A2ScoreDecompositionReportBuilder.IsEnabled(config))
+        {
+            var comparison = M5A2ScoreDecompositionReportBuilder.Build(config, result);
+            m5A2AucComparisonCsvPath = Path.Combine(runDirectory, $"{M5A2ScoreDecompositionReportBuilder.ArtifactPrefix}_auc_comparison.csv");
+            m5A2FindingsPath = Path.Combine(runDirectory, $"{M5A2ScoreDecompositionReportBuilder.ArtifactPrefix}_findings.md");
+            m5A2DeltaSummaryCsvPath = Path.Combine(runDirectory, $"{M5A2ScoreDecompositionReportBuilder.ArtifactPrefix}_delta_summary.csv");
+            M5A2ScoreDecompositionReportBuilder.WriteComparisonCsv(m5A2AucComparisonCsvPath, comparison.Rows);
+            M5A2ScoreDecompositionReportBuilder.WriteAggregateDeltaCsv(m5A2DeltaSummaryCsvPath, comparison.AggregateDeltaRows);
+            File.WriteAllText(m5A2FindingsPath, comparison.FindingsMarkdown);
+        }
+
         return new ArtifactPaths(
             runDirectory,
             manifestPath,
@@ -88,6 +102,9 @@ public sealed class ArtifactFileWriter
             m4FindingsPath,
             m5A1AucComparisonCsvPath,
             m5A1FindingsPath,
-            m5A1DeltaSummaryCsvPath);
+            m5A1DeltaSummaryCsvPath,
+            m5A2AucComparisonCsvPath,
+            m5A2FindingsPath,
+            m5A2DeltaSummaryCsvPath);
     }
 }

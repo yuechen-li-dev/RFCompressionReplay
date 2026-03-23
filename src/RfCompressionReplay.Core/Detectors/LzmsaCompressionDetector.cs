@@ -50,6 +50,7 @@ public class LzmsaCompressionDetector : IDetector
             SerializedByteCount: serialized.Length,
             InputByteCount: serialized.Length,
             CompressedByteCount: compressed.Length,
-            CompressedByteSum: byteSum);
+            CompressedByteSum: byteSum,
+            CompressedBytes: compressed);
     }
 }
